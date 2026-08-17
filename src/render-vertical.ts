@@ -44,14 +44,21 @@ function renderNode(
 	const node = document.createElement("div");
 	node.className = `timeline-graph-node ${alignLeft ? "is-left" : "is-right"}`;
 
+	const color = event.group ? colorForGroup(event.group) : undefined;
+
 	const dot = document.createElement("div");
 	dot.className = "timeline-graph-node-dot";
-	if (event.group) dot.style.setProperty("--marker-color", colorForGroup(event.group));
+	if (color) dot.style.setProperty("--marker-color", color);
 	node.appendChild(dot);
+
+	const connector = document.createElement("div");
+	connector.className = "timeline-graph-connector";
+	if (color) connector.style.setProperty("--marker-color", color);
+	node.appendChild(connector);
 
 	const card = document.createElement("div");
 	card.className = "timeline-graph-card";
-	if (event.group) card.style.setProperty("--marker-color", colorForGroup(event.group));
+	if (color) card.style.setProperty("--marker-color", color);
 
 	const dateEl = document.createElement("span");
 	dateEl.className = "timeline-graph-card-date";
