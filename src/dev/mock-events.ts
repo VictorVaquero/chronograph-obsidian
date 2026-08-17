@@ -91,11 +91,16 @@ export const mockEvents: TimelineEvent[] = [
 
 // Ancient-history sample data spanning BC/AD, for testing coarse date
 // granularities (decade/century/millennium) and the BC/AD boundary.
+//
+// TimelineDate.year is the astronomical year (1 BC = year 0, 2 BC = year -1,
+// ...), not "the BC year with a minus sign" — converting a BC year to this
+// form is `1 - bcYear` (e.g. 44 BC -> -43), matching how parseTimelineDate
+// and formatYear in ../date/timeline-date.ts both treat it.
 export const ancientMockEvents: TimelineEvent[] = [
 	{
 		id: "a1",
 		title: "Great Pyramid of Giza completed",
-		date: { year: -2559 },
+		date: { year: -2558 }, // 2559 BC
 		sourcePath: "History/Pyramid.md",
 		description: "Completion of the Great Pyramid under Khufu.",
 		group: "Egypt",
@@ -103,30 +108,30 @@ export const ancientMockEvents: TimelineEvent[] = [
 	{
 		id: "a2",
 		title: "Code of Hammurabi",
-		date: { year: -1753 },
+		date: { year: -1752 }, // 1753 BC
 		sourcePath: "History/Hammurabi.md",
 		group: "Mesopotamia",
 	},
 	{
 		id: "a3",
 		title: "Trojan War (traditional dating)",
-		date: { year: -1193 },
-		endDate: { year: -1183 },
+		date: { year: -1192 }, // 1193 BC
+		endDate: { year: -1182 }, // 1183 BC
 		sourcePath: "History/Troy.md",
 		group: "Greece",
 	},
 	{
 		id: "a4",
 		title: "Founding of Rome",
-		date: { year: -753 },
+		date: { year: -752 }, // 753 BC
 		sourcePath: "History/Rome.md",
 		group: "Rome",
 	},
 	{
 		id: "a5",
 		title: "Roman Republic",
-		date: { year: -509 },
-		endDate: { year: -27 },
+		date: { year: -508 }, // 509 BC
+		endDate: { year: -26 }, // 27 BC
 		sourcePath: "History/Republic.md",
 		description: "From the overthrow of the monarchy to Augustus.",
 		group: "Rome",
@@ -134,14 +139,14 @@ export const ancientMockEvents: TimelineEvent[] = [
 	{
 		id: "a6",
 		title: "Julius Caesar assassinated",
-		date: { year: -44, month: 3, day: 15 },
+		date: { year: -43, month: 3, day: 15 }, // 44 BC
 		sourcePath: "History/Caesar.md",
 		group: "Rome",
 	},
 	{
 		id: "a7",
 		title: "Roman Empire founded",
-		date: { year: -27 },
+		date: { year: -26 }, // 27 BC
 		endDate: { year: 476 },
 		sourcePath: "History/Empire.md",
 		group: "Rome",
@@ -163,16 +168,16 @@ export const ancientMockEvents: TimelineEvent[] = [
 	{
 		id: "a-period-1",
 		title: "Bronze Age",
-		date: { year: -3300 },
-		endDate: { year: -1200 },
+		date: { year: -3299 }, // 3300 BC
+		endDate: { year: -1199 }, // 1200 BC
 		sourcePath: "History/BronzeAge.md",
 		kind: "period",
 	},
 	{
 		id: "a-period-2",
 		title: "Iron Age",
-		date: { year: -1200 },
-		endDate: { year: -550 },
+		date: { year: -1199 }, // 1200 BC
+		endDate: { year: -549 }, // 550 BC
 		sourcePath: "History/IronAge.md",
 		kind: "period",
 	},

@@ -32,6 +32,12 @@ describe("parseTimelineDate", () => {
 		expect(parseTimelineDate("1 BC")?.year).toBeCloseTo(0);
 	});
 
+	it("parses day-precision BC/AD strings via a YYYY-MM-DD + era suffix", () => {
+		expect(parseTimelineDate("44-03-15 BC")).toEqual({ year: -43, month: 3, day: 15 });
+		expect(parseTimelineDate("0044-3-15 BCE")).toEqual({ year: -43, month: 3, day: 15 });
+		expect(parseTimelineDate("1969-07-20 AD")).toEqual({ year: 1969, month: 7, day: 20 });
+	});
+
 	it("parses AD/CE year strings", () => {
 		expect(parseTimelineDate("1969")).toEqual({ year: 1969 });
 		expect(parseTimelineDate("1969 AD")).toEqual({ year: 1969 });

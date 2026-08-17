@@ -24,16 +24,19 @@ const MONTH_NAMES = [
 	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
-const BC_STRING_RE = /^\s*(-?\d+)\s*(bc|bce)\s*$/i;
-const AD_STRING_RE = /^\s*(-?\d+)\s*(ad|ce)\s*$/i;
+const BC_STRING_RE = /^\s*(-?\d+)(?:-(\d{1,2})-(\d{1,2}))?\s*(bc|bce)\s*$/i;
+const AD_STRING_RE = /^\s*(-?\d+)(?:-(\d{1,2})-(\d{1,2}))?\s*(ad|ce)\s*$/i;
 const YEAR_ONLY_RE = /^\s*(-?\d+)\s*$/;
 
 /**
  * Parses a raw Dataview field value into a TimelineDate. Accepts real
  * Dataview/Luxon date values (via `toMillis`/`toObject`-like duck typing,
  * handled by the caller before reaching here), plain ISO date strings, and
- * year-only strings with an optional era suffix ("3000 BC", "44 BCE",
- * "1969", "1969 AD"). Returns undefined if the value can't be parsed.
+ * year-only or full-date strings with an era suffix ("3000 BC", "44 BCE",
+ * "44-03-15 BC" for day precision, "1969", "1969 AD"). The year in a BC/BCE
+ * string is always the calendar year (e.g. 44, not -43) — the era suffix
+ * itself signals the conversion to astronomical numbering. Returns
+ * undefined if the value can't be parsed.
  */
 export function parseTimelineDate(value: unknown): TimelineDate | undefined {
 	if (value == null) return undefined;
@@ -44,10 +47,10 @@ export function parseTimelineDate(value: unknown): TimelineDate | undefined {
 
 	if (typeof value === "string") {
 		const bc = value.match(BC_STRING_RE);
-		if (bc) return { year: -(parseInt(bc[1], 10) - 1) };
+		if (bc) return eraMatchToDate(bc, -(parseInt(bc[1], 10) - 1));
 
 		const ad = value.match(AD_STRING_RE);
-		if (ad) return { year: parseInt(ad[1], 10) };
+		if (ad) return eraMatchToDate(ad, parseInt(ad[1], 10));
 
 		const yearOnly = value.match(YEAR_ONLY_RE);
 		if (yearOnly) return { year: parseInt(yearOnly[1], 10) };
@@ -59,6 +62,12 @@ export function parseTimelineDate(value: unknown): TimelineDate | undefined {
 	}
 
 	return undefined;
+}
+
+function eraMatchToDate(match: RegExpMatchArray, year: number): TimelineDate {
+	const [, , month, day] = match;
+	if (month && day) return { year, month: parseInt(month, 10), day: parseInt(day, 10) };
+	return { year };
 }
 
 function fromEpochMillis(ms: number): TimelineDate {
