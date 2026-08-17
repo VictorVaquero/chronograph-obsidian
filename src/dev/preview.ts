@@ -1,6 +1,6 @@
 import { renderTimeline, renderEmptyState, renderErrorState } from "../timeline-renderer";
 import { mockEvents, randomizedMockEvents } from "./mock-events";
-import { TimelineEvent } from "../types";
+import { TimelineEvent, TimelineLayout } from "../types";
 
 // Entry point for the standalone browser preview (see src/dev/preview.html).
 // Bundled and served without any Obsidian runtime, so the timeline renderer
@@ -15,18 +15,29 @@ function logClick(event: TimelineEvent): void {
 	log.textContent = `Clicked: ${event.title} (${event.sourcePath})`;
 }
 
-function render(events: TimelineEvent[]): void {
-	renderTimeline(container!, events, { onEventClick: logClick });
+let layout: TimelineLayout = "vertical";
+let currentEvents: TimelineEvent[] = mockEvents;
+
+function render(): void {
+	renderTimeline(container!, currentEvents, layout, { onEventClick: logClick });
 }
 
-render(mockEvents);
+const layoutSelect = document.getElementById("layout-select") as HTMLSelectElement | null;
+layoutSelect?.addEventListener("change", () => {
+	layout = layoutSelect.value as TimelineLayout;
+	render();
+});
+
+render();
 
 document.getElementById("btn-sample")?.addEventListener("click", () => {
-	render(mockEvents);
+	currentEvents = mockEvents;
+	render();
 });
 
 document.getElementById("btn-random")?.addEventListener("click", () => {
-	render(randomizedMockEvents(30));
+	currentEvents = randomizedMockEvents(30);
+	render();
 });
 
 document.getElementById("btn-empty")?.addEventListener("click", () => {

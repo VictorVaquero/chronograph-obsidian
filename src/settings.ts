@@ -9,6 +9,7 @@ export function createDefaultView(): TimelineViewConfig {
 			dateField: "date",
 		},
 		sortOrder: "asc",
+		layout: "vertical",
 	};
 }
 

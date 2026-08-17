@@ -118,6 +118,20 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(section)
+			.setName("Layout")
+			.setDesc("Vertical list or a horizontal axis with grouped lanes.")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("vertical", "Vertical list")
+					.addOption("horizontal", "Horizontal axis")
+					.setValue(view.layout)
+					.onChange(async (value) => {
+						view.layout = value as "vertical" | "horizontal";
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(section)
 			.setName("Default view")
 			.setDesc("Open this view by default when the timeline pane is created.")
 			.addToggle((toggle) =>

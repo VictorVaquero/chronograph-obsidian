@@ -13,6 +13,8 @@ export interface TimelineEvent {
 
 export type TimelineSortOrder = "asc" | "desc";
 
+export type TimelineLayout = "vertical" | "horizontal";
+
 export interface TimelineFieldMapping {
 	/** Frontmatter/inline field holding the event start date. */
 	dateField: string;
@@ -33,6 +35,7 @@ export interface TimelineViewConfig {
 	dataviewQuery: string;
 	fields: TimelineFieldMapping;
 	sortOrder: TimelineSortOrder;
+	layout: TimelineLayout;
 }
 
 export interface TimelineGraphSettings {

@@ -81,7 +81,7 @@ export class TimelineView extends ItemView {
 					? a.date - b.date
 					: b.date - a.date
 			);
-			renderTimeline(this.contentEl, events, {
+			renderTimeline(this.contentEl, events, this.activeConfig.layout, {
 				onEventClick: (event) =>
 					this.app.workspace.openLinkText(event.sourcePath, "", false),
 			});

@@ -12,18 +12,23 @@
 			--size-4-3: 12px;
 			--size-4-4: 16px;
 			--background-primary: #ffffff;
+			--background-secondary: #f5f5f5;
 			--background-modifier-border: #e0e0e0;
 			--text-normal: #2e3338;
 			--text-muted: #6c7075;
+			--text-on-accent: #ffffff;
 			--text-error: #c0392b;
+			--interactive-accent: #7c3aed;
 			--font-smallest: 11px;
 			--font-small: 13px;
 			--font-medium: 500;
 			--radius-m: 6px;
+			--radius-s: 4px;
 		}
 		@media (prefers-color-scheme: dark) {
 			:root {
 				--background-primary: #1e1e1e;
+				--background-secondary: #262626;
 				--background-modifier-border: #3a3a3a;
 				--text-normal: #dcddde;
 				--text-muted: #999999;
@@ -51,14 +56,21 @@
 			color: var(--text-muted);
 			margin-left: auto;
 		}
+		.preview-toolbar select {
+			padding: 4px 8px;
+		}
 		#app {
-			max-width: 720px;
+			max-width: 960px;
 		}
 	</style>
 	<link rel="stylesheet" href="../../styles.css" />
 </head>
 <body>
 	<div class="preview-toolbar">
+		<select id="layout-select">
+			<option value="vertical">Vertical list</option>
+			<option value="horizontal">Horizontal axis</option>
+		</select>
 		<button id="btn-sample">Sample data</button>
 		<button id="btn-random">Randomized data</button>
 		<button id="btn-empty">Empty state</button>

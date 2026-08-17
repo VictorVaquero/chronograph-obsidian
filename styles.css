@@ -35,11 +35,123 @@
 	font-weight: var(--font-medium);
 	color: var(--text-normal);
 	cursor: pointer;
+	border-left: 3px solid transparent;
+	padding-left: var(--size-4-2);
+	text-decoration: none;
+}
+
+.timeline-graph-item-title:hover {
+	text-decoration: underline;
+}
+
+.timeline-graph-item-badge {
+	display: inline-block;
+	width: fit-content;
+	font-size: var(--font-smallest);
+	color: #fff;
+	padding: 1px var(--size-4-2);
+	border-radius: 999px;
 }
 
 .timeline-graph-item-desc {
 	font-size: var(--font-small);
 	color: var(--text-muted);
+}
+
+/* Horizontal axis layout */
+
+.timeline-graph-horizontal-scroller {
+	overflow-x: auto;
+	padding-bottom: var(--size-4-2);
+}
+
+.timeline-graph-horizontal-track {
+	position: relative;
+	min-width: 100%;
+}
+
+.timeline-graph-axis {
+	position: relative;
+	height: 28px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	margin-bottom: var(--size-4-3);
+}
+
+.timeline-graph-axis-tick {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	border-left: 1px solid var(--background-modifier-border);
+}
+
+.timeline-graph-axis-tick span {
+	position: absolute;
+	top: 4px;
+	left: 4px;
+	font-size: var(--font-smallest);
+	color: var(--text-muted);
+	white-space: nowrap;
+}
+
+.timeline-graph-lane {
+	display: flex;
+	align-items: stretch;
+	min-height: 40px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.timeline-graph-lane:last-child {
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.timeline-graph-lane-label {
+	position: sticky;
+	left: 0;
+	z-index: 1;
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	width: 120px;
+	padding: var(--size-4-1) var(--size-4-2);
+	font-size: var(--font-small);
+	color: var(--text-muted);
+	background: var(--background-primary);
+	border-left: 3px solid var(--background-modifier-border);
+}
+
+.timeline-graph-lane-track {
+	position: relative;
+	flex: 1 1 auto;
+}
+
+.timeline-graph-marker {
+	position: absolute;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	background: var(--marker-color, var(--interactive-accent));
+	border: none;
+	cursor: pointer;
+	color: var(--text-on-accent, #fff);
+	font-size: var(--font-smallest);
+	white-space: nowrap;
+	max-width: 160px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding: 2px var(--size-4-2);
+}
+
+.timeline-graph-marker-point {
+	border-radius: 999px;
+}
+
+.timeline-graph-marker-range {
+	transform: translateY(-50%);
+	border-radius: var(--radius-s);
+	text-align: left;
+}
+
+.timeline-graph-marker-label {
+	pointer-events: none;
 }
 
 .timeline-graph-view-config {
