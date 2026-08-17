@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
-	<title>Timeline Graph — Preview</title>
+	<title>Chronograph — Preview</title>
 	<style>
 		/* Stand-ins for the Obsidian CSS variables styles.css relies on,
 		   so the plugin's real stylesheet renders reasonably outside the app. */
@@ -14,96 +14,556 @@
 			--background-primary: #ffffff;
 			--background-secondary: #f5f5f5;
 			--background-modifier-border: #e0e0e0;
+			--background-modifier-hover: #ebebeb;
 			--text-normal: #2e3338;
 			--text-muted: #6c7075;
+			--text-faint: #a0a4a8;
 			--text-on-accent: #ffffff;
 			--text-error: #c0392b;
 			--interactive-accent: #7c3aed;
+			--interactive-accent-hover: #6d28d9;
 			--font-smallest: 11px;
 			--font-small: 13px;
 			--font-medium: 500;
 			--radius-m: 6px;
 			--radius-s: 4px;
+			--mono-font: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
 		}
 		@media (prefers-color-scheme: dark) {
 			:root {
 				--background-primary: #1e1e1e;
 				--background-secondary: #262626;
 				--background-modifier-border: #3a3a3a;
+				--background-modifier-hover: #2e2e2e;
 				--text-normal: #dcddde;
 				--text-muted: #999999;
+				--text-faint: #666666;
 			}
 		}
-		body {
+		* { box-sizing: border-box; }
+		html, body {
 			margin: 0;
-			background: var(--background-primary);
+			height: 100%;
+			background: #d9d9d9;
 			color: var(--text-normal);
 			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 		}
+		@media (prefers-color-scheme: dark) {
+			html, body { background: #101010; }
+		}
+
+		/* ---- Obsidian-like window chrome ---- */
+		.obsidian-window {
+			display: flex;
+			flex-direction: column;
+			max-width: 1180px;
+			min-height: 100vh;
+			margin: 0 auto;
+			background: var(--background-primary);
+			box-shadow: 0 0 0 1px var(--background-modifier-border);
+		}
+		.titlebar {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 8px 12px;
+			background: var(--background-secondary);
+			border-bottom: 1px solid var(--background-modifier-border);
+			font-size: 13px;
+			color: var(--text-muted);
+			-webkit-user-select: none;
+			user-select: none;
+		}
+		.titlebar .traffic-lights { display: flex; gap: 6px; }
+		.titlebar .traffic-lights span {
+			width: 11px; height: 11px; border-radius: 50%; display: inline-block;
+		}
+		.titlebar .traffic-lights span:nth-child(1) { background: #ff5f57; }
+		.titlebar .traffic-lights span:nth-child(2) { background: #febc2e; }
+		.titlebar .traffic-lights span:nth-child(3) { background: #28c840; }
+		.titlebar .vault-name { margin: 0 auto; font-weight: 500; }
+		.titlebar .harness-badge {
+			font-size: var(--font-smallest);
+			padding: 2px 6px;
+			border-radius: var(--radius-s);
+			background: var(--interactive-accent);
+			color: var(--text-on-accent);
+		}
+
+		.workspace {
+			display: flex;
+			flex: 1;
+			min-height: 0;
+		}
+
+		.ribbon {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 4px;
+			width: 44px;
+			padding: 8px 0;
+			background: var(--background-secondary);
+			border-right: 1px solid var(--background-modifier-border);
+		}
+		.ribbon .ribbon-icon {
+			width: 28px;
+			height: 28px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: var(--radius-s);
+			cursor: pointer;
+			font-size: 16px;
+			color: var(--text-muted);
+		}
+		.ribbon .ribbon-icon:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+		.ribbon .ribbon-icon.active { background: var(--interactive-accent); color: var(--text-on-accent); }
+
+		.pane {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			min-width: 0;
+		}
+		.tab-header {
+			display: flex;
+			align-items: center;
+			background: var(--background-secondary);
+			border-bottom: 1px solid var(--background-modifier-border);
+			font-size: 13px;
+		}
+		.tab-header .tab {
+			padding: 8px 14px;
+			cursor: pointer;
+			color: var(--text-muted);
+			border-right: 1px solid var(--background-modifier-border);
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+		.tab-header .tab.active {
+			color: var(--text-normal);
+			background: var(--background-primary);
+			font-weight: var(--font-medium);
+		}
+
+		.pane-content {
+			flex: 1;
+			overflow: auto;
+			padding: 16px;
+		}
+
+		/* ---- Settings modal look-alike ---- */
+		.settings-modal-backdrop {
+			position: fixed;
+			inset: 0;
+			background: rgba(0, 0, 0, 0.5);
+			display: none;
+			align-items: center;
+			justify-content: center;
+			z-index: 10;
+		}
+		.settings-modal-backdrop.open { display: flex; }
+		.settings-modal {
+			width: min(720px, 92vw);
+			max-height: 82vh;
+			display: flex;
+			flex-direction: column;
+			background: var(--background-primary);
+			border-radius: var(--radius-m);
+			box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+			overflow: hidden;
+		}
+		.settings-modal-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 10px 16px;
+			border-bottom: 1px solid var(--background-modifier-border);
+			font-weight: var(--font-medium);
+		}
+		.settings-modal-header button {
+			border: none;
+			background: transparent;
+			cursor: pointer;
+			font-size: 16px;
+			color: var(--text-muted);
+		}
+		.settings-modal-body {
+			overflow: auto;
+			padding: 12px 16px 20px;
+		}
+
+		.setting-item {
+			display: flex;
+			align-items: flex-start;
+			justify-content: space-between;
+			gap: 16px;
+			padding: 10px 0;
+			border-bottom: 1px solid var(--background-modifier-border);
+		}
+		.setting-item:last-child { border-bottom: none; }
+		.setting-item-info { flex: 1; min-width: 0; }
+		.setting-item-name { font-size: 14px; }
+		.setting-item-description { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+		.setting-item-control {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			flex-shrink: 0;
+		}
+		.setting-item-control input[type="text"],
+		.setting-item-control select {
+			padding: 5px 8px;
+			border: 1px solid var(--background-modifier-border);
+			border-radius: var(--radius-s);
+			background: var(--background-primary);
+			color: var(--text-normal);
+			font-size: 13px;
+			min-width: 220px;
+		}
+
+		.checkbox-toggle {
+			position: relative;
+			width: 34px;
+			height: 20px;
+			display: inline-block;
+		}
+		.checkbox-toggle input { opacity: 0; width: 0; height: 0; }
+		.checkbox-toggle .slider {
+			position: absolute;
+			inset: 0;
+			background: var(--background-modifier-border);
+			border-radius: 999px;
+			cursor: pointer;
+			transition: background 0.15s;
+		}
+		.checkbox-toggle .slider::before {
+			content: "";
+			position: absolute;
+			width: 16px;
+			height: 16px;
+			left: 2px;
+			top: 2px;
+			background: white;
+			border-radius: 50%;
+			transition: transform 0.15s;
+		}
+		.checkbox-toggle input:checked + .slider { background: var(--interactive-accent); }
+		.checkbox-toggle input:checked + .slider::before { transform: translateX(14px); }
+
+		.setting-group-heading {
+			font-size: 12px;
+			font-weight: var(--font-medium);
+			text-transform: uppercase;
+			letter-spacing: 0.03em;
+			color: var(--text-faint);
+			margin: 18px 0 4px;
+		}
+		.setting-group-heading:first-child { margin-top: 4px; }
+		.settings-note {
+			font-size: 12px;
+			color: var(--text-muted);
+			background: var(--background-secondary);
+			border-radius: var(--radius-s);
+			padding: 8px 10px;
+			margin-bottom: 6px;
+		}
+
+		/* ---- Source editor tabs (Table / Dataview / Frontmatter) ---- */
+		.source-tabs {
+			display: flex;
+			gap: 2px;
+			margin-bottom: 8px;
+		}
+		.source-tabs button {
+			padding: 6px 12px;
+			font-size: 12px;
+			border: 1px solid var(--background-modifier-border);
+			background: var(--background-secondary);
+			color: var(--text-muted);
+			cursor: pointer;
+			border-radius: var(--radius-s) var(--radius-s) 0 0;
+		}
+		.source-tabs button.active {
+			background: var(--background-primary);
+			color: var(--text-normal);
+			font-weight: var(--font-medium);
+			border-bottom-color: var(--background-primary);
+		}
+		.source-panel { display: none; }
+		.source-panel.active { display: block; }
+
+		.note-editor {
+			border: 1px solid var(--background-modifier-border);
+			border-radius: var(--radius-s);
+			overflow: hidden;
+		}
+		.note-editor .note-title {
+			padding: 6px 10px;
+			font-size: 12px;
+			color: var(--text-muted);
+			background: var(--background-secondary);
+			border-bottom: 1px solid var(--background-modifier-border);
+			font-family: var(--mono-font);
+		}
+		.note-editor textarea {
+			display: block;
+			width: 100%;
+			min-height: 190px;
+			border: none;
+			padding: 10px;
+			font-family: var(--mono-font);
+			font-size: 12.5px;
+			line-height: 1.5;
+			resize: vertical;
+			background: var(--background-primary);
+			color: var(--text-normal);
+		}
+		.note-editor textarea:focus { outline: none; }
+
+		.dataview-query-input {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			font-family: var(--mono-font);
+			font-size: 13px;
+			border: 1px solid var(--background-modifier-border);
+			border-radius: var(--radius-s);
+			padding: 8px 10px;
+			background: var(--background-secondary);
+		}
+		.dataview-query-input::before { content: "≡"; color: var(--interactive-accent); font-weight: bold; }
+		.dataview-query-input input {
+			flex: 1;
+			border: none;
+			background: transparent;
+			color: var(--text-normal);
+			font-family: inherit;
+			font-size: inherit;
+		}
+		.dataview-query-input input:focus { outline: none; }
+
+		.query-presets {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 6px;
+			margin-top: 8px;
+		}
+		.query-presets button {
+			font-size: 11px;
+			font-family: var(--mono-font);
+			padding: 4px 8px;
+			border: 1px solid var(--background-modifier-border);
+			border-radius: var(--radius-s);
+			background: var(--background-primary);
+			color: var(--text-muted);
+			cursor: pointer;
+		}
+		.query-presets button:hover { background: var(--background-modifier-hover); color: var(--text-normal); }
+
+		.parse-feedback {
+			font-size: 12px;
+			margin-top: 6px;
+			min-height: 16px;
+		}
+		.parse-feedback.ok { color: #2e7d32; }
+		.parse-feedback.error { color: var(--text-error); }
+
+		.frontmatter-filters {
+			display: flex;
+			gap: 10px;
+			margin-bottom: 8px;
+			flex-wrap: wrap;
+		}
+		.frontmatter-filters label {
+			display: flex;
+			flex-direction: column;
+			gap: 3px;
+			font-size: 12px;
+			color: var(--text-muted);
+		}
+		.frontmatter-filters input {
+			padding: 5px 8px;
+			border: 1px solid var(--background-modifier-border);
+			border-radius: var(--radius-s);
+			background: var(--background-primary);
+			color: var(--text-normal);
+			font-size: 12.5px;
+		}
+		.mock-vault-list {
+			font-family: var(--mono-font);
+			font-size: 11.5px;
+			color: var(--text-muted);
+			border: 1px solid var(--background-modifier-border);
+			border-radius: var(--radius-s);
+			padding: 8px 10px;
+			margin-top: 6px;
+			max-height: 110px;
+			overflow: auto;
+		}
+		.mock-vault-list .vault-note { padding: 1px 0; }
+		.mock-vault-list .vault-note.matched { color: #2e7d32; }
+		.mock-vault-list .vault-note.matched::before { content: "✓ "; }
+		.mock-vault-list .vault-note:not(.matched)::before { content: "· "; opacity: 0.5; }
+
+		.disclaimer {
+			font-size: 11px;
+			color: var(--text-faint);
+			margin-top: 6px;
+			font-style: italic;
+		}
+
+		details.editor-toggle {
+			margin-bottom: 14px;
+			border: 1px solid var(--background-modifier-border);
+			border-radius: var(--radius-m);
+			padding: 0;
+			overflow: hidden;
+		}
+		details.editor-toggle summary {
+			padding: 8px 12px;
+			cursor: pointer;
+			font-size: 13px;
+			font-weight: var(--font-medium);
+			background: var(--background-secondary);
+			list-style: none;
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+		details.editor-toggle summary::-webkit-details-marker { display: none; }
+		details.editor-toggle summary::before { content: "▶"; font-size: 9px; transition: transform 0.1s; }
+		details.editor-toggle[open] summary::before { transform: rotate(90deg); }
+		details.editor-toggle .editor-toggle-body { padding: 12px; }
+
 		.preview-toolbar {
 			display: flex;
 			gap: 8px;
-			padding: 12px 16px;
-			border-bottom: 1px solid var(--background-modifier-border);
+			padding: 8px 0 12px;
 			align-items: center;
 			flex-wrap: wrap;
+			border-bottom: 1px solid var(--background-modifier-border);
+			margin-bottom: 12px;
 		}
 		.preview-toolbar button {
 			cursor: pointer;
+			font-size: 12px;
+			padding: 5px 10px;
+			border: 1px solid var(--background-modifier-border);
+			border-radius: var(--radius-s);
+			background: var(--background-primary);
+			color: var(--text-normal);
 		}
+		.preview-toolbar button:hover { background: var(--background-modifier-hover); }
 		#log {
 			font-size: 12px;
 			color: var(--text-muted);
 			margin-left: auto;
 		}
-		.preview-toolbar select {
-			padding: 4px 8px;
+		.settings-gear {
+			margin-left: 4px;
+			cursor: pointer;
+			font-size: 12px;
+			padding: 5px 10px;
+			border: 1px solid var(--background-modifier-border);
+			border-radius: var(--radius-s);
+			background: var(--background-primary);
+			color: var(--text-normal);
 		}
-		.preview-toolbar label {
-			display: flex;
-			align-items: center;
-			gap: 4px;
-			font-size: 13px;
-		}
-		#app {
-			max-width: 960px;
-		}
+		.settings-gear:hover { background: var(--background-modifier-hover); }
+
+		#app { max-width: 960px; }
 	</style>
 	<link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-	<div class="preview-toolbar">
-		<label><input type="checkbox" id="advanced-toggle" /> Advanced</label>
-		<select id="layout-select" class="advanced-control" hidden>
-			<option value="vertical">Vertical list</option>
-			<option value="horizontal">Horizontal axis</option>
-		</select>
-		<select id="precision-select" class="advanced-control" hidden>
-			<option value="day">Day</option>
-			<option value="month">Month</option>
-			<option value="year">Year</option>
-			<option value="decade">Decade</option>
-			<option value="century">Century</option>
-			<option value="millennium">Millennium</option>
-		</select>
-		<select id="card-side-select" class="advanced-control" hidden>
-			<option value="alternate">Cards: alternate</option>
-			<option value="left">Cards: left only</option>
-			<option value="right">Cards: right only</option>
-		</select>
-		<select id="line-style-select" class="advanced-control" hidden>
-			<option value="solid">Line: solid</option>
-			<option value="dashed">Line: dashed</option>
-			<option value="dotted">Line: dotted</option>
-		</select>
-		<button id="btn-sample">Sample data</button>
-		<button id="btn-random">Randomized data</button>
-		<button id="btn-ancient">Ancient (BC/AD) data</button>
-		<button id="btn-empty">Empty state</button>
-		<button id="btn-error">Error state (click to cycle)</button>
-		<span id="log"></span>
+	<div class="obsidian-window">
+		<div class="titlebar">
+			<span class="traffic-lights"><span></span><span></span><span></span></span>
+			<span class="vault-name">My Vault</span>
+			<span class="harness-badge">Chronograph dev preview — not real Obsidian</span>
+		</div>
+		<div class="workspace">
+			<div class="ribbon">
+				<div class="ribbon-icon active" title="Open Chronograph">📈</div>
+				<div class="ribbon-icon" title="Settings" id="ribbon-settings">⚙️</div>
+			</div>
+			<div class="pane">
+				<div class="tab-header">
+					<div class="tab active">📈 Chronograph</div>
+				</div>
+				<div class="pane-content">
+					<div class="preview-toolbar">
+						<button id="btn-sample">Sample data</button>
+						<button id="btn-random">Randomized data</button>
+						<button id="btn-ancient">Ancient (BC/AD) data</button>
+						<button id="btn-empty">Empty state</button>
+						<button id="btn-error">Error state (click to cycle)</button>
+						<button class="settings-gear" id="open-settings">⚙️ Chronograph settings</button>
+						<span id="log"></span>
+					</div>
+
+					<details class="editor-toggle" id="source-editor" open>
+						<summary>Current view's source — edit like a real note</summary>
+						<div class="editor-toggle-body">
+							<div class="source-tabs">
+								<button class="source-tab-btn active" data-source="table">Markdown table</button>
+								<button class="source-tab-btn" data-source="dataview">Dataview query</button>
+								<button class="source-tab-btn" data-source="frontmatter">Frontmatter scan</button>
+							</div>
+
+							<div class="source-panel active" data-source-panel="table">
+								<div class="note-editor">
+									<div class="note-title">Timeline/Events.md</div>
+									<textarea id="table-editor" spellcheck="false"></textarea>
+								</div>
+								<div class="parse-feedback" id="table-feedback"></div>
+							</div>
+
+							<div class="source-panel" data-source-panel="dataview">
+								<div class="dataview-query-input">
+									<input id="dataview-query" type="text" spellcheck="false" />
+								</div>
+								<div class="query-presets" id="dataview-presets"></div>
+								<div class="parse-feedback" id="dataview-feedback"></div>
+								<div class="disclaimer">
+									Dataview isn't actually running in this harness — recognized queries above swap in a preset
+									result set. Anything else shows an error, same as an unresolvable query would in the real plugin.
+								</div>
+							</div>
+
+							<div class="source-panel" data-source-panel="frontmatter">
+								<div class="frontmatter-filters">
+									<label>Tag filter <input id="frontmatter-tag" type="text" placeholder="e.g. event" /></label>
+									<label>Folder filter <input id="frontmatter-folder" type="text" placeholder="e.g. Journal" /></label>
+								</div>
+								<div class="mock-vault-list" id="mock-vault-list"></div>
+								<div class="parse-feedback" id="frontmatter-feedback"></div>
+								<div class="disclaimer">Scans a small mock vault standing in for Obsidian's metadata cache.</div>
+							</div>
+						</div>
+					</details>
+
+					<div id="app" class="timeline-graph-view"></div>
+				</div>
+			</div>
+		</div>
 	</div>
-	<div id="app" class="timeline-graph-view"></div>
+
+	<div class="settings-modal-backdrop" id="settings-backdrop">
+		<div class="settings-modal">
+			<div class="settings-modal-header">
+				<span>Chronograph</span>
+				<button id="close-settings" aria-label="Close">✕</button>
+			</div>
+			<div class="settings-modal-body" id="settings-body">
+				<!-- populated by preview.ts, mirrors src/settings-tab.ts -->
+			</div>
+		</div>
+	</div>
+
 	<script type="module" src="./preview.bundle.js"></script>
 </body>
 </html>
