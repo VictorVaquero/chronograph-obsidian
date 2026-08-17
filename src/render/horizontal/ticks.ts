@@ -94,6 +94,25 @@ export function renderAxis(ticks: Tick[], scale: Scale): HTMLElement {
 	return axis;
 }
 
+// Small break markers on the axis at every gap the scale compressed (see
+// Scale.compressedGaps), so a squeezed 20-year gap and a squeezed
+// 5000-year gap — which end up the same pixel width — don't look like an
+// equal amount of calendar time went by.
+export function renderCompressionMarkers(scale: Scale): HTMLElement {
+	const wrap = createDiv();
+	wrap.className = "timeline-graph-compression-markers";
+
+	for (const ordinal of scale.compressedGaps) {
+		const marker = createDiv();
+		marker.className = "timeline-graph-compression-marker";
+		marker.style.left = `${xFor(ordinal, scale)}%`;
+		marker.title = "Timeline compressed here — this gap spans more calendar time than its width suggests";
+		wrap.appendChild(marker);
+	}
+
+	return wrap;
+}
+
 // Full-height vertical lines through the lanes, marking where each axis
 // tick's period boundary falls, so year/decade/century transitions are
 // visible at a glance behind the event markers.

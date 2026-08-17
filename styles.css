@@ -297,6 +297,35 @@
 	opacity: 0.5;
 }
 
+.timeline-graph-compression-markers {
+	position: absolute;
+	top: 22px;
+	left: 0;
+	right: 0;
+	height: 12px;
+	pointer-events: none;
+	z-index: 1;
+}
+
+.timeline-graph-compression-marker {
+	position: absolute;
+	top: 0;
+	width: 12px;
+	height: 12px;
+	transform: translateX(-50%);
+	background: var(--background-primary);
+	color: var(--text-faint);
+	pointer-events: auto;
+}
+
+.timeline-graph-compression-marker::before {
+	content: "⌇";
+	display: block;
+	text-align: center;
+	line-height: 12px;
+	font-size: 14px;
+}
+
 .timeline-graph-axis-tick span {
 	position: absolute;
 	top: 4px;

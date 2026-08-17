@@ -2,7 +2,7 @@ import { TimelineEvent, TimelineDatePrecision } from "../../types";
 import { TimelineRenderCallbacks, groupsOf, renderEmptyState } from "../render-shared";
 import { hasAnyBCDate, toOrdinal } from "../../date/timeline-date";
 import { AXIS_PADDING_PX, buildScale } from "./scale";
-import { computeTicks, renderAxis, renderPeriodLines } from "./ticks";
+import { computeTicks, renderAxis, renderCompressionMarkers, renderPeriodLines } from "./ticks";
 import { setupZoomAndPan } from "./zoom-pan";
 import { renderFlagMarker, renderLane, renderPeriodBands, renderTodayLine, todayAsTimelineDate } from "./markers";
 import { renderArrows } from "./arrows";
@@ -77,6 +77,7 @@ export function renderHorizontalTimeline(
 	track.appendChild(renderPeriodBands(periodEvents, scale, callbacks, precision, showEra));
 	track.appendChild(renderAxis(ticks, scale));
 	track.appendChild(renderPeriodLines(ticks, scale));
+	track.appendChild(renderCompressionMarkers(scale));
 
 	groupsOf(laneEvents).forEach((group, laneIndex) => {
 		const eventsInLane = laneEvents.filter((e) => (e.group ?? "") === group);

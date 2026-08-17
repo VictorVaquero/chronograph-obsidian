@@ -20,12 +20,15 @@ View) and against common companion plugins in the ecosystem.
 - [x] Vertical-layout zoom parity — a matching zoom in/out/fit toolbar
       scales the card list via CSS transform; panning stays native page
       scroll rather than a nested scroll region (`src/render/vertical-zoom-pan.ts`)
+- [x] Collapse/compress sparse date ranges — the horizontal axis's
+      non-linear scale now saturates gaps at 20 empty years (was 50) and
+      caps them at 180px (was 260), plus a small "⌇" break marker on the
+      axis wherever a gap actually got compressed, so equal-width gaps
+      don't read as equal calendar time (`src/render/horizontal/scale.ts`,
+      `renderCompressionMarkers` in `ticks.ts`)
 
 ## Feature gaps vs. competing timeline plugins
 
-- [ ] **Collapse/compress sparse date ranges.** For long timelines (century+
-      spans), visually compress long gaps of empty time instead of wasting
-      axis space on them.
 - [ ] **Export/share snapshot.** Export a timeline view as an image or
       static HTML. Not offered by any close competitor either — lower
       priority.

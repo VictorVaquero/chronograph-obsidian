@@ -60,6 +60,7 @@ Map additional columns/frontmatter keys beyond the date field:
 
 - **Two layouts, both zoomable**: a vertical chronological list with cards alternating (or fixed) on either side of a spine, or a horizontal axis with zoom/pan.
 - **Horizontal axis**: mouse-wheel/pinch zoom and drag-to-pan, grouped lanes (one row per distinct `group` value), full-height translucent period bands for eras/spans, flag markers for single significant dates, a "today" line, and BC/BCE-aware date formatting.
+- **Compressed sparse ranges**: long empty gaps (century+ spans) are compressed on the horizontal axis instead of wasting track width, with a small "⌇" break marker showing where compression happened.
 - **Vertical layout options**: which side of the spine cards sit on (alternating, left, or right), and the spine's line style (solid, dashed, dotted).
 
 ### Sort & date granularity
