@@ -25,6 +25,11 @@ export default class TimelineGraphPlugin extends Plugin {
 			callback: () => this.activateView(),
 		});
 
+		this.registerHoverLinkSource("chronograph", {
+			display: "Chronograph",
+			defaultMod: false,
+		});
+
 		this.addSettingTab(new TimelineGraphSettingTab(this.app, this));
 	}
 

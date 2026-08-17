@@ -1,6 +1,6 @@
 import { TimelineEvent, TimelineDatePrecision } from "../../types";
 import { TimelineDate, formatTimelineDate, toOrdinal } from "../../date/timeline-date";
-import { TimelineRenderCallbacks, colorForGroup } from "../render-shared";
+import { TimelineRenderCallbacks, attachHoverPreview, colorForGroup } from "../render-shared";
 import { Scale, xFor } from "./scale";
 
 export function todayAsTimelineDate(): TimelineDate {
@@ -66,6 +66,7 @@ function renderMarker(
 	el.style.setProperty("--marker-color", color);
 	el.addEventListener("click", () => callbacks.onEventClick?.(event));
 	attachTooltip(el, event, precision, showEra);
+	attachHoverPreview(el, event, callbacks);
 
 	const labelEl = createSpan();
 	labelEl.className = "timeline-graph-marker-label";
@@ -179,6 +180,7 @@ export function renderPeriodBands(
 		if (color) band.style.setProperty("--marker-color", color);
 		band.addEventListener("click", () => callbacks.onEventClick?.(period));
 		attachTooltip(band, period, precision, showEra);
+		attachHoverPreview(band, period, callbacks);
 
 		const label = createSpan();
 		label.className = "timeline-graph-period-band-label";
@@ -209,6 +211,7 @@ export function renderFlagMarker(
 	if (color) line.style.setProperty("--marker-color", color);
 	line.addEventListener("click", () => callbacks.onEventClick?.(marker));
 	attachTooltip(line, marker, precision, showEra);
+	attachHoverPreview(line, marker, callbacks);
 
 	const label = createSpan();
 	label.textContent = marker.title;

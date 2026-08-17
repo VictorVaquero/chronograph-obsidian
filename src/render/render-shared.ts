@@ -3,6 +3,18 @@ import { TimelineEvent } from "../types";
 export interface TimelineRenderCallbacks {
 	/** Called when a user activates an event (e.g. clicks its title/marker). */
 	onEventClick?: (event: TimelineEvent) => void;
+	/** Called on mouseover of an event's title/marker, to trigger Obsidian's native hover-link preview popover. */
+	onEventHover?: (event: TimelineEvent, evt: MouseEvent, targetEl: HTMLElement) => void;
+}
+
+export function attachHoverPreview(
+	el: HTMLElement,
+	event: TimelineEvent,
+	callbacks: TimelineRenderCallbacks
+): void {
+	el.addEventListener("mouseover", (evt) => {
+		callbacks.onEventHover?.(event, evt, el);
+	});
 }
 
 export function renderEmptyState(container: HTMLElement, message: string): void {

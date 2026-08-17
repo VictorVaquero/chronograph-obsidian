@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, Notice } from "obsidian";
+import { HoverParent, HoverPopover, ItemView, WorkspaceLeaf, Notice } from "obsidian";
 import { TIMELINE_VIEW_TYPE, TimelineViewConfig } from "./types";
 import {
 	DataviewUnavailableError,
@@ -10,9 +10,10 @@ import { renderEmptyState, renderErrorState, renderTimeline } from "./render/tim
 import { compareTimelineDates } from "./date/timeline-date";
 import type TimelineGraphPlugin from "./main";
 
-export class TimelineView extends ItemView {
+export class TimelineView extends ItemView implements HoverParent {
 	private plugin: TimelineGraphPlugin;
 	private activeConfig: TimelineViewConfig | null = null;
+	hoverPopover: HoverPopover | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: TimelineGraphPlugin) {
 		super(leaf);
@@ -90,6 +91,16 @@ export class TimelineView extends ItemView {
 				{
 					onEventClick: (event) => {
 						void this.app.workspace.openLinkText(event.sourcePath, "", false);
+					},
+					onEventHover: (event, evt, targetEl) => {
+						this.app.workspace.trigger("hover-link", {
+							event: evt,
+							source: "chronograph",
+							hoverParent: this,
+							targetEl,
+							linktext: event.sourcePath,
+							sourcePath: "",
+						});
 					},
 				},
 				{

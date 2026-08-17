@@ -1,5 +1,5 @@
 import { TimelineEvent, TimelineDatePrecision, TimelineCardSide, TimelineLineStyle } from "../types";
-import { TimelineRenderCallbacks, colorForGroup, renderEmptyState } from "./render-shared";
+import { TimelineRenderCallbacks, attachHoverPreview, colorForGroup, renderEmptyState } from "./render-shared";
 import {
 	bucketOf,
 	compareTimelineDates,
@@ -105,6 +105,7 @@ function renderNode(
 		evt.preventDefault();
 		callbacks.onEventClick?.(event);
 	});
+	attachHoverPreview(link, event, callbacks);
 	card.appendChild(link);
 
 	if (event.group) {
