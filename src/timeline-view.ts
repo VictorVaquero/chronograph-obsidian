@@ -1,10 +1,11 @@
 import { ItemView, WorkspaceLeaf, Notice } from "obsidian";
-import { TIMELINE_VIEW_TYPE, TimelineEvent, TimelineViewConfig } from "./types";
+import { TIMELINE_VIEW_TYPE, TimelineViewConfig } from "./types";
 import {
 	DataviewUnavailableError,
 	isDataviewEnabled,
 	queryTimelineEvents,
 } from "./dataview-source";
+import { renderEmptyState, renderErrorState, renderTimeline } from "./timeline-renderer";
 import type TimelineGraphPlugin from "./main";
 
 export class TimelineView extends ItemView {
@@ -39,7 +40,10 @@ export class TimelineView extends ItemView {
 		if (config) {
 			await this.setConfig(config);
 		} else {
-			this.renderEmptyState();
+			renderEmptyState(
+				this.contentEl,
+				"No timeline view configured yet. Add one in Settings → Timeline Graph."
+			);
 		}
 	}
 
@@ -54,14 +58,15 @@ export class TimelineView extends ItemView {
 
 	async refresh(): Promise<void> {
 		if (!this.activeConfig) {
-			this.renderEmptyState();
+			renderEmptyState(
+				this.contentEl,
+				"No timeline view configured yet. Add one in Settings → Timeline Graph."
+			);
 			return;
 		}
 
-		this.contentEl.empty();
-
 		if (!isDataviewEnabled(this.app)) {
-			this.renderDataviewMissing();
+			renderErrorState(this.contentEl, new DataviewUnavailableError().message);
 			return;
 		}
 
@@ -76,66 +81,15 @@ export class TimelineView extends ItemView {
 					? a.date - b.date
 					: b.date - a.date
 			);
-			this.renderTimeline(events);
+			renderTimeline(this.contentEl, events, {
+				onEventClick: (event) =>
+					this.app.workspace.openLinkText(event.sourcePath, "", false),
+			});
 		} catch (err) {
-			this.renderError(err instanceof Error ? err.message : String(err));
-		}
-	}
-
-	private renderEmptyState(): void {
-		this.contentEl.empty();
-		const el = this.contentEl.createDiv({ cls: "timeline-graph-empty" });
-		el.createEl("p", {
-			text: "No timeline view configured yet. Add one in Settings → Timeline Graph.",
-		});
-	}
-
-	private renderDataviewMissing(): void {
-		const el = this.contentEl.createDiv({ cls: "timeline-graph-error" });
-		el.createEl("p", {
-			text: new DataviewUnavailableError().message,
-		});
-	}
-
-	private renderError(message: string): void {
-		this.contentEl.empty();
-		const el = this.contentEl.createDiv({ cls: "timeline-graph-error" });
-		el.createEl("p", { text: `Timeline Graph error: ${message}` });
-	}
-
-	private renderTimeline(events: TimelineEvent[]): void {
-		if (events.length === 0) {
-			const el = this.contentEl.createDiv({ cls: "timeline-graph-empty" });
-			el.createEl("p", {
-				text: "No events matched this view's query and date field.",
-			});
-			return;
-		}
-
-		// Placeholder rendering: a simple vertical list ordered by date.
-		// The graphical/interactive timeline (zoom, pan, grouping lanes)
-		// is implemented incrementally on top of this scaffold.
-		const list = this.contentEl.createDiv({ cls: "timeline-graph-list" });
-		for (const event of events) {
-			const item = list.createDiv({ cls: "timeline-graph-item" });
-			item.createEl("span", {
-				cls: "timeline-graph-item-date",
-				text: new Date(event.date).toLocaleDateString(),
-			});
-			const link = item.createEl("a", {
-				cls: "timeline-graph-item-title",
-				text: event.title,
-			});
-			link.addEventListener("click", (evt) => {
-				evt.preventDefault();
-				this.app.workspace.openLinkText(event.sourcePath, "", false);
-			});
-			if (event.description) {
-				item.createEl("span", {
-					cls: "timeline-graph-item-desc",
-					text: event.description,
-				});
-			}
+			renderErrorState(
+				this.contentEl,
+				err instanceof Error ? err.message : String(err)
+			);
 		}
 	}
 }
