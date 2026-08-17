@@ -92,6 +92,20 @@ export function fromOrdinal(ordinal: number): TimelineDate {
 	return { year, month, day };
 }
 
+// Traditional BC/AD year numbering has no year zero (1 BC is immediately
+// followed by 1 AD), while the astronomical ordinal/year used for date math
+// does (... -1, 0, 1 ..., where 0 = 1 BC). Snapping round boundaries (for
+// axis ticks and period dividers alike) in display-year space keeps them
+// landing on the numbers a reader actually expects — 2500 BC, 2000 BC, ...,
+// 1 BC / 1 AD, 500 AD — instead of off-by-one values like "2501 BC".
+export function displayYearOf(ordinalYear: number): number {
+	return ordinalYear <= 0 ? ordinalYear - 1 : ordinalYear;
+}
+
+export function ordinalYearOfDisplayYear(displayYear: number): number {
+	return displayYear < 0 ? displayYear + 1 : displayYear;
+}
+
 // AD years are shown bare ("2026") when the view has no BC dates at all —
 // the era suffix would be redundant noise. Once any BC date is present,
 // "AD" is shown too so mixed-era views stay unambiguous.
@@ -150,12 +164,12 @@ export function formatTimelineDate(
 		case "decade": {
 			const absYear = isBC ? 1 - date.year : date.year;
 			const decadeStart = Math.floor(absYear / 10) * 10;
-			return era ? `${decadeStart}s ${era}` : `${decadeStart}s`;
+			return era ? `${decadeStart} ${era}` : `${decadeStart}`;
 		}
 		case "century": {
 			const absYear = isBC ? 1 - date.year : date.year;
 			const centuryNumber = Math.floor(absYear / 100) + 1;
-			const label = `${romanizeCentury(centuryNumber)} century`;
+			const label = romanizeCentury(centuryNumber);
 			return era ? `${label} ${era}` : label;
 		}
 		case "millennium": {
@@ -204,13 +218,18 @@ export function bucketOf(
 			return { key: `d:${date.year}:${date.month ?? 1}:${date.day ?? 1}`, label: "" };
 		case "month":
 			return { key: `m:${date.year}:${date.month ?? 1}`, label: "" };
+		// "year" and "decade" both bucket by century — matching the horizontal
+		// axis, a divider every single year/decade would be denser than useful,
+		// so dividers only appear at century boundaries (..., 2500 BC, 2000 BC,
+		// ..., 1 BC, 500 AD, ...), snapped the same way the axis ticks are.
 		case "year":
-			return { key: `y:${date.year}`, label: formatYear(date.year, showEra) };
 		case "decade": {
-			const decadeStart = Math.floor(absYear / 10) * 10;
+			const step = 100;
+			const bucketStart = Math.floor(displayYearOf(date.year) / step) * step;
+			const label = formatYear(ordinalYearOfDisplayYear(bucketStart), showEra);
 			return {
-				key: `dec:${isBC ? "bc" : "ad"}:${decadeStart}`,
-				label: formatTimelineDate(date, "decade", showEra),
+				key: `cen:${bucketStart}`,
+				label,
 			};
 		}
 		case "century": {
