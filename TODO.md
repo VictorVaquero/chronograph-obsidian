@@ -17,11 +17,12 @@ View) and against common companion plugins in the ecosystem.
       horizontal toolbar opens a date/title prompt; creates a table row
       (table source) or a new note with frontmatter (Dataview/frontmatter
       sources) (`src/event-creation.ts`, `src/create-event-modal.ts`)
+- [x] Vertical-layout zoom parity — a matching zoom in/out/fit toolbar
+      scales the card list via CSS transform; panning stays native page
+      scroll rather than a nested scroll region (`src/render/vertical-zoom-pan.ts`)
 
 ## Feature gaps vs. competing timeline plugins
 
-- [ ] **Vertical-layout zoom/pan parity.** Only the horizontal layout has
-      zoom/pan today; vertical is the default layout and lacks it.
 - [ ] **Collapse/compress sparse date ranges.** For long timelines (century+
       spans), visually compress long gaps of empty time instead of wasting
       axis space on them.

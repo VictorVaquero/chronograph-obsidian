@@ -7,6 +7,7 @@ import {
 	hasAnyBCDate,
 	toOrdinal,
 } from "../date/timeline-date";
+import { setupVerticalZoom } from "./vertical-zoom-pan";
 
 export function renderVerticalTimeline(
 	container: HTMLElement,
@@ -54,7 +55,36 @@ export function renderVerticalTimeline(
 		spine.appendChild(renderTodayMarker());
 	}
 
-	container.appendChild(spine);
+	const root = createDiv();
+	root.className = "timeline-graph-vertical";
+
+	const toolbar = createDiv();
+	toolbar.className = "timeline-graph-vertical-toolbar";
+
+	const zoomOutBtn = createEl("button");
+	zoomOutBtn.type = "button";
+	zoomOutBtn.className = "timeline-graph-zoom-btn";
+	zoomOutBtn.textContent = "−";
+	zoomOutBtn.title = "Zoom out";
+
+	const zoomInBtn = createEl("button");
+	zoomInBtn.type = "button";
+	zoomInBtn.className = "timeline-graph-zoom-btn";
+	zoomInBtn.textContent = "+";
+	zoomInBtn.title = "Zoom in";
+
+	const fitBtn = createEl("button");
+	fitBtn.type = "button";
+	fitBtn.className = "timeline-graph-fit-btn";
+	fitBtn.textContent = "Fit";
+	fitBtn.title = "Reset zoom";
+
+	toolbar.append(zoomOutBtn, zoomInBtn, fitBtn);
+
+	root.append(toolbar, spine);
+	container.appendChild(root);
+
+	setupVerticalZoom(root, spine, zoomInBtn, zoomOutBtn, fitBtn);
 }
 
 function renderPeriodDivider(label: string): HTMLElement {

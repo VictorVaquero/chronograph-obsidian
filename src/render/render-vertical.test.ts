@@ -119,4 +119,21 @@ describe("renderVerticalTimeline", () => {
 		renderVerticalTimeline(container, events, {}, "year");
 		expect(container.querySelectorAll(".timeline-graph-period-divider").length).toBeGreaterThan(0);
 	});
+
+	it("renders zoom/fit toolbar buttons that scale the spine", () => {
+		const container = document.createElement("div");
+		renderVerticalTimeline(container, [makeEvent()], {});
+		const spine = container.querySelector<HTMLElement>(".timeline-graph-spine")!;
+		const buttons = container.querySelectorAll<HTMLButtonElement>(".timeline-graph-vertical-toolbar button");
+		const [zoomOutBtn, zoomInBtn, fitBtn] = [buttons[0], buttons[1], buttons[2]];
+
+		zoomInBtn.click();
+		expect(spine.style.transform).toBe("scale(1.15)");
+
+		fitBtn.click();
+		expect(spine.style.transform).toBe("scale(1)");
+
+		zoomOutBtn.click();
+		expect(spine.style.transform).toBe("scale(1)");
+	});
 });

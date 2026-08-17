@@ -6,8 +6,9 @@ Define one or more "views," each pulling events from a [Dataview](https://blacks
 
 ## Features
 
-- **Two layouts**: a vertical chronological list with cards alternating (or fixed) on either side of a spine, or a horizontal axis with zoom/pan.
+- **Two layouts, both zoomable**: a vertical chronological list with cards alternating (or fixed) on either side of a spine, or a horizontal axis with zoom/pan.
 - **Horizontal axis**: mouse-wheel/pinch zoom and drag-to-pan, grouped lanes (one row per distinct `group` value), full-height translucent period bands for eras/spans, flag markers for single significant dates, a "today" line, and BC/BCE-aware date formatting.
+- **Vertical layout zoom**: a zoom in/out/fit toolbar (and Ctrl/Cmd+wheel) scales the card list for denser or roomier reading; panning is native page scroll.
 - **Ranged and point events**: an optional end-date field renders events as a span instead of a single marker.
 - **Grouping & color**: events auto-color by group (deterministic hash), or set an explicit per-event color that overrides the group color.
 - **Connecting arrows**: point one event at another (by title) to draw an arrow between them on the horizontal axis.
@@ -137,6 +138,7 @@ src/
     timeline-renderer.ts   Dispatches to the vertical/horizontal renderer (no Obsidian dep)
     render-shared.ts       Shared render helpers: colors, hover preview, empty/error states
     render-vertical.ts     Vertical card-list layout
+    vertical-zoom-pan.ts   Transform-scale zoom for the vertical layout
     horizontal/
       index.ts             Horizontal axis orchestration
       scale.ts              Date <-> percentage-position scale

@@ -24,11 +24,21 @@
 
 /* Vertical layout: central spine with alternating cards */
 
+.timeline-graph-vertical-toolbar {
+	display: flex;
+	gap: var(--size-4-1);
+	margin-bottom: var(--size-4-2);
+	max-width: 720px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
 .timeline-graph-spine {
 	position: relative;
 	max-width: 720px;
 	margin: 0 auto;
 	padding: var(--size-4-4) 0;
+	transform-origin: top center;
 }
 
 .timeline-graph-spine-line {
