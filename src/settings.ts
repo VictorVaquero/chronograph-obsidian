@@ -23,4 +23,10 @@ export function createDefaultView(): TimelineViewConfig {
 export const DEFAULT_SETTINGS: TimelineGraphSettings = {
 	views: [],
 	defaultViewId: null,
+	advanced: {
+		extraFields: false,
+		layoutAndStyle: false,
+		sortAndGranularity: false,
+		multiView: false,
+	},
 };

@@ -24,6 +24,70 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 				desc: "Each view queries events from Dataview, a markdown table, or frontmatter scanned directly (no Dataview needed), and maps fields to timeline events.",
 			},
 			{
+				name: "",
+				desc: "Advanced settings are hidden by default so a new view only needs a name, source, and date field. Turn on the groups you need below.",
+			},
+			{
+				name: "Extra field mappings",
+				desc: "Map additional fields: end date, title, group, color, kind, and points-to.",
+				render: (setting) => {
+					setting.addToggle((toggle) =>
+						toggle
+							.setValue(this.plugin.settings.advanced.extraFields)
+							.onChange(async (value) => {
+								this.plugin.settings.advanced.extraFields = value;
+								await this.plugin.saveSettings();
+								this.update();
+							})
+					);
+				},
+			},
+			{
+				name: "Layout & style options",
+				desc: "Choose the layout (vertical/horizontal) and vertical-layout card side and spine line style.",
+				render: (setting) => {
+					setting.addToggle((toggle) =>
+						toggle
+							.setValue(this.plugin.settings.advanced.layoutAndStyle)
+							.onChange(async (value) => {
+								this.plugin.settings.advanced.layoutAndStyle = value;
+								await this.plugin.saveSettings();
+								this.update();
+							})
+					);
+				},
+			},
+			{
+				name: "Sort & date granularity",
+				desc: "Change sort order and date display/bucketing granularity.",
+				render: (setting) => {
+					setting.addToggle((toggle) =>
+						toggle
+							.setValue(this.plugin.settings.advanced.sortAndGranularity)
+							.onChange(async (value) => {
+								this.plugin.settings.advanced.sortAndGranularity = value;
+								await this.plugin.saveSettings();
+								this.update();
+							})
+					);
+				},
+			},
+			{
+				name: "Multiple views",
+				desc: "Set which view opens by default. Only useful once you have more than one view.",
+				render: (setting) => {
+					setting.addToggle((toggle) =>
+						toggle
+							.setValue(this.plugin.settings.advanced.multiView)
+							.onChange(async (value) => {
+								this.plugin.settings.advanced.multiView = value;
+								await this.plugin.saveSettings();
+								this.update();
+							})
+					);
+				},
+			},
+			{
 				type: "list",
 				heading: "Timeline views",
 				emptyState: "No timeline views yet.",
@@ -169,6 +233,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			},
 			{
 				name: "End date field (optional)",
+				visible: () => this.plugin.settings.advanced.extraFields,
 				render: (setting) => {
 					setting.addText((text) =>
 						text.setValue(view.fields.endDateField ?? "").onChange(async (value) => {
@@ -180,6 +245,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			},
 			{
 				name: "Title field (optional)",
+				visible: () => this.plugin.settings.advanced.extraFields,
 				render: (setting) => {
 					setting.addText((text) =>
 						text.setValue(view.fields.titleField ?? "").onChange(async (value) => {
@@ -191,6 +257,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			},
 			{
 				name: "Group field (optional)",
+				visible: () => this.plugin.settings.advanced.extraFields,
 				render: (setting) => {
 					setting.addText((text) =>
 						text.setValue(view.fields.groupField ?? "").onChange(async (value) => {
@@ -203,6 +270,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			{
 				name: "Color field (optional)",
 				desc: "Field holding an explicit CSS color (e.g. \"orange\" or \"#ff8800\") for the event. Overrides the color derived from the group.",
+				visible: () => this.plugin.settings.advanced.extraFields,
 				render: (setting) => {
 					setting.addText((text) =>
 						text.setValue(view.fields.colorField ?? "").onChange(async (value) => {
@@ -215,6 +283,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			{
 				name: "Kind field (optional)",
 				desc: 'Horizontal layout only: field whose value ("event", "period", or "marker") selects how the item renders. Unset/unrecognized values default to "event".',
+				visible: () => this.plugin.settings.advanced.extraFields,
 				render: (setting) => {
 					setting.addText((text) =>
 						text.setValue(view.fields.kindField ?? "").onChange(async (value) => {
@@ -227,6 +296,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			{
 				name: "Points-to field (optional)",
 				desc: "Horizontal layout only: field holding the title of another event in this view to draw a connecting arrow toward.",
+				visible: () => this.plugin.settings.advanced.extraFields,
 				render: (setting) => {
 					setting.addText((text) =>
 						text.setValue(view.fields.pointsToField ?? "").onChange(async (value) => {
@@ -238,6 +308,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			},
 			{
 				name: "Sort order",
+				visible: () => this.plugin.settings.advanced.sortAndGranularity,
 				render: (setting) => {
 					setting.addDropdown((dropdown) =>
 						dropdown
@@ -254,6 +325,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			{
 				name: "Layout",
 				desc: "Vertical list or a horizontal axis with grouped lanes.",
+				visible: () => this.plugin.settings.advanced.layoutAndStyle,
 				render: (setting) => {
 					setting.addDropdown((dropdown) =>
 						dropdown
@@ -270,6 +342,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			{
 				name: "Vertical card side",
 				desc: "Vertical layout only: which side of the spine cards are placed on.",
+				visible: () => this.plugin.settings.advanced.layoutAndStyle,
 				render: (setting) => {
 					setting.addDropdown((dropdown) =>
 						dropdown
@@ -287,6 +360,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			{
 				name: "Vertical spine line style",
 				desc: "Vertical layout only: visual style of the central spine line.",
+				visible: () => this.plugin.settings.advanced.layoutAndStyle,
 				render: (setting) => {
 					setting.addDropdown((dropdown) =>
 						dropdown
@@ -304,6 +378,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			{
 				name: "Date granularity",
 				desc: "How dates are displayed and how the horizontal axis is ticked. Use coarser settings for ancient history.",
+				visible: () => this.plugin.settings.advanced.sortAndGranularity,
 				render: (setting) => {
 					setting.addDropdown((dropdown) =>
 						dropdown
@@ -324,6 +399,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			{
 				name: "Default view",
 				desc: "Open this view by default when the timeline pane is created.",
+				visible: () => this.plugin.settings.advanced.multiView,
 				render: (setting) => {
 					setting.addToggle((toggle) =>
 						toggle

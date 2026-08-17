@@ -58,6 +58,7 @@ export default class TimelineGraphPlugin extends Plugin {
 	async loadSettings(): Promise<void> {
 		const data = (await this.loadData()) as Partial<TimelineGraphSettings> | null;
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, data ?? {});
+		this.settings.advanced = Object.assign({}, DEFAULT_SETTINGS.advanced, data?.advanced ?? {});
 		// Back-fill fields introduced after views were first saved, so
 		// pre-existing configs (which predate the table source) keep working.
 		for (const view of this.settings.views) {

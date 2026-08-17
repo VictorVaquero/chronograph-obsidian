@@ -24,4 +24,13 @@ describe("DEFAULT_SETTINGS", () => {
 		expect(DEFAULT_SETTINGS.views).toEqual([]);
 		expect(DEFAULT_SETTINGS.defaultViewId).toBeNull();
 	});
+
+	it("starts with all advanced feature groups off", () => {
+		expect(DEFAULT_SETTINGS.advanced).toEqual({
+			extraFields: false,
+			layoutAndStyle: false,
+			sortAndGranularity: false,
+			multiView: false,
+		});
+	});
 });

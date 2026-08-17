@@ -94,7 +94,20 @@ export interface TimelineViewConfig {
 	verticalLineStyle: TimelineLineStyle;
 }
 
+/** Which optional groups of advanced per-view settings are shown in the settings tab. Each is off by default so new views only ask for a name, source, and date field. */
+export interface TimelineAdvancedFeatures {
+	/** End date, title, group, color, kind, and points-to field mappings. */
+	extraFields: boolean;
+	/** Layout, vertical card side, and vertical spine line style. */
+	layoutAndStyle: boolean;
+	/** Sort order and date granularity. */
+	sortAndGranularity: boolean;
+	/** Default-view toggle, relevant once a vault has more than one view. */
+	multiView: boolean;
+}
+
 export interface TimelineGraphSettings {
 	views: TimelineViewConfig[];
 	defaultViewId: string | null;
+	advanced: TimelineAdvancedFeatures;
 }

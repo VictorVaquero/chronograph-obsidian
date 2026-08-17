@@ -4,48 +4,23 @@ A configurable timeline graph view for [Obsidian](https://obsidian.md).
 
 Define one or more "views," each pulling events from a [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) Query Language (DQL) source string across the vault, a markdown table in a single note, or frontmatter scanned directly (no Dataview dependency), and map fields to build an interactive timeline.
 
-## Features
-
-- **Two layouts, both zoomable**: a vertical chronological list with cards alternating (or fixed) on either side of a spine, or a horizontal axis with zoom/pan.
-- **Horizontal axis**: mouse-wheel/pinch zoom and drag-to-pan, grouped lanes (one row per distinct `group` value), full-height translucent period bands for eras/spans, flag markers for single significant dates, a "today" line, and BC/BCE-aware date formatting.
-- **Vertical layout zoom**: a zoom in/out/fit toolbar (and Ctrl/Cmd+wheel) scales the card list for denser or roomier reading; panning is native page scroll.
-- **Ranged and point events**: an optional end-date field renders events as a span instead of a single marker.
-- **Grouping & color**: events auto-color by group (deterministic hash), or set an explicit per-event color that overrides the group color.
-- **Connecting arrows**: point one event at another (by title) to draw an arrow between them on the horizontal axis.
-- **Click-to-create events**: a "+ new event" button in the horizontal toolbar prompts for a date/title and creates the event — a new table row for the table source, or a new note with frontmatter for the Dataview/frontmatter sources.
-- **Native hover preview**: hovering an event's title shows Obsidian's built-in note preview popover.
-- **Three event sources**: a Dataview query across the vault, a single-note markdown table, or frontmatter scanned directly via Obsidian's own metadata cache (the latter two need no Dataview dependency) — plus an "Insert timeline event row" command that scaffolds or appends rows to a table source.
-- **Frontmatter source filtering**: optionally narrow the frontmatter source by tag and/or vault folder, so a single view can target e.g. all notes tagged `#event` under `Journal/`.
-- **In-note code-block timelines**: a self-contained ` ```chronograph ` fenced block with an inline markdown table renders a timeline directly in Reading/Live Preview — no view configured in Settings → Chronograph required.
-- **Date granularity**: from exact day up to millennium, for anything from a daily journal to ancient history.
+Chronograph is simple by default: a new view only asks for a name, a source, and a date field. Everything else — extra field mappings, layout/style, sort order, date granularity, multiple views — is opt-in, off until you turn it on in Settings → Chronograph.
 
 ## Requirements
 
 - Obsidian ≥ 1.13.0
 - [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin installed and enabled, only for views using the Dataview source (optional at install time — Chronograph will show a notice if it's missing on a Dataview-backed view). Views using the markdown table or frontmatter source don't need Dataview.
 
-## Usage
+## Quick start
 
 1. Open the timeline pane via the ribbon icon ("Open Chronograph") or the **Chronograph: Open view** command.
-2. In Settings → Chronograph, add a view and choose its source:
+2. In Settings → Chronograph, click **Add view**, then choose its source:
    - **Dataview query**: a DQL source string, e.g. `from "Journal" where date`.
    - **Markdown table**: the vault path of a note containing a table with a header row and a `---` divider row.
    - **Frontmatter**: scans vault notes directly via Obsidian's metadata cache, no Dataview needed. Optionally filter by tag and/or folder.
-3. Map fields to columns/frontmatter keys:
+3. Set the **Date field** — the column header (table source) or frontmatter field (Dataview/frontmatter source) holding each event's date.
 
-   | Field | Purpose |
-   | --- | --- |
-   | Date | Event start date (required) |
-   | End date | Renders the event as a span instead of a point |
-   | Title | Falls back to the note's file name if unset |
-   | Description | Shown in tooltips and vertical-layout cards |
-   | Group | Buckets events into horizontal lanes and derives a color |
-   | Color | Explicit CSS color, overrides the group-derived color |
-   | Kind | `event` (default), `period` (background band), or `marker` (flag line) — horizontal layout only |
-   | Points-to | Title of another event in the same view to draw a connecting arrow toward — horizontal layout only |
-
-4. Pick a layout, sort order, date granularity, and (for the table source) use **Insert timeline event row** from the command palette while editing that note to scaffold/append rows.
-5. On the horizontal layout, click **+ new event** in the toolbar to create an event without leaving the timeline: table-source views get a new row appended to the table note, Dataview-source views get a new note at the vault root, and frontmatter-source views get a new note in the view's folder filter (or vault root, if unset). The note's file name is the entered title, or the date if no title is given.
+That's it. The view renders as a vertical chronological list, oldest first, using each note's file name as the event title — no other setting required. Zoom in/out/fit from the toolbar (or Ctrl/Cmd+wheel) any time; panning is native page scroll.
 
 ### In-note code blocks
 
@@ -58,7 +33,58 @@ For a one-off timeline without adding a view in settings, use a ` ```chronograph
     | 2024-03-15 | v2 | Product |
     ```
 
-Column headers default to `date`, `enddate`, `title`, `description`, `group`, `color`, `kind`, `pointsto` — matching the field names in the settings-tab table above, lowercased. To override layout, precision, sort order, or field names, add a settings header above a lone `---` line before the table:
+Column headers default to `date`, `title`, `group` (see [Extra field mappings](#extra-field-mappings) below for the full list). This also needs no view configured in Settings → Chronograph.
+
+## More features
+
+Each group below is a toggle in Settings → Chronograph, off by default so the settings tab only shows what you've turned on.
+
+### Extra field mappings
+
+Map additional columns/frontmatter keys beyond the date field:
+
+| Field | Purpose |
+| --- | --- |
+| End date | Renders the event as a span instead of a point |
+| Title | Falls back to the note's file name if unset |
+| Group | Buckets events into horizontal lanes and derives a color |
+| Color | Explicit CSS color, overrides the group-derived color |
+| Kind | `event` (default), `period` (background band), or `marker` (flag line) — horizontal layout only |
+| Points-to | Title of another event in the same view to draw a connecting arrow toward — horizontal layout only |
+
+- **Ranged and point events**: an optional end-date field renders events as a span instead of a single marker.
+- **Grouping & color**: events auto-color by group (deterministic hash), or set an explicit per-event color that overrides the group color.
+- **Connecting arrows**: point one event at another (by title) to draw an arrow between them on the horizontal axis.
+
+### Layout & style
+
+- **Two layouts, both zoomable**: a vertical chronological list with cards alternating (or fixed) on either side of a spine, or a horizontal axis with zoom/pan.
+- **Horizontal axis**: mouse-wheel/pinch zoom and drag-to-pan, grouped lanes (one row per distinct `group` value), full-height translucent period bands for eras/spans, flag markers for single significant dates, a "today" line, and BC/BCE-aware date formatting.
+- **Vertical layout options**: which side of the spine cards sit on (alternating, left, or right), and the spine's line style (solid, dashed, dotted).
+
+### Sort & date granularity
+
+- **Sort order**: oldest or newest first.
+- **Date granularity**: from exact day up to millennium, for anything from a daily journal to ancient history.
+
+### Multiple views
+
+- Add as many views as you like, each with its own source and settings.
+- Once you have more than one, mark one as the **default view** to open it automatically when the timeline pane is created.
+
+### Always available
+
+These aren't behind a toggle — they work regardless of which advanced groups are on:
+
+- **Click-to-create events**: a "+ new event" button in the horizontal toolbar prompts for a date/title and creates the event — a new table row for the table source, or a new note with frontmatter for the Dataview/frontmatter sources.
+- **Native hover preview**: hovering an event's title shows Obsidian's built-in note preview popover.
+- **Three event sources**: a Dataview query across the vault, a single-note markdown table, or frontmatter scanned directly via Obsidian's own metadata cache (the latter two need no Dataview dependency) — plus an "Insert timeline event row" command that scaffolds or appends rows to a table source.
+- **Frontmatter source filtering**: narrow the frontmatter source by tag and/or vault folder, so a single view can target e.g. all notes tagged `#event` under `Journal/`.
+- **In-note code-block timelines**: see [In-note code blocks](#in-note-code-blocks) above.
+
+## Advanced: in-note code block settings
+
+The ` ```chronograph ` code block accepts the same options as a configured view. Add a settings header above a lone `---` line before the table:
 
     ```chronograph
     layout: horizontal
@@ -71,7 +97,7 @@ Column headers default to `date`, `enddate`, `title`, `description`, `group`, `c
     | 1969 | Moon landing |
     ```
 
-Recognized settings keys: `layout` (`vertical`/`horizontal`), `precision` (`day`/`month`/`year`/`decade`/`century`/`millennium`), `sort` (`asc`/`desc`), `cardside` (`alternate`/`left`/`right`), `linestyle` (`solid`/`dashed`/`dotted`), and `<field>field` for each field in the mapping table above (e.g. `titlefield`, `groupfield`). Unrecognized keys/values are ignored.
+Recognized settings keys: `layout` (`vertical`/`horizontal`), `precision` (`day`/`month`/`year`/`decade`/`century`/`millennium`), `sort` (`asc`/`desc`), `cardside` (`alternate`/`left`/`right`), `linestyle` (`solid`/`dashed`/`dotted`), and `<field>field` for each field in the [extra field mappings](#extra-field-mappings) table (e.g. `titlefield`, `groupfield`), plus `descriptionfield` for the description shown in tooltips and vertical-layout cards. Unrecognized keys/values are ignored.
 
 ## Development
 
@@ -99,9 +125,10 @@ pnpm run dev:preview
 
 This serves `src/dev/preview.html` (default: http://127.0.0.1:8000/src/dev/preview.html)
 with buttons to switch between sample data, randomized data, and the
-empty/error states. It rebuilds on save. This only exercises the rendering
-layer — Dataview querying and the real Obsidian workspace still require
-testing inside a vault.
+empty/error states, plus an "Advanced" checkbox that mirrors the settings
+tab's layout/style/granularity toggles. It rebuilds on save. This only
+exercises the rendering layer — Dataview querying and the real Obsidian
+workspace still require testing inside a vault.
 
 ### Tests
 

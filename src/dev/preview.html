@@ -59,6 +59,12 @@
 		.preview-toolbar select {
 			padding: 4px 8px;
 		}
+		.preview-toolbar label {
+			display: flex;
+			align-items: center;
+			gap: 4px;
+			font-size: 13px;
+		}
 		#app {
 			max-width: 960px;
 		}
@@ -67,11 +73,12 @@
 </head>
 <body>
 	<div class="preview-toolbar">
-		<select id="layout-select">
+		<label><input type="checkbox" id="advanced-toggle" /> Advanced</label>
+		<select id="layout-select" class="advanced-control" hidden>
 			<option value="vertical">Vertical list</option>
 			<option value="horizontal">Horizontal axis</option>
 		</select>
-		<select id="precision-select">
+		<select id="precision-select" class="advanced-control" hidden>
 			<option value="day">Day</option>
 			<option value="month">Month</option>
 			<option value="year">Year</option>
@@ -79,12 +86,12 @@
 			<option value="century">Century</option>
 			<option value="millennium">Millennium</option>
 		</select>
-		<select id="card-side-select">
+		<select id="card-side-select" class="advanced-control" hidden>
 			<option value="alternate">Cards: alternate</option>
 			<option value="left">Cards: left only</option>
 			<option value="right">Cards: right only</option>
 		</select>
-		<select id="line-style-select">
+		<select id="line-style-select" class="advanced-control" hidden>
 			<option value="solid">Line: solid</option>
 			<option value="dashed">Line: dashed</option>
 			<option value="dotted">Line: dotted</option>

@@ -36,6 +36,16 @@ function render(): void {
 	);
 }
 
+// Mirrors the settings tab's advanced-feature toggles: layout/precision/card-side/
+// line-style are hidden behind "Advanced" by default, same as in the real plugin.
+const advancedToggle = document.getElementById("advanced-toggle") as HTMLInputElement | null;
+const advancedControls = document.querySelectorAll<HTMLElement>(".advanced-control");
+advancedToggle?.addEventListener("change", () => {
+	advancedControls.forEach((control) => {
+		control.hidden = !advancedToggle.checked;
+	});
+});
+
 const layoutSelect = document.getElementById("layout-select") as HTMLSelectElement | null;
 layoutSelect?.addEventListener("change", () => {
 	layout = layoutSelect.value as TimelineLayout;
