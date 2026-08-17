@@ -2,7 +2,7 @@
 
 A configurable timeline graph view for [Obsidian](https://obsidian.md).
 
-Define one or more "views," each pulling events from either a [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) Query Language (DQL) source string across the vault, or a markdown table in a single note, and map fields to build an interactive timeline.
+Define one or more "views," each pulling events from a [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) Query Language (DQL) source string across the vault, a markdown table in a single note, or frontmatter scanned directly (no Dataview dependency), and map fields to build an interactive timeline.
 
 ## Features
 
@@ -12,13 +12,14 @@ Define one or more "views," each pulling events from either a [Dataview](https:/
 - **Grouping & color**: events auto-color by group (deterministic hash), or set an explicit per-event color that overrides the group color.
 - **Connecting arrows**: point one event at another (by title) to draw an arrow between them on the horizontal axis.
 - **Native hover preview**: hovering an event's title shows Obsidian's built-in note preview popover.
-- **Two event sources**: a Dataview query across the vault, or a single-note markdown table (no Dataview dependency) — plus an "Insert timeline event row" command that scaffolds or appends rows to that table.
+- **Three event sources**: a Dataview query across the vault, a single-note markdown table, or frontmatter scanned directly via Obsidian's own metadata cache (the latter two need no Dataview dependency) — plus an "Insert timeline event row" command that scaffolds or appends rows to a table source.
+- **Frontmatter source filtering**: optionally narrow the frontmatter source by tag and/or vault folder, so a single view can target e.g. all notes tagged `#event` under `Journal/`.
 - **Date granularity**: from exact day up to millennium, for anything from a daily journal to ancient history.
 
 ## Requirements
 
 - Obsidian ≥ 1.13.0
-- [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin installed and enabled, only for views using the Dataview source (optional at install time — Chronograph will show a notice if it's missing on a Dataview-backed view). Views using the markdown table source don't need Dataview.
+- [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin installed and enabled, only for views using the Dataview source (optional at install time — Chronograph will show a notice if it's missing on a Dataview-backed view). Views using the markdown table or frontmatter source don't need Dataview.
 
 ## Usage
 
@@ -26,6 +27,7 @@ Define one or more "views," each pulling events from either a [Dataview](https:/
 2. In Settings → Chronograph, add a view and choose its source:
    - **Dataview query**: a DQL source string, e.g. `from "Journal" where date`.
    - **Markdown table**: the vault path of a note containing a table with a header row and a `---` divider row.
+   - **Frontmatter**: scans vault notes directly via Obsidian's metadata cache, no Dataview needed. Optionally filter by tag and/or folder.
 3. Map fields to columns/frontmatter keys:
 
    | Field | Purpose |
@@ -97,6 +99,7 @@ src/
     dataview-source.ts     Dataview API detection + query -> TimelineEvent mapping
     dataview-api.d.ts      Ambient types for the subset of Dataview's API used
     table-source.ts        Markdown table parsing -> TimelineEvent mapping (no Dataview dep)
+    frontmatter-source.ts  Metadata-cache scan (tag/folder filters) -> TimelineEvent mapping (no Dataview dep)
   render/
     timeline-renderer.ts   Dispatches to the vertical/horizontal renderer (no Obsidian dep)
     render-shared.ts       Shared render helpers: colors, hover preview, empty/error states

@@ -8,18 +8,11 @@ View) and against common companion plugins in the ecosystem.
 
 - [x] Rewrite README to reflect current feature set (`f2760a1`)
 - [x] Connecting arrows between events via `pointsTo` (`4d80db2`)
+- [x] Frontmatter/tag-based event source, no Dataview dependency
+      (`src/sources/frontmatter-source.ts`, tag + folder filters)
 
 ## Feature gaps vs. competing timeline plugins
 
-- [ ] **Frontmatter/tag-based event source, no Dataview dependency.**
-      Read dates/title/group directly from a note's frontmatter (or a tag)
-      via Obsidian's own metadata cache. This is the biggest adoption
-      blocker today — both current sources require either installing
-      Dataview or hand-maintaining a table. It's also the pattern every
-      close competitor (Timelines Revamped, obsidian-timelines) supports,
-      and it incidentally covers reading the same frontmatter shapes used
-      by Periodic Notes and the Full Calendar plugin, so no separate work
-      is needed for those.
 - [ ] **In-note code-block rendering.** Render a timeline inline in
       Reading/Live Preview from a fenced code block (e.g. ` ```chronograph `),
       not only from a dedicated view configured in settings. Chronos

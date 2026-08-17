@@ -6,6 +6,7 @@ import {
 	queryTimelineEvents,
 } from "./sources/dataview-source";
 import { queryTimelineEventsFromTable } from "./sources/table-source";
+import { queryTimelineEventsFromFrontmatter } from "./sources/frontmatter-source";
 import { renderEmptyState, renderErrorState, renderTimeline } from "./render/timeline-renderer";
 import { compareTimelineDates } from "./date/timeline-date";
 import type TimelineGraphPlugin from "./main";
@@ -78,7 +79,14 @@ export class TimelineView extends ItemView implements HoverParent {
 			const events =
 				config.sourceType === "table"
 					? await queryTimelineEventsFromTable(this.app, config.tableNotePath, config.fields)
-					: await queryTimelineEvents(this.app, config.dataviewQuery, config.fields);
+					: config.sourceType === "frontmatter"
+						? queryTimelineEventsFromFrontmatter(
+								this.app,
+								config.frontmatterTag,
+								config.frontmatterFolder,
+								config.fields
+							)
+						: await queryTimelineEvents(this.app, config.dataviewQuery, config.fields);
 			events.sort((a, b) =>
 				config.sortOrder === "asc"
 					? compareTimelineDates(a.date, b.date)

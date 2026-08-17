@@ -31,3 +31,29 @@ export class Setting {
 }
 
 export class WorkspaceLeaf {}
+
+// Minimal stand-in for Obsidian's getAllTags: combines inline cache.tags
+// with frontmatter tags/tag fields (string, comma-separated string, or
+// array), normalizing each to a leading "#".
+export function getAllTags(cache: {
+	tags?: { tag: string }[];
+	frontmatter?: Record<string, unknown>;
+}): string[] | null {
+	const tags = new Set<string>();
+
+	for (const t of cache.tags ?? []) tags.add(t.tag);
+
+	const fm = cache.frontmatter;
+	const fmTags = fm?.tags ?? fm?.tag;
+	const raw = Array.isArray(fmTags)
+		? fmTags
+		: typeof fmTags === "string"
+			? fmTags.split(",")
+			: [];
+	for (const t of raw) {
+		const trimmed = String(t).trim();
+		if (trimmed) tags.add(trimmed.startsWith("#") ? trimmed : `#${trimmed}`);
+	}
+
+	return tags.size > 0 ? [...tags] : null;
+}

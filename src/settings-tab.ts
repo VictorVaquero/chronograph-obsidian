@@ -16,12 +16,12 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 		return [
 			{
 				name: "",
-				desc: "⚠ Dataview is not installed/enabled. Views using the Dataview source need it to fetch events; views using the table source work regardless.",
+				desc: "⚠ Dataview is not installed/enabled. Views using the Dataview source need it to fetch events; views using the table or frontmatter source work regardless.",
 				visible: () => !isDataviewEnabled(this.app),
 			},
 			{
 				name: "",
-				desc: "Each view queries events from Dataview or a markdown table, and maps fields to timeline events.",
+				desc: "Each view queries events from Dataview, a markdown table, or frontmatter scanned directly (no Dataview needed), and maps fields to timeline events.",
 			},
 			{
 				type: "list",
@@ -64,7 +64,9 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			desc:
 				view.sourceType === "table"
 					? `Table source: ${view.tableNotePath || "(not set)"}`
-					: "Dataview source",
+					: view.sourceType === "frontmatter"
+						? "Frontmatter source (no Dataview needed)"
+						: "Dataview source",
 			items: this.buildViewItems(view),
 		};
 	}
@@ -84,12 +86,13 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			},
 			{
 				name: "Source",
-				desc: "Where events come from: a Dataview query across the vault, or a markdown table in one note.",
+				desc: "Where events come from: a Dataview query across the vault, a markdown table in one note, or frontmatter scanned directly (no Dataview needed).",
 				render: (setting) => {
 					setting.addDropdown((dropdown) =>
 						dropdown
 							.addOption("dataview", "Dataview query")
 							.addOption("table", "Markdown table")
+							.addOption("frontmatter", "Frontmatter (no Dataview)")
 							.setValue(view.sourceType)
 							.onChange(async (value) => {
 								view.sourceType = value as TimelineViewConfig["sourceType"];
@@ -116,7 +119,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			{
 				name: "Dataview query",
 				desc: 'DQL source, e.g. from "Journal" where date',
-				visible: () => view.sourceType !== "table",
+				visible: () => view.sourceType === "dataview",
 				render: (setting) => {
 					setting.addTextArea((text) =>
 						text.setValue(view.dataviewQuery).onChange(async (value) => {
@@ -127,8 +130,34 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 				},
 			},
 			{
+				name: "Tag filter (optional)",
+				desc: 'Only include notes carrying this tag, e.g. "event" or "#event". Leave empty to include all notes (narrow with the folder filter instead).',
+				visible: () => view.sourceType === "frontmatter",
+				render: (setting) => {
+					setting.addText((text) =>
+						text.setValue(view.frontmatterTag).onChange(async (value) => {
+							view.frontmatterTag = value;
+							await this.plugin.saveSettings();
+						})
+					);
+				},
+			},
+			{
+				name: "Folder filter (optional)",
+				desc: 'Only include notes under this vault folder, e.g. "Journal". Leave empty to include the whole vault.',
+				visible: () => view.sourceType === "frontmatter",
+				render: (setting) => {
+					setting.addText((text) =>
+						text.setValue(view.frontmatterFolder).onChange(async (value) => {
+							view.frontmatterFolder = value;
+							await this.plugin.saveSettings();
+						})
+					);
+				},
+			},
+			{
 				name: "Date field",
-				desc: "Table column header (table source) or frontmatter/inline field (Dataview source) used as the event date.",
+				desc: "Table column header (table source) or frontmatter field (Dataview/frontmatter source) used as the event date.",
 				render: (setting) => {
 					setting.addText((text) =>
 						text.setValue(view.fields.dateField).onChange(async (value) => {

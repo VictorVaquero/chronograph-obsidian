@@ -27,6 +27,8 @@ function tableView(overrides: Partial<TimelineViewConfig> = {}): TimelineViewCon
 		sourceType: "table",
 		dataviewQuery: "",
 		tableNotePath: "Timeline/Events.md",
+		frontmatterTag: "",
+		frontmatterFolder: "",
 		fields: { dateField: "date", titleField: "title" },
 		sortOrder: "asc",
 		layout: "vertical",

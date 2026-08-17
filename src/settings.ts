@@ -7,6 +7,8 @@ export function createDefaultView(): TimelineViewConfig {
 		sourceType: "dataview",
 		dataviewQuery: 'FROM ""',
 		tableNotePath: "",
+		frontmatterTag: "",
+		frontmatterFolder: "",
 		fields: {
 			dateField: "date",
 		},
