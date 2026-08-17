@@ -414,6 +414,28 @@
 	white-space: nowrap;
 }
 
+.timeline-graph-arrows {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 4;
+	pointer-events: none;
+	overflow: visible;
+}
+
+.timeline-graph-arrow-line {
+	stroke: var(--interactive-accent, #7c3aed);
+	stroke-width: 1.5;
+	opacity: 0.6;
+}
+
+.timeline-graph-arrowhead-fill {
+	fill: var(--interactive-accent, #7c3aed);
+	opacity: 0.6;
+}
+
 .timeline-graph-period-bands {
 	position: absolute;
 	top: 0;

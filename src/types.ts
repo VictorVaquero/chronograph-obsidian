@@ -21,6 +21,12 @@ export interface TimelineEvent {
 	group?: string;
 	color?: string;
 	kind?: TimelineEventKind;
+	/**
+	 * Title of another event in the same view to draw a connecting arrow
+	 * toward (horizontal layout only). Matched case-insensitively against
+	 * event titles; unresolved references are silently skipped.
+	 */
+	pointsTo?: string;
 }
 
 export type TimelineSortOrder = "asc" | "desc";
@@ -58,6 +64,8 @@ export interface TimelineFieldMapping {
 	colorField?: string;
 	/** Field whose value ("event" | "period" | "marker") selects the render kind; unset/unrecognized values default to "event". */
 	kindField?: string;
+	/** Field holding the title of another event this one points to, drawn as a connecting arrow (horizontal layout only). */
+	pointsToField?: string;
 }
 
 export interface TimelineViewConfig {

@@ -61,6 +61,7 @@ function renderMarker(
 
 	const el = createEl("button");
 	el.type = "button";
+	el.dataset.timelineEventId = event.id;
 	el.style.setProperty("--marker-color", color);
 	el.addEventListener("click", () => callbacks.onEventClick?.(event));
 	attachTooltip(el, event, precision, showEra);
@@ -171,6 +172,7 @@ export function renderPeriodBands(
 
 		const band = createEl("button");
 		band.type = "button";
+		band.dataset.timelineEventId = period.id;
 		band.className = "timeline-graph-period-band";
 		band.style.left = `${startX}%`;
 		band.style.width = `${width}%`;
@@ -203,6 +205,7 @@ export function renderFlagMarker(
 ): HTMLElement {
 	const line = createEl("button");
 	line.type = "button";
+	line.dataset.timelineEventId = marker.id;
 	line.className = "timeline-graph-flag-marker";
 	line.style.left = `${xFor(toOrdinal(marker.date), scale)}%`;
 	const color = colorForEvent(marker);

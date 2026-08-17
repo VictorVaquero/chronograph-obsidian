@@ -130,6 +130,21 @@ describe("queryTimelineEventsFromTable", () => {
 		expect(events[0].color).toBe("#ff8800");
 	});
 
+	it("maps the points-to field", async () => {
+		const content = [
+			"| date | title | next |",
+			"| --- | --- | --- |",
+			"| 2024-01-01 | Kickoff | Review |",
+		].join("\n");
+		const app = makeApp(TABLE_NOTE, content);
+		const events = await queryTimelineEventsFromTable(
+			app as never,
+			TABLE_NOTE,
+			fields({ titleField: "title", pointsToField: "next" })
+		);
+		expect(events[0].pointsTo).toBe("Review");
+	});
+
 	it("handles escaped pipes within cell content", async () => {
 		const content = ["| date | title |", "| --- | --- |", String.raw`| 2024-01-01 | A \| B |`].join(
 			"\n"

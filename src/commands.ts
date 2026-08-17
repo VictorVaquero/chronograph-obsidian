@@ -18,6 +18,7 @@ function orderedHeaders(fields: TimelineFieldMapping): string[] {
 		fields.groupField,
 		fields.colorField,
 		fields.kindField,
+		fields.pointsToField,
 	].filter((f): f is string => !!f);
 }
 

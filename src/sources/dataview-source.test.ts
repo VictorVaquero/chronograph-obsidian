@@ -124,6 +124,18 @@ describe("queryTimelineEvents", () => {
 		expect(events[0].color).toBe("#ff8800");
 	});
 
+	it("maps the points-to field", async () => {
+		const page = makePage({ date: "2024-01-01", nextEvent: "Review" });
+		const api = makeApi({ successful: true, value: { type: "table", values: [page] } });
+		const app = makeApp(api);
+		const events = await queryTimelineEvents(
+			app as never,
+			"",
+			fields({ pointsToField: "nextEvent" })
+		);
+		expect(events[0].pointsTo).toBe("Review");
+	});
+
 	it("maps the kind field, defaulting to 'event' for unset/unrecognized values", async () => {
 		const period = makePage({
 			file: { path: "P.md", name: "P", link: undefined },

@@ -91,6 +91,8 @@ function pageToEvent(
 
 	const color = fields.colorField ? fieldToString(page[fields.colorField]) : undefined;
 
+	const pointsTo = fields.pointsToField ? fieldToString(page[fields.pointsToField]) : undefined;
+
 	return {
 		id: page.file.path,
 		title,
@@ -101,6 +103,7 @@ function pageToEvent(
 		group,
 		kind,
 		color,
+		pointsTo,
 	};
 }
 

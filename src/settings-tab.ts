@@ -196,6 +196,18 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 				},
 			},
 			{
+				name: "Points-to field (optional)",
+				desc: "Horizontal layout only: field holding the title of another event in this view to draw a connecting arrow toward.",
+				render: (setting) => {
+					setting.addText((text) =>
+						text.setValue(view.fields.pointsToField ?? "").onChange(async (value) => {
+							view.fields.pointsToField = value || undefined;
+							await this.plugin.saveSettings();
+						})
+					);
+				},
+			},
+			{
 				name: "Sort order",
 				render: (setting) => {
 					setting.addDropdown((dropdown) =>

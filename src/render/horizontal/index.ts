@@ -5,6 +5,7 @@ import { AXIS_PADDING_PX, buildScale } from "./scale";
 import { computeTicks, renderAxis, renderPeriodLines } from "./ticks";
 import { setupZoomAndPan } from "./zoom-pan";
 import { renderFlagMarker, renderLane, renderPeriodBands, renderTodayLine, todayAsTimelineDate } from "./markers";
+import { renderArrows } from "./arrows";
 
 export function renderHorizontalTimeline(
 	container: HTMLElement,
@@ -87,6 +88,8 @@ export function renderHorizontalTimeline(
 	root.appendChild(toolbar);
 	root.appendChild(scroller);
 	container.appendChild(root);
+
+	renderArrows(track, events);
 
 	setupZoomAndPan(scroller, track, totalWidth, zoomInBtn, zoomOutBtn, fitBtn);
 }
