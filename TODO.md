@@ -31,9 +31,20 @@ View) and against common companion plugins in the ecosystem.
       dates, independent of the per-note frontmatter/table/Dataview
       sources; click-to-create is disabled for this source since there's
       no single note/table to target
+- [x] Fix: century/decade/millennium precision showed a rounded/roman-numeral
+      bucket label ("XX", "1980") on individual event cards instead of the
+      exact year; now shows the full year (e.g. "1983") at every precision.
+      Divider bucket labels (`bucketOf`) are unaffected (`src/date/timeline-date.ts`)
+- [x] Split developer docs out of README into `CONTRIBUTING.md` (build/dev
+      workflow, preview harness, tests, project structure) so README stays
+      a non-technical, user-facing overview
 
 ## Feature gaps vs. competing timeline plugins
 
+- [ ] **Visual polish for README.** Add screenshots/GIFs of the timeline in
+      use (vertical and horizontal layouts) and a project logo/wordmark.
+      Needs actual rendered captures from inside Obsidian — can't be
+      generated from source alone.
 - [ ] **Export/share snapshot.** Export a timeline view as an image or
       static HTML. Not offered by any close competitor either — lower
       priority.
