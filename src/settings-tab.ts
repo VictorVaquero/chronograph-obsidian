@@ -132,6 +132,24 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(section)
+			.setName("Date granularity")
+			.setDesc("How dates are displayed and how the horizontal axis is ticked. Use coarser settings for ancient history.")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("day", "Day")
+					.addOption("month", "Month")
+					.addOption("year", "Year")
+					.addOption("decade", "Decade")
+					.addOption("century", "Century")
+					.addOption("millennium", "Millennium")
+					.setValue(view.datePrecision)
+					.onChange(async (value) => {
+						view.datePrecision = value as TimelineViewConfig["datePrecision"];
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(section)
 			.setName("Default view")
 			.setDesc("Open this view by default when the timeline pane is created.")
 			.addToggle((toggle) =>

@@ -1,6 +1,6 @@
 import { renderTimeline, renderEmptyState, renderErrorState } from "../timeline-renderer";
-import { mockEvents, randomizedMockEvents } from "./mock-events";
-import { TimelineEvent, TimelineLayout } from "../types";
+import { mockEvents, ancientMockEvents, randomizedMockEvents } from "./mock-events";
+import { TimelineEvent, TimelineLayout, TimelineDatePrecision } from "../types";
 
 // Entry point for the standalone browser preview (see src/dev/preview.html).
 // Bundled and served without any Obsidian runtime, so the timeline renderer
@@ -16,15 +16,22 @@ function logClick(event: TimelineEvent): void {
 }
 
 let layout: TimelineLayout = "vertical";
+let precision: TimelineDatePrecision = "day";
 let currentEvents: TimelineEvent[] = mockEvents;
 
 function render(): void {
-	renderTimeline(container!, currentEvents, layout, { onEventClick: logClick });
+	renderTimeline(container!, currentEvents, layout, { onEventClick: logClick }, precision);
 }
 
 const layoutSelect = document.getElementById("layout-select") as HTMLSelectElement | null;
 layoutSelect?.addEventListener("change", () => {
 	layout = layoutSelect.value as TimelineLayout;
+	render();
+});
+
+const precisionSelect = document.getElementById("precision-select") as HTMLSelectElement | null;
+precisionSelect?.addEventListener("change", () => {
+	precision = precisionSelect.value as TimelineDatePrecision;
 	render();
 });
 
@@ -37,6 +44,15 @@ document.getElementById("btn-sample")?.addEventListener("click", () => {
 
 document.getElementById("btn-random")?.addEventListener("click", () => {
 	currentEvents = randomizedMockEvents(30);
+	render();
+});
+
+document.getElementById("btn-ancient")?.addEventListener("click", () => {
+	currentEvents = ancientMockEvents;
+	if (precisionSelect) {
+		precisionSelect.value = "year";
+		precision = "year";
+	}
 	render();
 });
 

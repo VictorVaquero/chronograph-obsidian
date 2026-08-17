@@ -10,6 +10,7 @@ export function createDefaultView(): TimelineViewConfig {
 		},
 		sortOrder: "asc",
 		layout: "vertical",
+		datePrecision: "day",
 	};
 }
 

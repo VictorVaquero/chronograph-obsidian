@@ -157,6 +157,35 @@
 	border-radius: 999px;
 }
 
+.timeline-graph-period-divider {
+	position: relative;
+	display: flex;
+	align-items: center;
+	margin: var(--size-4-3) 0;
+}
+
+.timeline-graph-period-divider::before,
+.timeline-graph-period-divider::after {
+	content: "";
+	flex: 1 1 auto;
+	height: 1px;
+	background: var(--background-modifier-border);
+}
+
+.timeline-graph-period-divider span {
+	flex: 0 0 auto;
+	padding: 2px var(--size-4-3);
+	margin: 0 var(--size-4-2);
+	font-size: var(--font-smallest);
+	font-weight: var(--font-medium);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--text-muted);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 999px;
+	background: var(--background-primary);
+}
+
 /* Horizontal axis layout */
 
 .timeline-graph-horizontal-scroller {
@@ -181,6 +210,24 @@
 	top: 0;
 	bottom: 0;
 	border-left: 1px solid var(--background-modifier-border);
+}
+
+.timeline-graph-period-lines {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.timeline-graph-period-line {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	border-left: 1px solid var(--background-modifier-border);
+	opacity: 0.5;
 }
 
 .timeline-graph-axis-tick span {

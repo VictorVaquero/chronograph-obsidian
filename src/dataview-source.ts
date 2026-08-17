@@ -1,6 +1,7 @@
 import { App } from "obsidian";
 import { DataviewApi, DataviewPage, DataviewPluginLike } from "./dataview-api";
 import { TimelineEvent, TimelineFieldMapping } from "./types";
+import { TimelineDate, parseTimelineDate } from "./timeline-date";
 
 export class DataviewUnavailableError extends Error {
 	constructor() {
@@ -23,7 +24,7 @@ export function isDataviewEnabled(app: App): boolean {
 	return getDataviewApi(app) !== null;
 }
 
-function toMillis(value: unknown): number | undefined {
+function toTimelineDate(value: unknown): TimelineDate | undefined {
 	if (value == null) return undefined;
 
 	// Dataview DateTime (luxon) values expose `toMillis`.
@@ -33,17 +34,10 @@ function toMillis(value: unknown): number | undefined {
 		"toMillis" in value &&
 		typeof (value as { toMillis: unknown }).toMillis === "function"
 	) {
-		return (value as { toMillis: () => number }).toMillis();
+		return parseTimelineDate((value as { toMillis: () => number }).toMillis());
 	}
 
-	if (typeof value === "number") return value;
-
-	if (typeof value === "string") {
-		const parsed = Date.parse(value);
-		return Number.isNaN(parsed) ? undefined : parsed;
-	}
-
-	return undefined;
+	return parseTimelineDate(value);
 }
 
 function fieldToString(value: unknown): string | undefined {
@@ -63,11 +57,11 @@ function pageToEvent(
 	page: DataviewPage,
 	fields: TimelineFieldMapping
 ): TimelineEvent | null {
-	const date = toMillis(page[fields.dateField]);
+	const date = toTimelineDate(page[fields.dateField]);
 	if (date === undefined) return null;
 
 	const endDate = fields.endDateField
-		? toMillis(page[fields.endDateField])
+		? toTimelineDate(page[fields.endDateField])
 		: undefined;
 
 	const title =

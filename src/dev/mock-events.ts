@@ -1,12 +1,14 @@
 import { TimelineEvent } from "../types";
+import { TimelineDate } from "../timeline-date";
 
 // Hand-authored sample data standing in for a Dataview query result, used
 // only by the standalone browser preview (src/dev/preview.ts).
 const GROUPS = ["Research", "Writing", "Meetings", "Personal"];
 
-function day(offsetDays: number): number {
+function day(offsetDays: number): TimelineDate {
 	const base = new Date("2026-01-01T00:00:00Z").getTime();
-	return base + offsetDays * 24 * 60 * 60 * 1000;
+	const d = new Date(base + offsetDays * 24 * 60 * 60 * 1000);
+	return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate() };
 }
 
 export const mockEvents: TimelineEvent[] = [
@@ -68,17 +70,91 @@ export const mockEvents: TimelineEvent[] = [
 	},
 ];
 
+// Ancient-history sample data spanning BC/AD, for testing coarse date
+// granularities (decade/century/millennium) and the BC/AD boundary.
+export const ancientMockEvents: TimelineEvent[] = [
+	{
+		id: "a1",
+		title: "Great Pyramid of Giza completed",
+		date: { year: -2559 },
+		sourcePath: "History/Pyramid.md",
+		description: "Completion of the Great Pyramid under Khufu.",
+		group: "Egypt",
+	},
+	{
+		id: "a2",
+		title: "Code of Hammurabi",
+		date: { year: -1753 },
+		sourcePath: "History/Hammurabi.md",
+		group: "Mesopotamia",
+	},
+	{
+		id: "a3",
+		title: "Trojan War (traditional dating)",
+		date: { year: -1193 },
+		endDate: { year: -1183 },
+		sourcePath: "History/Troy.md",
+		group: "Greece",
+	},
+	{
+		id: "a4",
+		title: "Founding of Rome",
+		date: { year: -753 },
+		sourcePath: "History/Rome.md",
+		group: "Rome",
+	},
+	{
+		id: "a5",
+		title: "Roman Republic",
+		date: { year: -509 },
+		endDate: { year: -27 },
+		sourcePath: "History/Republic.md",
+		description: "From the overthrow of the monarchy to Augustus.",
+		group: "Rome",
+	},
+	{
+		id: "a6",
+		title: "Julius Caesar assassinated",
+		date: { year: -44, month: 3, day: 15 },
+		sourcePath: "History/Caesar.md",
+		group: "Rome",
+	},
+	{
+		id: "a7",
+		title: "Roman Empire founded",
+		date: { year: -27 },
+		endDate: { year: 476 },
+		sourcePath: "History/Empire.md",
+		group: "Rome",
+	},
+	{
+		id: "a8",
+		title: "Fall of the Western Roman Empire",
+		date: { year: 476 },
+		sourcePath: "History/Fall.md",
+		group: "Rome",
+	},
+	{
+		id: "a9",
+		title: "Battle of Hastings",
+		date: { year: 1066, month: 10, day: 14 },
+		sourcePath: "History/Hastings.md",
+		group: "Medieval",
+	},
+];
+
 export function randomizedMockEvents(count = 25): TimelineEvent[] {
 	const events: TimelineEvent[] = [];
 	for (let i = 0; i < count; i++) {
 		const group = GROUPS[i % GROUPS.length];
-		const start = day(Math.floor(Math.random() * 90));
+		const startOffset = Math.floor(Math.random() * 90);
+		const start = day(startOffset);
 		const hasRange = Math.random() > 0.6;
 		events.push({
 			id: `rand-${i}`,
 			title: `${group} item ${i + 1}`,
 			date: start,
-			endDate: hasRange ? start + Math.floor(Math.random() * 6 + 1) * 86400000 : undefined,
+			endDate: hasRange ? day(startOffset + Math.floor(Math.random() * 6 + 1)) : undefined,
 			sourcePath: `${group}/Item ${i + 1}.md`,
 			description: Math.random() > 0.5 ? "Sample description text." : undefined,
 			group,

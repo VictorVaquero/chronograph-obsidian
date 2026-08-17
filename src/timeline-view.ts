@@ -6,6 +6,7 @@ import {
 	queryTimelineEvents,
 } from "./dataview-source";
 import { renderEmptyState, renderErrorState, renderTimeline } from "./timeline-renderer";
+import { compareTimelineDates } from "./timeline-date";
 import type TimelineGraphPlugin from "./main";
 
 export class TimelineView extends ItemView {
@@ -78,13 +79,19 @@ export class TimelineView extends ItemView {
 			);
 			events.sort((a, b) =>
 				this.activeConfig!.sortOrder === "asc"
-					? a.date - b.date
-					: b.date - a.date
+					? compareTimelineDates(a.date, b.date)
+					: compareTimelineDates(b.date, a.date)
 			);
-			renderTimeline(this.contentEl, events, this.activeConfig.layout, {
-				onEventClick: (event) =>
-					this.app.workspace.openLinkText(event.sourcePath, "", false),
-			});
+			renderTimeline(
+				this.contentEl,
+				events,
+				this.activeConfig.layout,
+				{
+					onEventClick: (event) =>
+						this.app.workspace.openLinkText(event.sourcePath, "", false),
+				},
+				this.activeConfig.datePrecision
+			);
 		} catch (err) {
 			renderErrorState(
 				this.contentEl,

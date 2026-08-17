@@ -1,10 +1,18 @@
-import { TimelineEvent } from "./types";
+import { TimelineEvent, TimelineDatePrecision } from "./types";
 import { TimelineRenderCallbacks, colorForGroup, renderEmptyState } from "./render-shared";
+import {
+	bucketOf,
+	compareTimelineDates,
+	formatTimelineDateRange,
+	hasAnyBCDate,
+	toOrdinal,
+} from "./timeline-date";
 
 export function renderVerticalTimeline(
 	container: HTMLElement,
 	events: TimelineEvent[],
-	callbacks: TimelineRenderCallbacks
+	callbacks: TimelineRenderCallbacks,
+	precision: TimelineDatePrecision = "day"
 ): void {
 	if (events.length === 0) {
 		renderEmptyState(
@@ -13,6 +21,8 @@ export function renderVerticalTimeline(
 		);
 		return;
 	}
+
+	const showEra = hasAnyBCDate(events.flatMap((e) => (e.endDate ? [e.date, e.endDate] : [e.date])));
 
 	const spine = document.createElement("div");
 	spine.className = "timeline-graph-spine";
@@ -23,11 +33,19 @@ export function renderVerticalTimeline(
 
 	const todayIndex = findTodayInsertionIndex(events);
 
+	let previousBucketKey: string | null = null;
 	events.forEach((event, index) => {
 		if (index === todayIndex) {
 			spine.appendChild(renderTodayMarker());
 		}
-		spine.appendChild(renderNode(event, index % 2 === 0, callbacks));
+
+		const bucket = bucketOf(event.date, precision, showEra);
+		if (bucket.label && bucket.key !== previousBucketKey) {
+			spine.appendChild(renderPeriodDivider(bucket.label));
+		}
+		previousBucketKey = bucket.key;
+
+		spine.appendChild(renderNode(event, index % 2 === 0, callbacks, precision, showEra));
 	});
 	if (todayIndex === events.length) {
 		spine.appendChild(renderTodayMarker());
@@ -36,10 +54,21 @@ export function renderVerticalTimeline(
 	container.appendChild(spine);
 }
 
+function renderPeriodDivider(label: string): HTMLElement {
+	const divider = document.createElement("div");
+	divider.className = "timeline-graph-period-divider";
+	const span = document.createElement("span");
+	span.textContent = label;
+	divider.appendChild(span);
+	return divider;
+}
+
 function renderNode(
 	event: TimelineEvent,
 	alignLeft: boolean,
-	callbacks: TimelineRenderCallbacks
+	callbacks: TimelineRenderCallbacks,
+	precision: TimelineDatePrecision,
+	showEra: boolean
 ): HTMLElement {
 	const node = document.createElement("div");
 	node.className = `timeline-graph-node ${alignLeft ? "is-left" : "is-right"}`;
@@ -62,7 +91,7 @@ function renderNode(
 
 	const dateEl = document.createElement("span");
 	dateEl.className = "timeline-graph-card-date";
-	dateEl.textContent = formatDateRange(event);
+	dateEl.textContent = formatTimelineDateRange(event.date, event.endDate, precision, showEra);
 	card.appendChild(dateEl);
 
 	const link = document.createElement("a");
@@ -103,16 +132,17 @@ function renderTodayMarker(): HTMLElement {
 }
 
 function findTodayInsertionIndex(events: TimelineEvent[]): number {
-	const now = Date.now();
-	const ascending = events.length < 2 || events[0].date <= events[events.length - 1].date;
-	const index = events.findIndex((e) => (ascending ? e.date > now : e.date < now));
+	const now = toOrdinal(todayAsTimelineDate());
+	const ascending =
+		events.length < 2 || compareTimelineDates(events[0].date, events[events.length - 1].date) <= 0;
+	const index = events.findIndex((e) =>
+		ascending ? toOrdinal(e.date) > now : toOrdinal(e.date) < now
+	);
 	if (index === -1) return events.length;
 	return index;
 }
 
-function formatDateRange(event: TimelineEvent): string {
-	const start = new Date(event.date).toLocaleDateString();
-	if (!event.endDate) return start;
-	const end = new Date(event.endDate).toLocaleDateString();
-	return `${start} → ${end}`;
+function todayAsTimelineDate() {
+	const d = new Date();
+	return { year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate() };
 }

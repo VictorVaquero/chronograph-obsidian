@@ -1,26 +1,35 @@
-import { TimelineEvent } from "./types";
+import { TimelineEvent, TimelineDatePrecision } from "./types";
 import {
 	TimelineRenderCallbacks,
 	colorForGroup,
 	groupsOf,
 	renderEmptyState,
 } from "./render-shared";
+import {
+	TimelineDate,
+	formatTimelineDate,
+	fromOrdinal,
+	hasAnyBCDate,
+	toOrdinal,
+} from "./timeline-date";
 
 const AXIS_PADDING_PX = 48;
 const PX_PER_DAY_MIN = 4;
-const DAY_MS = 24 * 60 * 60 * 1000;
+const MIN_TRACK_WIDTH_PX = 600;
+const MAX_TRACK_WIDTH_PX = 20000;
 const MIN_MARKER_WIDTH_PX = 8;
 
 interface Scale {
-	minDate: number;
-	maxDate: number;
+	minOrdinal: number;
+	maxOrdinal: number;
 	trackWidth: number;
 }
 
 export function renderHorizontalTimeline(
 	container: HTMLElement,
 	events: TimelineEvent[],
-	callbacks: TimelineRenderCallbacks
+	callbacks: TimelineRenderCallbacks,
+	precision: TimelineDatePrecision = "day"
 ): void {
 	if (events.length === 0) {
 		renderEmptyState(
@@ -30,12 +39,17 @@ export function renderHorizontalTimeline(
 		return;
 	}
 
-	const minDate = Math.min(...events.map((e) => e.date));
-	const maxDate = Math.max(...events.map((e) => e.endDate ?? e.date));
-	const spanDays = Math.max(1, (maxDate - minDate) / DAY_MS);
-	const trackWidth = Math.max(600, spanDays * PX_PER_DAY_MIN);
-	const scale: Scale = { minDate, maxDate, trackWidth };
+	const minOrdinal = Math.min(...events.map((e) => toOrdinal(e.date)));
+	const maxOrdinal = Math.max(...events.map((e) => toOrdinal(e.endDate ?? e.date)));
+	const spanYears = Math.max(1 / 365, maxOrdinal - minOrdinal);
+	// Width driven by day-level pixel density, but clamped so multi-century/
+	// millennium spans don't blow up into a track millions of pixels wide.
+	const idealWidth = spanYears * 365 * PX_PER_DAY_MIN;
+	const trackWidth = Math.min(MAX_TRACK_WIDTH_PX, Math.max(MIN_TRACK_WIDTH_PX, idealWidth));
+	const scale: Scale = { minOrdinal, maxOrdinal, trackWidth };
 	const totalWidth = trackWidth + AXIS_PADDING_PX * 2;
+
+	const showEra = hasAnyBCDate(events.flatMap((e) => (e.endDate ? [e.date, e.endDate] : [e.date])));
 
 	const root = document.createElement("div");
 	root.className = "timeline-graph-horizontal";
@@ -46,15 +60,20 @@ export function renderHorizontalTimeline(
 	const track = document.createElement("div");
 	track.className = "timeline-graph-horizontal-track";
 	track.style.width = `${totalWidth}px`;
-	track.appendChild(renderAxis(scale));
+
+	const ticks = computeTicks(scale, precision, showEra);
+	track.appendChild(renderAxis(ticks, scale));
+	track.appendChild(renderPeriodLines(ticks, scale));
 
 	groupsOf(events).forEach((group, laneIndex) => {
 		const laneEvents = events.filter((e) => (e.group ?? "") === group);
-		track.appendChild(renderLane(group, laneEvents, scale, laneIndex, callbacks));
+		track.appendChild(
+			renderLane(group, laneEvents, scale, laneIndex, callbacks, precision, showEra)
+		);
 	});
 
-	const now = Date.now();
-	if (now >= scale.minDate && now <= scale.maxDate) {
+	const now = toOrdinal(todayAsTimelineDate());
+	if (now >= scale.minOrdinal && now <= scale.maxOrdinal) {
 		track.appendChild(renderTodayLine(now, scale));
 	}
 
@@ -63,34 +82,103 @@ export function renderHorizontalTimeline(
 	container.appendChild(root);
 }
 
-function xFor(date: number, scale: Scale): number {
-	const spanMs = Math.max(1, scale.maxDate - scale.minDate);
-	const offset = (date - scale.minDate) / spanMs;
+function todayAsTimelineDate(): TimelineDate {
+	const d = new Date();
+	return { year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate() };
+}
+
+function xFor(ordinal: number, scale: Scale): number {
+	const span = Math.max(1 / 365, scale.maxOrdinal - scale.minOrdinal);
+	const offset = (ordinal - scale.minOrdinal) / span;
 	return AXIS_PADDING_PX + offset * scale.trackWidth;
 }
 
-function renderAxis(scale: Scale): HTMLElement {
-	const spanDays = Math.max(1, (scale.maxDate - scale.minDate) / DAY_MS);
+// Tick spacing (in years) appropriate for each display precision, so
+// zooming out to "century" doesn't render a tick every single day.
+const TICK_STEP_YEARS: Record<TimelineDatePrecision, number> = {
+	day: 7 / 365,
+	month: 1 / 12,
+	year: 1,
+	decade: 10,
+	century: 100,
+	millennium: 1000,
+};
+
+interface Tick {
+	ordinal: number;
+	label: string;
+}
+
+function computeTicks(
+	scale: Scale,
+	precision: TimelineDatePrecision,
+	showEra: boolean
+): Tick[] {
+	const spanYears = Math.max(1 / 365, scale.maxOrdinal - scale.minOrdinal);
+	const rawStep = TICK_STEP_YEARS[precision];
+	const targetTicks = 10;
+	let step = rawStep;
+	while (spanYears / step > targetTicks) step *= 2;
+	while (spanYears / step < 3 && step > rawStep / 8) step /= 2;
+
+	const labelPrecision = tickPrecision(precision, step);
+	const ticks: Tick[] = [];
+	const startOrdinal = Math.floor(scale.minOrdinal / step) * step;
+	for (let ordinal = startOrdinal; ordinal <= scale.maxOrdinal; ordinal += step) {
+		if (ordinal < scale.minOrdinal) continue;
+		ticks.push({
+			ordinal,
+			label: formatTimelineDate(fromOrdinal(ordinal), labelPrecision, showEra),
+		});
+	}
+	return ticks;
+}
+
+function renderAxis(ticks: Tick[], scale: Scale): HTMLElement {
 	const axis = document.createElement("div");
 	axis.className = "timeline-graph-axis";
 
-	const tickCount = Math.min(12, Math.max(2, Math.round(spanDays / 7)));
-	for (let i = 0; i <= tickCount; i++) {
-		const date = scale.minDate + (i / tickCount) * (scale.maxDate - scale.minDate);
-		const tick = document.createElement("div");
-		tick.className = "timeline-graph-axis-tick";
-		tick.style.left = `${xFor(date, scale)}px`;
+	for (const tick of ticks) {
+		const tickEl = document.createElement("div");
+		tickEl.className = "timeline-graph-axis-tick";
+		tickEl.style.left = `${xFor(tick.ordinal, scale)}px`;
 
 		const label = document.createElement("span");
-		label.textContent = new Date(date).toLocaleDateString(undefined, {
-			month: "short",
-			day: "numeric",
-		});
-		tick.appendChild(label);
-		axis.appendChild(tick);
+		label.textContent = tick.label;
+		tickEl.appendChild(label);
+		axis.appendChild(tickEl);
 	}
 
 	return axis;
+}
+
+// Full-height vertical lines through the lanes, marking where each axis
+// tick's period boundary falls, so year/decade/century transitions are
+// visible at a glance behind the event markers.
+function renderPeriodLines(ticks: Tick[], scale: Scale): HTMLElement {
+	const wrap = document.createElement("div");
+	wrap.className = "timeline-graph-period-lines";
+
+	for (const tick of ticks) {
+		const line = document.createElement("div");
+		line.className = "timeline-graph-period-line";
+		line.style.left = `${xFor(tick.ordinal, scale)}px`;
+		wrap.appendChild(line);
+	}
+
+	return wrap;
+}
+
+// Ticks only show a granularity finer than "year" when the step between
+// them is actually sub-year — otherwise a tick every decade/century would
+// misleadingly claim day/month precision.
+function tickPrecision(precision: TimelineDatePrecision, stepYears: number): TimelineDatePrecision {
+	if (stepYears >= 1) {
+		return precision === "day" || precision === "month" || precision === "year"
+			? "year"
+			: precision;
+	}
+	return precision === "day" ? "day" : "month";
 }
 
 function renderLane(
@@ -98,7 +186,9 @@ function renderLane(
 	laneEvents: TimelineEvent[],
 	scale: Scale,
 	laneIndex: number,
-	callbacks: TimelineRenderCallbacks
+	callbacks: TimelineRenderCallbacks,
+	precision: TimelineDatePrecision,
+	showEra: boolean
 ): HTMLElement {
 	const lane = document.createElement("div");
 	lane.className = `timeline-graph-lane ${laneIndex % 2 === 0 ? "is-even" : "is-odd"}`;
@@ -114,7 +204,7 @@ function renderLane(
 	laneTrack.style.width = `${scale.trackWidth + AXIS_PADDING_PX * 2}px`;
 
 	for (const event of laneEvents) {
-		laneTrack.appendChild(renderMarker(event, scale, callbacks));
+		laneTrack.appendChild(renderMarker(event, scale, callbacks, precision, showEra));
 	}
 
 	lane.appendChild(laneTrack);
@@ -136,16 +226,21 @@ function renderTodayLine(now: number, scale: Scale): HTMLElement {
 function renderMarker(
 	event: TimelineEvent,
 	scale: Scale,
-	callbacks: TimelineRenderCallbacks
+	callbacks: TimelineRenderCallbacks,
+	precision: TimelineDatePrecision,
+	showEra: boolean
 ): HTMLElement {
 	const color = event.group
 		? colorForGroup(event.group)
 		: "var(--interactive-accent, #7c3aed)";
-	const startX = xFor(event.date, scale);
+	const startX = xFor(toOrdinal(event.date), scale);
 
 	const el = document.createElement("button");
 	el.type = "button";
-	el.title = event.description ? `${event.title}\n${event.description}` : event.title;
+	const dateLabel = formatTimelineDate(event.date, precision, showEra);
+	el.title = event.description
+		? `${event.title} (${dateLabel})\n${event.description}`
+		: `${event.title} (${dateLabel})`;
 	el.style.setProperty("--marker-color", color);
 	el.addEventListener("click", () => callbacks.onEventClick?.(event));
 
@@ -154,7 +249,7 @@ function renderMarker(
 	labelEl.textContent = event.title;
 
 	if (event.endDate) {
-		const endX = xFor(event.endDate, scale);
+		const endX = xFor(toOrdinal(event.endDate), scale);
 		const width = Math.max(MIN_MARKER_WIDTH_PX, endX - startX);
 		el.className = "timeline-graph-marker timeline-graph-marker-range";
 		el.style.left = `${startX}px`;

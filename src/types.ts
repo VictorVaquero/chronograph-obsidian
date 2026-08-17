@@ -1,10 +1,12 @@
+import { TimelineDate, TimelineDatePrecision } from "./timeline-date";
+
 export const TIMELINE_VIEW_TYPE = "timeline-graph-view";
 
 export interface TimelineEvent {
 	id: string;
 	title: string;
-	date: number;
-	endDate?: number;
+	date: TimelineDate;
+	endDate?: TimelineDate;
 	sourcePath: string;
 	description?: string;
 	group?: string;
@@ -14,6 +16,8 @@ export interface TimelineEvent {
 export type TimelineSortOrder = "asc" | "desc";
 
 export type TimelineLayout = "vertical" | "horizontal";
+
+export type { TimelineDatePrecision } from "./timeline-date";
 
 export interface TimelineFieldMapping {
 	/** Frontmatter/inline field holding the event start date. */
@@ -36,6 +40,8 @@ export interface TimelineViewConfig {
 	fields: TimelineFieldMapping;
 	sortOrder: TimelineSortOrder;
 	layout: TimelineLayout;
+	/** Display/bucketing granularity, e.g. "day" for exact dates, "century" for ancient history. */
+	datePrecision: TimelineDatePrecision;
 }
 
 export interface TimelineGraphSettings {

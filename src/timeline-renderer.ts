@@ -1,4 +1,4 @@
-import { TimelineEvent, TimelineLayout } from "./types";
+import { TimelineEvent, TimelineLayout, TimelineDatePrecision } from "./types";
 import { TimelineRenderCallbacks } from "./render-shared";
 import { renderVerticalTimeline } from "./render-vertical";
 import { renderHorizontalTimeline } from "./render-horizontal";
@@ -15,13 +15,14 @@ export function renderTimeline(
 	container: HTMLElement,
 	events: TimelineEvent[],
 	layout: TimelineLayout,
-	callbacks: TimelineRenderCallbacks = {}
+	callbacks: TimelineRenderCallbacks = {},
+	precision: TimelineDatePrecision = "day"
 ): void {
 	container.replaceChildren();
 
 	if (layout === "horizontal") {
-		renderHorizontalTimeline(container, events, callbacks);
+		renderHorizontalTimeline(container, events, callbacks, precision);
 	} else {
-		renderVerticalTimeline(container, events, callbacks);
+		renderVerticalTimeline(container, events, callbacks, precision);
 	}
 }
