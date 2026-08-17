@@ -282,6 +282,11 @@
 
 .timeline-graph-lane {
 	position: relative;
+	/* Must outrank .timeline-graph-period-bands (z-index: 1) so lane markers
+	   receive clicks/hover even where a period band sits underneath them —
+	   without an explicit z-index here, this positioned-but-auto element
+	   loses to the band's explicit stacking level regardless of DOM order. */
+	z-index: 2;
 	display: flex;
 	align-items: stretch;
 	min-height: 44px;

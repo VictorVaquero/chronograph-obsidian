@@ -16,12 +16,12 @@ export default class TimelineGraphPlugin extends Plugin {
 		);
 
 		this.addRibbonIcon("calendar-clock", "Open Timeline Graph", () => {
-			this.activateView();
+			void this.activateView();
 		});
 
 		this.addCommand({
-			id: "open-timeline-graph",
-			name: "Open Timeline Graph",
+			id: "open-view",
+			name: "Open view",
 			callback: () => this.activateView(),
 		});
 
@@ -42,11 +42,12 @@ export default class TimelineGraphPlugin extends Plugin {
 			await leaf.setViewState({ type: TIMELINE_VIEW_TYPE, active: true });
 		}
 
-		workspace.revealLeaf(leaf);
+		await workspace.revealLeaf(leaf);
 	}
 
 	async loadSettings(): Promise<void> {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		const data = (await this.loadData()) as Partial<TimelineGraphSettings> | null;
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, data ?? {});
 		// Back-fill fields introduced after views were first saved, so
 		// pre-existing configs (which predate the table source) keep working.
 		for (const view of this.settings.views) {

@@ -98,25 +98,25 @@ export function renderHorizontalTimeline(
 
 	const showEra = hasAnyBCDate(events.flatMap((e) => (e.endDate ? [e.date, e.endDate] : [e.date])));
 
-	const root = document.createElement("div");
+	const root = createDiv();
 	root.className = "timeline-graph-horizontal";
 
-	const toolbar = document.createElement("div");
+	const toolbar = createDiv();
 	toolbar.className = "timeline-graph-horizontal-toolbar";
 
-	const zoomOutBtn = document.createElement("button");
+	const zoomOutBtn = createEl("button");
 	zoomOutBtn.type = "button";
 	zoomOutBtn.className = "timeline-graph-zoom-btn";
 	zoomOutBtn.textContent = "−";
 	zoomOutBtn.title = "Zoom out";
 
-	const zoomInBtn = document.createElement("button");
+	const zoomInBtn = createEl("button");
 	zoomInBtn.type = "button";
 	zoomInBtn.className = "timeline-graph-zoom-btn";
 	zoomInBtn.textContent = "+";
 	zoomInBtn.title = "Zoom in";
 
-	const fitBtn = document.createElement("button");
+	const fitBtn = createEl("button");
 	fitBtn.type = "button";
 	fitBtn.className = "timeline-graph-fit-btn";
 	fitBtn.textContent = "Fit";
@@ -124,10 +124,10 @@ export function renderHorizontalTimeline(
 
 	toolbar.append(zoomOutBtn, zoomInBtn, fitBtn);
 
-	const scroller = document.createElement("div");
+	const scroller = createDiv();
 	scroller.className = "timeline-graph-horizontal-scroller";
 
-	const track = document.createElement("div");
+	const track = createDiv();
 	track.className = "timeline-graph-horizontal-track";
 	track.style.width = `${totalWidth}px`;
 
@@ -352,15 +352,15 @@ function computeTicks(
 }
 
 function renderAxis(ticks: Tick[], scale: Scale): HTMLElement {
-	const axis = document.createElement("div");
+	const axis = createDiv();
 	axis.className = "timeline-graph-axis";
 
 	for (const tick of ticks) {
-		const tickEl = document.createElement("div");
+		const tickEl = createDiv();
 		tickEl.className = "timeline-graph-axis-tick";
 		tickEl.style.left = `${xFor(tick.ordinal, scale)}%`;
 
-		const label = document.createElement("span");
+		const label = createSpan();
 		label.textContent = tick.label;
 		tickEl.appendChild(label);
 		axis.appendChild(tickEl);
@@ -373,11 +373,11 @@ function renderAxis(ticks: Tick[], scale: Scale): HTMLElement {
 // tick's period boundary falls, so year/decade/century transitions are
 // visible at a glance behind the event markers.
 function renderPeriodLines(ticks: Tick[], scale: Scale): HTMLElement {
-	const wrap = document.createElement("div");
+	const wrap = createDiv();
 	wrap.className = "timeline-graph-period-lines";
 
 	for (const tick of ticks) {
-		const line = document.createElement("div");
+		const line = createDiv();
 		line.className = "timeline-graph-period-line";
 		line.style.left = `${xFor(tick.ordinal, scale)}%`;
 		wrap.appendChild(line);
@@ -404,16 +404,16 @@ function renderLane(
 	precision: TimelineDatePrecision,
 	showEra: boolean
 ): HTMLElement {
-	const lane = document.createElement("div");
+	const lane = createDiv();
 	lane.className = `timeline-graph-lane ${laneIndex % 2 === 0 ? "is-even" : "is-odd"}`;
 
-	const label = document.createElement("div");
+	const label = createDiv();
 	label.className = "timeline-graph-lane-label";
 	label.textContent = group || "Ungrouped";
 	if (group) label.style.borderLeftColor = colorForGroup(group);
 	lane.appendChild(label);
 
-	const laneTrack = document.createElement("div");
+	const laneTrack = createDiv();
 	laneTrack.className = "timeline-graph-lane-track";
 
 	for (const event of laneEvents) {
@@ -425,11 +425,11 @@ function renderLane(
 }
 
 function renderTodayLine(now: number, scale: Scale): HTMLElement {
-	const line = document.createElement("div");
+	const line = createDiv();
 	line.className = "timeline-graph-today-line";
 	line.style.left = `${xFor(now, scale)}%`;
 
-	const label = document.createElement("span");
+	const label = createSpan();
 	label.textContent = "Today";
 	line.appendChild(label);
 
@@ -448,13 +448,13 @@ function renderMarker(
 		: "var(--interactive-accent, #7c3aed)";
 	const startX = xFor(toOrdinal(event.date), scale);
 
-	const el = document.createElement("button");
+	const el = createEl("button");
 	el.type = "button";
 	el.style.setProperty("--marker-color", color);
 	el.addEventListener("click", () => callbacks.onEventClick?.(event));
 	attachTooltip(el, event, precision, showEra);
 
-	const labelEl = document.createElement("span");
+	const labelEl = createSpan();
 	labelEl.className = "timeline-graph-marker-label";
 	labelEl.textContent = event.title;
 
@@ -468,12 +468,12 @@ function renderMarker(
 		return el;
 	}
 
-	const wrapper = document.createElement("div");
+	const wrapper = createDiv();
 	wrapper.className = "timeline-graph-marker-point-wrapper";
 	wrapper.style.left = `${startX}%`;
 	wrapper.style.setProperty("--marker-color", color);
 
-	const stem = document.createElement("div");
+	const stem = createDiv();
 	stem.className = "timeline-graph-marker-stem";
 	wrapper.appendChild(stem);
 
@@ -505,20 +505,20 @@ function attachTooltip(
 	let tooltip: HTMLElement | null = null;
 
 	el.addEventListener("mouseenter", () => {
-		tooltip = document.createElement("div");
+		tooltip = createDiv();
 		tooltip.className = "timeline-graph-tooltip";
 
-		const titleEl = document.createElement("strong");
+		const titleEl = createEl("strong");
 		titleEl.textContent = event.title;
 		tooltip.appendChild(titleEl);
 
-		const dateEl = document.createElement("div");
+		const dateEl = createDiv();
 		dateEl.className = "timeline-graph-tooltip-date";
 		dateEl.textContent = fullDateLabel;
 		tooltip.appendChild(dateEl);
 
 		if (event.description) {
-			const descEl = document.createElement("div");
+			const descEl = createDiv();
 			descEl.className = "timeline-graph-tooltip-desc";
 			descEl.textContent = event.description;
 			tooltip.appendChild(descEl);
@@ -549,7 +549,7 @@ function renderPeriodBands(
 	precision: TimelineDatePrecision,
 	showEra: boolean
 ): HTMLElement {
-	const wrap = document.createElement("div");
+	const wrap = createDiv();
 	wrap.className = "timeline-graph-period-bands";
 
 	for (const period of periods) {
@@ -557,7 +557,7 @@ function renderPeriodBands(
 		const endX = period.endDate ? xFor(toOrdinal(period.endDate), scale) : startX;
 		const width = Math.max(0, endX - startX);
 
-		const band = document.createElement("button");
+		const band = createEl("button");
 		band.type = "button";
 		band.className = "timeline-graph-period-band";
 		band.style.left = `${startX}%`;
@@ -567,7 +567,7 @@ function renderPeriodBands(
 		band.addEventListener("click", () => callbacks.onEventClick?.(period));
 		attachTooltip(band, period, precision, showEra);
 
-		const label = document.createElement("span");
+		const label = createSpan();
 		label.className = "timeline-graph-period-band-label";
 		label.textContent = period.title;
 		band.appendChild(label);
@@ -588,7 +588,7 @@ function renderFlagMarker(
 	precision: TimelineDatePrecision,
 	showEra: boolean
 ): HTMLElement {
-	const line = document.createElement("button");
+	const line = createEl("button");
 	line.type = "button";
 	line.className = "timeline-graph-flag-marker";
 	line.style.left = `${xFor(toOrdinal(marker.date), scale)}%`;
@@ -597,7 +597,7 @@ function renderFlagMarker(
 	line.addEventListener("click", () => callbacks.onEventClick?.(marker));
 	attachTooltip(line, marker, precision, showEra);
 
-	const label = document.createElement("span");
+	const label = createSpan();
 	label.textContent = marker.title;
 	line.appendChild(label);
 

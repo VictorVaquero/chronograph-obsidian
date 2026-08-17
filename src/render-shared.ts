@@ -7,9 +7,9 @@ export interface TimelineRenderCallbacks {
 
 export function renderEmptyState(container: HTMLElement, message: string): void {
 	container.replaceChildren();
-	const el = document.createElement("div");
+	const el = createDiv();
 	el.className = "timeline-graph-empty";
-	const p = document.createElement("p");
+	const p = createEl("p");
 	p.textContent = message;
 	el.appendChild(p);
 	container.appendChild(el);
@@ -17,9 +17,9 @@ export function renderEmptyState(container: HTMLElement, message: string): void 
 
 export function renderErrorState(container: HTMLElement, message: string): void {
 	container.replaceChildren();
-	const el = document.createElement("div");
+	const el = createDiv();
 	el.className = "timeline-graph-error";
-	const p = document.createElement("p");
+	const p = createEl("p");
 	p.textContent = `Timeline Graph error: ${message}`;
 	el.appendChild(p);
 	container.appendChild(el);

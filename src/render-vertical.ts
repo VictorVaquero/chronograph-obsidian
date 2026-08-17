@@ -26,10 +26,10 @@ export function renderVerticalTimeline(
 
 	const showEra = hasAnyBCDate(events.flatMap((e) => (e.endDate ? [e.date, e.endDate] : [e.date])));
 
-	const spine = document.createElement("div");
+	const spine = createDiv();
 	spine.className = `timeline-graph-spine timeline-graph-spine-${cardSide}`;
 
-	const line = document.createElement("div");
+	const line = createDiv();
 	line.className = `timeline-graph-spine-line timeline-graph-spine-line-${lineStyle}`;
 	spine.appendChild(line);
 
@@ -58,9 +58,9 @@ export function renderVerticalTimeline(
 }
 
 function renderPeriodDivider(label: string): HTMLElement {
-	const divider = document.createElement("div");
+	const divider = createDiv();
 	divider.className = "timeline-graph-period-divider";
-	const span = document.createElement("span");
+	const span = createSpan();
 	span.textContent = label;
 	divider.appendChild(span);
 	return divider;
@@ -73,31 +73,31 @@ function renderNode(
 	precision: TimelineDatePrecision,
 	showEra: boolean
 ): HTMLElement {
-	const node = document.createElement("div");
+	const node = createDiv();
 	node.className = `timeline-graph-node ${alignLeft ? "is-left" : "is-right"}`;
 
 	const color = event.group ? colorForGroup(event.group) : undefined;
 
-	const dot = document.createElement("div");
+	const dot = createDiv();
 	dot.className = "timeline-graph-node-dot";
 	if (color) dot.style.setProperty("--marker-color", color);
 	node.appendChild(dot);
 
-	const connector = document.createElement("div");
+	const connector = createDiv();
 	connector.className = "timeline-graph-connector";
 	if (color) connector.style.setProperty("--marker-color", color);
 	node.appendChild(connector);
 
-	const card = document.createElement("div");
+	const card = createDiv();
 	card.className = "timeline-graph-card";
 	if (color) card.style.setProperty("--marker-color", color);
 
-	const dateEl = document.createElement("span");
+	const dateEl = createSpan();
 	dateEl.className = "timeline-graph-card-date";
 	dateEl.textContent = formatTimelineDateRange(event.date, event.endDate, precision, showEra);
 	card.appendChild(dateEl);
 
-	const link = document.createElement("a");
+	const link = createEl("a");
 	link.className = "timeline-graph-card-title";
 	link.textContent = event.title;
 	link.href = "#";
@@ -108,14 +108,14 @@ function renderNode(
 	card.appendChild(link);
 
 	if (event.group) {
-		const badge = document.createElement("span");
+		const badge = createSpan();
 		badge.className = "timeline-graph-card-badge";
 		badge.textContent = event.group;
 		card.appendChild(badge);
 	}
 
 	if (event.description) {
-		const descEl = document.createElement("p");
+		const descEl = createEl("p");
 		descEl.className = "timeline-graph-card-desc";
 		descEl.textContent = event.description;
 		card.appendChild(descEl);
@@ -126,9 +126,9 @@ function renderNode(
 }
 
 function renderTodayMarker(): HTMLElement {
-	const marker = document.createElement("div");
+	const marker = createDiv();
 	marker.className = "timeline-graph-today";
-	const label = document.createElement("span");
+	const label = createSpan();
 	label.textContent = "Today";
 	marker.appendChild(label);
 	return marker;

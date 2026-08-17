@@ -10,7 +10,7 @@ Early scaffold. The plugin loads, detects Dataview, runs configured queries, and
 
 ## Requirements
 
-- Obsidian ≥ 1.5.0
+- Obsidian ≥ 1.13.0
 - [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin installed and enabled, only for views using the Dataview source (optional at install time — Timeline Graph will show a notice if it's missing on a Dataview-backed view). Views using the markdown table source don't need Dataview.
 
 ## Development
@@ -21,7 +21,13 @@ pnpm run dev    # watch mode, rebuilds main.js on change
 pnpm run build  # type-check + production build
 ```
 
-To test in a vault, symlink or copy `main.js`, `manifest.json`, and `styles.css` into `<vault>/.obsidian/plugins/timeline-graph/`.
+To test in a vault, set `OBSIDIAN_VAULT` to the vault's root directory and every build (`dev` or `build`) copies `main.js`, `manifest.json`, and `styles.css` into `<vault>/.obsidian/plugins/timeline-graph/` automatically:
+
+```bash
+OBSIDIAN_VAULT=/path/to/your/vault pnpm run dev
+```
+
+Reload Obsidian (`Ctrl+R`/`Cmd+R` in the developer console, or via the community [Hot-Reload](https://github.com/pjeby/hot-reload) plugin) to pick up changes without a manual copy step.
 
 ### Previewing the timeline UI without Obsidian
 

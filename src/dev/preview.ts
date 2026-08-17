@@ -1,3 +1,4 @@
+import "./obsidian-dom-polyfill";
 import { renderTimeline, renderEmptyState, renderErrorState } from "../timeline-renderer";
 import { mockEvents, ancientMockEvents, randomizedMockEvents } from "./mock-events";
 import { TimelineEvent, TimelineLayout, TimelineDatePrecision, TimelineCardSide, TimelineLineStyle } from "../types";
@@ -77,9 +78,9 @@ document.getElementById("btn-ancient")?.addEventListener("click", () => {
 });
 
 document.getElementById("btn-empty")?.addEventListener("click", () => {
-	renderEmptyState(container!, "No events matched this view's query and date field.");
+	renderEmptyState(container, "No events matched this view's query and date field.");
 });
 
 document.getElementById("btn-error")?.addEventListener("click", () => {
-	renderErrorState(container!, "Dataview is not installed or enabled.");
+	renderErrorState(container, "Dataview is not installed or enabled.");
 });

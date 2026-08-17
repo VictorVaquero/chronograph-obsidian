@@ -88,8 +88,9 @@ export class TimelineView extends ItemView {
 				events,
 				config.layout,
 				{
-					onEventClick: (event) =>
-						this.app.workspace.openLinkText(event.sourcePath, "", false),
+					onEventClick: (event) => {
+						void this.app.workspace.openLinkText(event.sourcePath, "", false);
+					},
 				},
 				{
 					precision: config.datePrecision,

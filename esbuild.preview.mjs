@@ -22,7 +22,7 @@ if (watch) {
 	await context.watch();
 	// Served from the project root (not src/dev) so preview.html can load
 	// the real styles.css via a root-relative path instead of "../../".
-	const serveResult = await context.serve({ servedir: "." }, {});
+	const serveResult = await context.serve({ servedir: ".", port: 8123 }, {});
 	console.log(
 		`Preview server: http://${serveResult.host}:${serveResult.port}/src/dev/preview.html`
 	);

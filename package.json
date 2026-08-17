@@ -8,8 +8,13 @@
 		"dev:preview": "node esbuild.preview.mjs watch",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
-		"lint": "eslint src --ext .ts",
-		"typecheck": "tsc -noEmit -skipLibCheck"
+		"lint": "eslint . --max-warnings 0",
+		"typecheck": "tsc -noEmit -skipLibCheck",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:e2e": "playwright test",
+		"review": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
+		"prepare": "simple-git-hooks"
 	},
 	"keywords": [
 		"obsidian",
@@ -20,16 +25,24 @@
 	"author": "Victor Vaquero",
 	"license": "MIT",
 	"devDependencies": {
+		"@eslint/js": "^9.39.5",
+		"@eslint/json": "0.14.0",
+		"@playwright/test": "^1.62.1",
 		"@types/node": "^20.14.2",
-		"@typescript-eslint/eslint-plugin": "^7.13.0",
-		"@typescript-eslint/parser": "^7.13.0",
-		"builtin-modules": "^3.3.0",
 		"esbuild": "^0.21.5",
-		"eslint": "^8.57.0",
+		"eslint": "^9.39.5",
+		"eslint-plugin-obsidianmd": "^0.4.1",
+		"jsdom": "^30.0.1",
 		"obsidian": "latest",
 		"playwright": "^1.62.1",
+		"simple-git-hooks": "^2.13.1",
 		"tslib": "2.6.2",
-		"typescript": "^5.4.5"
+		"typescript": "^5.4.5",
+		"typescript-eslint": "^8.67.0",
+		"vitest": "^4.1.10"
 	},
-	"packageManager": "pnpm@10.27.0"
+	"packageManager": "pnpm@10.27.0",
+	"simple-git-hooks": {
+		"pre-commit": "pnpm run review"
+	}
 }

@@ -32,7 +32,7 @@ function toTimelineDate(value: unknown): TimelineDate | undefined {
 		typeof value === "object" &&
 		value !== null &&
 		"toMillis" in value &&
-		typeof (value as { toMillis: unknown }).toMillis === "function"
+		typeof (value).toMillis === "function"
 	) {
 		return parseTimelineDate((value as { toMillis: () => number }).toMillis());
 	}
@@ -48,6 +48,10 @@ function fieldToString(value: unknown): string | undefined {
 		"toString" in value &&
 		typeof (value as { toString: unknown }).toString === "function"
 	) {
+		// Dataview values (Link, DateTime, ...) override toString with a
+		// meaningful representation; plain objects intentionally degrade to
+		// the default "[object Object]" rather than being dropped.
+		// eslint-disable-next-line @typescript-eslint/no-base-to-string -- Dataview values may override toString; plain objects intentionally degrade to the default representation.
 		return String(value);
 	}
 	return undefined;
