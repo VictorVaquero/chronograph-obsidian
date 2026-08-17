@@ -14,6 +14,7 @@ Define one or more "views," each pulling events from a [Dataview](https://blacks
 - **Native hover preview**: hovering an event's title shows Obsidian's built-in note preview popover.
 - **Three event sources**: a Dataview query across the vault, a single-note markdown table, or frontmatter scanned directly via Obsidian's own metadata cache (the latter two need no Dataview dependency) — plus an "Insert timeline event row" command that scaffolds or appends rows to a table source.
 - **Frontmatter source filtering**: optionally narrow the frontmatter source by tag and/or vault folder, so a single view can target e.g. all notes tagged `#event` under `Journal/`.
+- **In-note code-block timelines**: a self-contained ` ```chronograph ` fenced block with an inline markdown table renders a timeline directly in Reading/Live Preview — no view configured in Settings → Chronograph required.
 - **Date granularity**: from exact day up to millennium, for anything from a daily journal to ancient history.
 
 ## Requirements
@@ -42,6 +43,32 @@ Define one or more "views," each pulling events from a [Dataview](https://blacks
    | Points-to | Title of another event in the same view to draw a connecting arrow toward — horizontal layout only |
 
 4. Pick a layout, sort order, date granularity, and (for the table source) use **Insert timeline event row** from the command palette while editing that note to scaffold/append rows.
+
+### In-note code blocks
+
+For a one-off timeline without adding a view in settings, use a ` ```chronograph ` fenced code block with an inline markdown table:
+
+    ```chronograph
+    | date | title | group |
+    | --- | --- | --- |
+    | 2024-01-01 | Launch | Product |
+    | 2024-03-15 | v2 | Product |
+    ```
+
+Column headers default to `date`, `enddate`, `title`, `description`, `group`, `color`, `kind`, `pointsto` — matching the field names in the settings-tab table above, lowercased. To override layout, precision, sort order, or field names, add a settings header above a lone `---` line before the table:
+
+    ```chronograph
+    layout: horizontal
+    precision: year
+    sort: desc
+    datefield: when
+    ---
+    | when | title |
+    | --- | --- |
+    | 1969 | Moon landing |
+    ```
+
+Recognized settings keys: `layout` (`vertical`/`horizontal`), `precision` (`day`/`month`/`year`/`decade`/`century`/`millennium`), `sort` (`asc`/`desc`), `cardside` (`alternate`/`left`/`right`), `linestyle` (`solid`/`dashed`/`dotted`), and `<field>field` for each field in the mapping table above (e.g. `titlefield`, `groupfield`). Unrecognized keys/values are ignored.
 
 ## Development
 
@@ -93,6 +120,7 @@ src/
   settings-tab.ts          Settings UI for defining timeline views
   commands.ts              "Insert timeline event row" editor command
   timeline-view.ts         ItemView wiring Obsidian lifecycle (incl. hover preview) to the renderer
+  code-block-view.ts       `chronograph` fenced-code-block processor, renders inline in notes
   date/
     timeline-date.ts       Signed-year date model (BC/BCE support), parsing, formatting
   sources/
@@ -100,6 +128,7 @@ src/
     dataview-api.d.ts      Ambient types for the subset of Dataview's API used
     table-source.ts        Markdown table parsing -> TimelineEvent mapping (no Dataview dep)
     frontmatter-source.ts  Metadata-cache scan (tag/folder filters) -> TimelineEvent mapping (no Dataview dep)
+    code-block-source.ts   Code-block settings header + inline table -> config/TimelineEvent mapping
   render/
     timeline-renderer.ts   Dispatches to the vertical/horizontal renderer (no Obsidian dep)
     render-shared.ts       Shared render helpers: colors, hover preview, empty/error states

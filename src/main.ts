@@ -4,6 +4,7 @@ import { DEFAULT_SETTINGS } from "./settings";
 import { TimelineView } from "./timeline-view";
 import { TimelineGraphSettingTab } from "./settings-tab";
 import { registerCommands } from "./commands";
+import { registerCodeBlockProcessor } from "./code-block-view";
 
 export default class TimelineGraphPlugin extends Plugin {
 	settings!: TimelineGraphSettings;
@@ -32,6 +33,7 @@ export default class TimelineGraphPlugin extends Plugin {
 		});
 
 		registerCommands(this);
+		registerCodeBlockProcessor(this);
 
 		this.addSettingTab(new TimelineGraphSettingTab(this.app, this));
 	}
@@ -61,6 +63,8 @@ export default class TimelineGraphPlugin extends Plugin {
 		for (const view of this.settings.views) {
 			view.sourceType ??= "dataview";
 			view.tableNotePath ??= "";
+			view.frontmatterTag ??= "";
+			view.frontmatterFolder ??= "";
 		}
 	}
 

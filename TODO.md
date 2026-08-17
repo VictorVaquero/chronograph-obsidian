@@ -10,13 +10,12 @@ View) and against common companion plugins in the ecosystem.
 - [x] Connecting arrows between events via `pointsTo` (`4d80db2`)
 - [x] Frontmatter/tag-based event source, no Dataview dependency
       (`src/sources/frontmatter-source.ts`, tag + folder filters)
+- [x] In-note code-block rendering — a self-contained ` ```chronograph `
+      fenced block with an inline table and optional settings header
+      (`src/sources/code-block-source.ts`, `src/code-block-view.ts`)
 
 ## Feature gaps vs. competing timeline plugins
 
-- [ ] **In-note code-block rendering.** Render a timeline inline in
-      Reading/Live Preview from a fenced code block (e.g. ` ```chronograph `),
-      not only from a dedicated view configured in settings. Chronos
-      Timeline's main draw is exactly this zero-config, per-note usage.
 - [ ] **Click-to-create note from timeline.** Clicking an empty spot on the
       axis creates a new note with the date field pre-filled. Consider
       using a Templater template for the new note if Templater is

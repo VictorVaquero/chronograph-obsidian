@@ -2,6 +2,16 @@
 	padding: var(--size-4-4);
 }
 
+/* In-note code-block variant: bounded height (scrolls internally) and a
+   border so it reads as an embedded widget rather than blending into the
+   surrounding note text. */
+.timeline-graph-code-block {
+	max-height: 480px;
+	overflow-y: auto;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+}
+
 .timeline-graph-empty,
 .timeline-graph-error {
 	color: var(--text-muted);

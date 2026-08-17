@@ -142,6 +142,31 @@ function rowToEvent(
 }
 
 /**
+ * Parses the first markdown table found in `content` and maps its rows into
+ * TimelineEvents using the given field mapping. Column headers are matched
+ * case-insensitively against the configured field names, so a
+ * `fields.dateField` of "date" matches a "Date" or "date" column. `sourcePath`
+ * is used as each event's source note path (and id prefix) — the caller's
+ * own note for a file-backed table, or the embedding note for an inline
+ * code-block table. Returns null if `content` has no markdown table.
+ */
+export function parseTimelineEventsFromTableContent(
+	content: string,
+	sourcePath: string,
+	fields: TimelineFieldMapping
+): TimelineEvent[] | null {
+	const table = findMarkdownTable(content);
+	if (!table) return null;
+
+	const events: TimelineEvent[] = [];
+	table.rows.forEach((row, index) => {
+		const event = rowToEvent(sourcePath, index, table.headers, row, fields);
+		if (event) events.push(event);
+	});
+	return events;
+}
+
+/**
  * Reads the first markdown table found in `notePath`'s body and maps its
  * rows into TimelineEvents using the given field mapping. Column headers
  * are matched case-insensitively against the configured field names, so a
@@ -156,13 +181,7 @@ export async function queryTimelineEventsFromTable(
 	if (!(file instanceof TFile)) throw new TimelineTableNotFoundError(notePath);
 
 	const content = await app.vault.cachedRead(file);
-	const table = findMarkdownTable(content);
-	if (!table) throw new TimelineTableParseError(notePath);
-
-	const events: TimelineEvent[] = [];
-	table.rows.forEach((row, index) => {
-		const event = rowToEvent(notePath, index, table.headers, row, fields);
-		if (event) events.push(event);
-	});
+	const events = parseTimelineEventsFromTableContent(content, notePath, fields);
+	if (!events) throw new TimelineTableParseError(notePath);
 	return events;
 }
