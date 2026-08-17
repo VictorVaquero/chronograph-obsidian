@@ -141,16 +141,16 @@ describe("formatTimelineDate", () => {
 		expect(formatTimelineDate({ year: 2024 }, "day")).toBe("2024");
 	});
 
-	it("formats decade precision, floored to the decade start", () => {
-		expect(formatTimelineDate({ year: 1969 }, "decade")).toBe("1960");
+	it("shows the exact year at decade precision, not floored to the decade start", () => {
+		expect(formatTimelineDate({ year: 1983 }, "decade")).toBe("1983");
 	});
 
-	it("formats century precision as roman numerals", () => {
-		expect(formatTimelineDate({ year: 2024 }, "century")).toBe("XXI");
+	it("shows the exact year at century precision, not a roman-numeral century label", () => {
+		expect(formatTimelineDate({ year: 1983 }, "century")).toBe("1983");
 	});
 
-	it("formats millennium precision", () => {
-		expect(formatTimelineDate({ year: 2024 }, "millennium")).toBe("III millennium");
+	it("shows the exact year at millennium precision", () => {
+		expect(formatTimelineDate({ year: 1983 }, "millennium")).toBe("1983");
 	});
 });
 

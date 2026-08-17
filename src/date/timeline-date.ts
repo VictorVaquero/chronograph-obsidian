@@ -143,9 +143,6 @@ export function formatTimelineDate(
 	precision: TimelineDatePrecision,
 	showEra = false
 ): string {
-	const isBC = date.year <= 0;
-	const era = isBC ? "BC" : showEra ? "AD" : "";
-
 	switch (precision) {
 		case "day": {
 			if (date.month && date.day) {
@@ -159,26 +156,33 @@ export function formatTimelineDate(
 			}
 			return formatYear(date.year, showEra);
 		}
+		// Coarser precisions still bucket/tick by decade/century/millennium
+		// elsewhere (see bucketOf below), but an individual event's own date
+		// is always shown as its exact year — rounding it to "1980" or "XX"
+		// would make the card less useful than the precision it's under.
 		case "year":
+		case "decade":
+		case "century":
+		case "millennium":
 			return formatYear(date.year, showEra);
-		case "decade": {
-			const absYear = isBC ? 1 - date.year : date.year;
-			const decadeStart = Math.floor(absYear / 10) * 10;
-			return era ? `${decadeStart} ${era}` : `${decadeStart}`;
-		}
-		case "century": {
-			const absYear = isBC ? 1 - date.year : date.year;
-			const centuryNumber = Math.floor(absYear / 100) + 1;
-			const label = romanizeCentury(centuryNumber);
-			return era ? `${label} ${era}` : label;
-		}
-		case "millennium": {
-			const absYear = isBC ? 1 - date.year : date.year;
-			const millenniumNumber = Math.floor(absYear / 1000) + 1;
-			const label = `${romanizeCentury(millenniumNumber)} millennium`;
-			return era ? `${label} ${era}` : label;
-		}
 	}
+}
+
+/** Roman-numeral century/millennium bucket label, e.g. "XX" or "III millennium". */
+function centuryBucketLabel(date: TimelineDate, precision: "century" | "millennium", showEra: boolean): string {
+	const isBC = date.year <= 0;
+	const era = isBC ? "BC" : showEra ? "AD" : "";
+	const absYear = isBC ? 1 - date.year : date.year;
+
+	if (precision === "century") {
+		const centuryNumber = Math.floor(absYear / 100) + 1;
+		const label = romanizeCentury(centuryNumber);
+		return era ? `${label} ${era}` : label;
+	}
+
+	const millenniumNumber = Math.floor(absYear / 1000) + 1;
+	const label = `${romanizeCentury(millenniumNumber)} millennium`;
+	return era ? `${label} ${era}` : label;
 }
 
 export function formatTimelineDateRange(
@@ -236,14 +240,14 @@ export function bucketOf(
 			const centuryNumber = Math.floor(absYear / 100) + 1;
 			return {
 				key: `cen:${isBC ? "bc" : "ad"}:${centuryNumber}`,
-				label: formatTimelineDate(date, "century", showEra),
+				label: centuryBucketLabel(date, "century", showEra),
 			};
 		}
 		case "millennium": {
 			const millenniumNumber = Math.floor(absYear / 1000) + 1;
 			return {
 				key: `mil:${isBC ? "bc" : "ad"}:${millenniumNumber}`,
-				label: formatTimelineDate(date, "millennium", showEra),
+				label: centuryBucketLabel(date, "millennium", showEra),
 			};
 		}
 	}
