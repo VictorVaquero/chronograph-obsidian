@@ -25,11 +25,11 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			},
 			{
 				name: "",
-				desc: "Advanced settings are hidden by default so a new view only needs a name, source, and date field. Turn on the groups you need below.",
+				desc: "Every view already has sensible defaults for the settings below (no field mappings beyond date, vertical layout, oldest-first, day precision). These toggles don't turn features on or off — they just show the controls to override a default per view. Leave them off if the defaults work for you.",
 			},
 			{
 				name: "Extra field mappings",
-				desc: "Map additional fields: end date, title, group, color, kind, and points-to.",
+				desc: "Show controls to map additional fields beyond date: end date, title, group, color, kind, and points-to. Without this, views just use the note title and no grouping/color/kind — which is often all you need.",
 				render: (setting) => {
 					setting.addToggle((toggle) =>
 						toggle
@@ -44,7 +44,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			},
 			{
 				name: "Layout & style options",
-				desc: "Choose the layout (vertical/horizontal) and vertical-layout card side and spine line style.",
+				desc: "Show controls to change a view's layout (default: vertical list) and vertical-layout card side/spine line style. These are per-view settings — most vaults never need more than one layout.",
 				render: (setting) => {
 					setting.addToggle((toggle) =>
 						toggle
@@ -59,7 +59,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			},
 			{
 				name: "Sort & date granularity",
-				desc: "Change sort order and date display/bucketing granularity.",
+				desc: "Show controls to change a view's sort order (default: oldest first) and date granularity (default: day). Granularity in particular is usually set per view — coarser for a history timeline, exact for a daily journal.",
 				render: (setting) => {
 					setting.addToggle((toggle) =>
 						toggle
@@ -74,7 +74,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			},
 			{
 				name: "Multiple views",
-				desc: "Set which view opens by default. Only useful once you have more than one view.",
+				desc: "Show the control to set which view opens by default. Only useful once you have more than one view.",
 				render: (setting) => {
 					setting.addToggle((toggle) =>
 						toggle

@@ -4,7 +4,7 @@ A configurable timeline graph view for [Obsidian](https://obsidian.md).
 
 Define one or more "views," each pulling events from a [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) Query Language (DQL) source string across the vault, a markdown table in a single note, frontmatter scanned directly (no Dataview dependency), or [Obsidian Tasks](https://publish.obsidian.md/tasks/) checklist emoji-dates, and map fields to build an interactive timeline.
 
-Chronograph is simple by default: a new view only asks for a name, a source, and a date field. Everything else — extra field mappings, layout/style, sort order, date granularity, multiple views — is opt-in, off until you turn it on in Settings → Chronograph.
+Chronograph is simple by default: a new view only asks for a name, a source, and a date field. Everything else — extra field mappings, layout/style, sort order, date granularity, multiple views — already works with sensible defaults (no extra fields, vertical layout, oldest-first, day precision); the corresponding toggle in Settings → Chronograph just reveals the controls to override that default per view, so the settings tab stays uncluttered until you need to change something.
 
 ## Requirements
 
@@ -38,9 +38,9 @@ Column headers default to `date`, `title`, `group` (see [Extra field mappings](#
 
 ## More features
 
-Each group below is a toggle in Settings → Chronograph, off by default so the settings tab only shows what you've turned on.
+Each group below already works with the sensible default noted in its heading. The toggle in Settings → Chronograph for that group doesn't turn the feature on or off — it just reveals the controls to override the default per view, off by default so the settings tab only shows what you've chosen to customize.
 
-### Extra field mappings
+### Extra field mappings (default: none — just date and title)
 
 Map additional columns/frontmatter keys beyond the date field:
 
@@ -57,17 +57,17 @@ Map additional columns/frontmatter keys beyond the date field:
 - **Grouping & color**: events auto-color by group (deterministic hash), or set an explicit per-event color that overrides the group color.
 - **Connecting arrows**: point one event at another (by title) to draw an arrow between them on the horizontal axis.
 
-### Layout & style
+### Layout & style (default: vertical list)
 
 - **Two layouts, both zoomable**: a vertical chronological list with cards alternating (or fixed) on either side of a spine, or a horizontal axis with zoom/pan.
 - **Horizontal axis**: mouse-wheel/pinch zoom and drag-to-pan, grouped lanes (one row per distinct `group` value), full-height translucent period bands for eras/spans, flag markers for single significant dates, a "today" line, and BC/BCE-aware date formatting.
 - **Compressed sparse ranges**: long empty gaps (century+ spans) are compressed on the horizontal axis instead of wasting track width, with a small "⌇" break marker showing where compression happened.
 - **Vertical layout options**: which side of the spine cards sit on (alternating, left, or right), and the spine's line style (solid, dashed, dotted).
 
-### Sort & date granularity
+### Sort & date granularity (default: oldest first, day precision)
 
 - **Sort order**: oldest or newest first.
-- **Date granularity**: from exact day up to millennium, for anything from a daily journal to ancient history.
+- **Date granularity**: from exact day up to millennium, for anything from a daily journal to ancient history. This is usually a per-view choice rather than a vault-wide one — a "life events" view showing decades/centuries and a daily journal view showing exact days can coexist as two separate views, each with its own granularity.
 
 ### Multiple views
 
