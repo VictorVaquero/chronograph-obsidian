@@ -1,6 +1,6 @@
 import { renderTimeline, renderEmptyState, renderErrorState } from "../timeline-renderer";
 import { mockEvents, ancientMockEvents, randomizedMockEvents } from "./mock-events";
-import { TimelineEvent, TimelineLayout, TimelineDatePrecision } from "../types";
+import { TimelineEvent, TimelineLayout, TimelineDatePrecision, TimelineCardSide, TimelineLineStyle } from "../types";
 
 // Entry point for the standalone browser preview (see src/dev/preview.html).
 // Bundled and served without any Obsidian runtime, so the timeline renderer
@@ -17,10 +17,18 @@ function logClick(event: TimelineEvent): void {
 
 let layout: TimelineLayout = "vertical";
 let precision: TimelineDatePrecision = "day";
+let cardSide: TimelineCardSide = "alternate";
+let lineStyle: TimelineLineStyle = "solid";
 let currentEvents: TimelineEvent[] = mockEvents;
 
 function render(): void {
-	renderTimeline(container!, currentEvents, layout, { onEventClick: logClick }, precision);
+	renderTimeline(
+		container!,
+		currentEvents,
+		layout,
+		{ onEventClick: logClick },
+		{ precision, verticalCardSide: cardSide, verticalLineStyle: lineStyle }
+	);
 }
 
 const layoutSelect = document.getElementById("layout-select") as HTMLSelectElement | null;
@@ -32,6 +40,18 @@ layoutSelect?.addEventListener("change", () => {
 const precisionSelect = document.getElementById("precision-select") as HTMLSelectElement | null;
 precisionSelect?.addEventListener("change", () => {
 	precision = precisionSelect.value as TimelineDatePrecision;
+	render();
+});
+
+const cardSideSelect = document.getElementById("card-side-select") as HTMLSelectElement | null;
+cardSideSelect?.addEventListener("change", () => {
+	cardSide = cardSideSelect.value as TimelineCardSide;
+	render();
+});
+
+const lineStyleSelect = document.getElementById("line-style-select") as HTMLSelectElement | null;
+lineStyleSelect?.addEventListener("change", () => {
+	lineStyle = lineStyleSelect.value as TimelineLineStyle;
 	render();
 });
 

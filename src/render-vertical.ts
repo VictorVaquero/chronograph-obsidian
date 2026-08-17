@@ -1,4 +1,4 @@
-import { TimelineEvent, TimelineDatePrecision } from "./types";
+import { TimelineEvent, TimelineDatePrecision, TimelineCardSide, TimelineLineStyle } from "./types";
 import { TimelineRenderCallbacks, colorForGroup, renderEmptyState } from "./render-shared";
 import {
 	bucketOf,
@@ -12,7 +12,9 @@ export function renderVerticalTimeline(
 	container: HTMLElement,
 	events: TimelineEvent[],
 	callbacks: TimelineRenderCallbacks,
-	precision: TimelineDatePrecision = "day"
+	precision: TimelineDatePrecision = "day",
+	cardSide: TimelineCardSide = "alternate",
+	lineStyle: TimelineLineStyle = "solid"
 ): void {
 	if (events.length === 0) {
 		renderEmptyState(
@@ -25,10 +27,10 @@ export function renderVerticalTimeline(
 	const showEra = hasAnyBCDate(events.flatMap((e) => (e.endDate ? [e.date, e.endDate] : [e.date])));
 
 	const spine = document.createElement("div");
-	spine.className = "timeline-graph-spine";
+	spine.className = `timeline-graph-spine timeline-graph-spine-${cardSide}`;
 
 	const line = document.createElement("div");
-	line.className = "timeline-graph-spine-line";
+	line.className = `timeline-graph-spine-line timeline-graph-spine-line-${lineStyle}`;
 	spine.appendChild(line);
 
 	const todayIndex = findTodayInsertionIndex(events);
@@ -45,7 +47,8 @@ export function renderVerticalTimeline(
 		}
 		previousBucketKey = bucket.key;
 
-		spine.appendChild(renderNode(event, index % 2 === 0, callbacks, precision, showEra));
+		const alignLeft = cardSide === "alternate" ? index % 2 === 0 : cardSide === "left";
+		spine.appendChild(renderNode(event, alignLeft, callbacks, precision, showEra));
 	});
 	if (todayIndex === events.length) {
 		spine.appendChild(renderTodayMarker());

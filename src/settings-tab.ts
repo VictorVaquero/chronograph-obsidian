@@ -132,6 +132,36 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(section)
+			.setName("Vertical card side")
+			.setDesc("Vertical layout only: which side of the spine cards are placed on.")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("alternate", "Alternate sides")
+					.addOption("left", "Left only")
+					.addOption("right", "Right only")
+					.setValue(view.verticalCardSide)
+					.onChange(async (value) => {
+						view.verticalCardSide = value as TimelineViewConfig["verticalCardSide"];
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(section)
+			.setName("Vertical spine line style")
+			.setDesc("Vertical layout only: visual style of the central spine line.")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("solid", "Solid")
+					.addOption("dashed", "Dashed")
+					.addOption("dotted", "Dotted")
+					.setValue(view.verticalLineStyle)
+					.onChange(async (value) => {
+						view.verticalLineStyle = value as TimelineViewConfig["verticalLineStyle"];
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(section)
 			.setName("Date granularity")
 			.setDesc("How dates are displayed and how the horizontal axis is ticked. Use coarser settings for ancient history.")
 			.addDropdown((dropdown) =>

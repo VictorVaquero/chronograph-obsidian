@@ -90,7 +90,11 @@ export class TimelineView extends ItemView {
 					onEventClick: (event) =>
 						this.app.workspace.openLinkText(event.sourcePath, "", false),
 				},
-				this.activeConfig.datePrecision
+				{
+					precision: this.activeConfig.datePrecision,
+					verticalCardSide: this.activeConfig.verticalCardSide,
+					verticalLineStyle: this.activeConfig.verticalLineStyle,
+				}
 			);
 		} catch (err) {
 			renderErrorState(

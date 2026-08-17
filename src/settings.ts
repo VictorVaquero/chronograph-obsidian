@@ -11,6 +11,8 @@ export function createDefaultView(): TimelineViewConfig {
 		sortOrder: "asc",
 		layout: "vertical",
 		datePrecision: "day",
+		verticalCardSide: "alternate",
+		verticalLineStyle: "solid",
 	};
 }
 

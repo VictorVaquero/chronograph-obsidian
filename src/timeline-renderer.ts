@@ -1,4 +1,4 @@
-import { TimelineEvent, TimelineLayout, TimelineDatePrecision } from "./types";
+import { TimelineEvent, TimelineLayout, TimelineDatePrecision, TimelineCardSide, TimelineLineStyle } from "./types";
 import { TimelineRenderCallbacks } from "./render-shared";
 import { renderVerticalTimeline } from "./render-vertical";
 import { renderHorizontalTimeline } from "./render-horizontal";
@@ -11,18 +11,35 @@ import { renderHorizontalTimeline } from "./render-horizontal";
 export type { TimelineRenderCallbacks } from "./render-shared";
 export { renderEmptyState, renderErrorState } from "./render-shared";
 
+export interface TimelineRenderOptions {
+	precision?: TimelineDatePrecision;
+	/** Vertical layout only. */
+	verticalCardSide?: TimelineCardSide;
+	/** Vertical layout only. */
+	verticalLineStyle?: TimelineLineStyle;
+}
+
 export function renderTimeline(
 	container: HTMLElement,
 	events: TimelineEvent[],
 	layout: TimelineLayout,
 	callbacks: TimelineRenderCallbacks = {},
-	precision: TimelineDatePrecision = "day"
+	options: TimelineRenderOptions = {}
 ): void {
 	container.replaceChildren();
+
+	const precision = options.precision ?? "day";
 
 	if (layout === "horizontal") {
 		renderHorizontalTimeline(container, events, callbacks, precision);
 	} else {
-		renderVerticalTimeline(container, events, callbacks, precision);
+		renderVerticalTimeline(
+			container,
+			events,
+			callbacks,
+			precision,
+			options.verticalCardSide ?? "alternate",
+			options.verticalLineStyle ?? "solid"
+		);
 	}
 }

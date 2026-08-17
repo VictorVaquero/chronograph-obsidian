@@ -17,6 +17,12 @@ export type TimelineSortOrder = "asc" | "desc";
 
 export type TimelineLayout = "vertical" | "horizontal";
 
+/** Which side of the spine vertical-layout cards are placed on. */
+export type TimelineCardSide = "alternate" | "left" | "right";
+
+/** Visual style of the vertical layout's central spine line. */
+export type TimelineLineStyle = "solid" | "dashed" | "dotted";
+
 export type { TimelineDatePrecision } from "./timeline-date";
 
 export interface TimelineFieldMapping {
@@ -42,6 +48,10 @@ export interface TimelineViewConfig {
 	layout: TimelineLayout;
 	/** Display/bucketing granularity, e.g. "day" for exact dates, "century" for ancient history. */
 	datePrecision: TimelineDatePrecision;
+	/** Vertical layout only: which side of the spine cards are placed on. */
+	verticalCardSide: TimelineCardSide;
+	/** Vertical layout only: visual style of the central spine line. */
+	verticalLineStyle: TimelineLineStyle;
 }
 
 export interface TimelineGraphSettings {

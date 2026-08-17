@@ -27,14 +27,28 @@
 	bottom: 0;
 	left: 50%;
 	width: 2px;
-	background: linear-gradient(
-		to bottom,
-		transparent,
-		var(--background-modifier-border) 4%,
-		var(--background-modifier-border) 96%,
-		transparent
-	);
 	transform: translateX(-50%);
+	-webkit-mask-image: linear-gradient(to bottom, transparent, black 4%, black 96%, transparent);
+	mask-image: linear-gradient(to bottom, transparent, black 4%, black 96%, transparent);
+}
+
+.timeline-graph-spine-line-solid {
+	background: var(--background-modifier-border);
+}
+
+.timeline-graph-spine-line-dashed,
+.timeline-graph-spine-line-dotted {
+	width: 0;
+	border-left-width: 2px;
+	border-left-color: var(--background-modifier-border);
+}
+
+.timeline-graph-spine-line-dashed {
+	border-left-style: dashed;
+}
+
+.timeline-graph-spine-line-dotted {
+	border-left-style: dotted;
 }
 
 .timeline-graph-node {
