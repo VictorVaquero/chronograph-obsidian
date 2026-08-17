@@ -26,7 +26,7 @@ test("error state button replaces the timeline with a prefixed error message", a
 	await page.click("#btn-error");
 	const error = page.locator(".timeline-graph-error");
 	await expect(error).toBeVisible();
-	await expect(error).toContainText("Timeline Graph error:");
+	await expect(error).toContainText("Chronograph error:");
 });
 
 test("clicking a vertical card title logs the clicked event", async ({ page }) => {

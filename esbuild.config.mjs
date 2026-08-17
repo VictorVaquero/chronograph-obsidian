@@ -22,7 +22,7 @@ const copyToVaultPlugin = {
 	setup(build) {
 		build.onEnd((result) => {
 			if (!vaultPath || result.errors.length > 0) return;
-			const pluginDir = path.join(vaultPath, ".obsidian", "plugins", "timeline-graph");
+			const pluginDir = path.join(vaultPath, ".obsidian", "plugins", "chronograph");
 			void (async () => {
 				await mkdir(pluginDir, { recursive: true });
 				await Promise.all(

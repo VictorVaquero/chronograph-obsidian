@@ -1,7 +1,7 @@
 {
-	"name": "timeline-graph",
+	"name": "chronograph",
 	"version": "0.1.0",
-	"description": "A configurable timeline graph view for Obsidian, powered by Dataview queries.",
+	"description": "A configurable timeline graph view for Obsidian, using Dataview or a markdown table as its event source.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

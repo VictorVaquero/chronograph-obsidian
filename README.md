@@ -1,4 +1,4 @@
-# Timeline Graph
+# Chronograph
 
 A configurable timeline graph view for [Obsidian](https://obsidian.md).
 
@@ -11,7 +11,7 @@ Early scaffold. The plugin loads, detects Dataview, runs configured queries, and
 ## Requirements
 
 - Obsidian ≥ 1.13.0
-- [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin installed and enabled, only for views using the Dataview source (optional at install time — Timeline Graph will show a notice if it's missing on a Dataview-backed view). Views using the markdown table source don't need Dataview.
+- [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin installed and enabled, only for views using the Dataview source (optional at install time — Chronograph will show a notice if it's missing on a Dataview-backed view). Views using the markdown table source don't need Dataview.
 
 ## Development
 
@@ -21,7 +21,7 @@ pnpm run dev    # watch mode, rebuilds main.js on change
 pnpm run build  # type-check + production build
 ```
 
-To test in a vault, set `OBSIDIAN_VAULT` to the vault's root directory and every build (`dev` or `build`) copies `main.js`, `manifest.json`, and `styles.css` into `<vault>/.obsidian/plugins/timeline-graph/` automatically:
+To test in a vault, set `OBSIDIAN_VAULT` to the vault's root directory and every build (`dev` or `build`) copies `main.js`, `manifest.json`, and `styles.css` into `<vault>/.obsidian/plugins/chronograph/` automatically:
 
 ```bash
 OBSIDIAN_VAULT=/path/to/your/vault pnpm run dev

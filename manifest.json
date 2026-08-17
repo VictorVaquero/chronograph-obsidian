@@ -1,11 +1,11 @@
 {
-	"id": "timeline-graph",
-	"name": "Timeline Graph",
+	"id": "chronograph",
+	"name": "Chronograph",
 	"version": "0.1.0",
 	"minAppVersion": "1.13.0",
 	"description": "A configurable timeline graph view for Obsidian, using Dataview or a markdown table as its event source.",
 	"author": "Victor Vaquero",
-	"authorUrl": "",
+	"authorUrl": "https://github.com/VictorVaquero",
 	"fundingUrl": "",
 	"isDesktopOnly": false
 }

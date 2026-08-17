@@ -6,7 +6,7 @@ import { TimelineDate, parseTimelineDate } from "./timeline-date";
 export class DataviewUnavailableError extends Error {
 	constructor() {
 		super(
-			"Dataview is not installed or enabled. Timeline Graph uses Dataview as its query backend."
+			"Dataview is not installed or enabled. Chronograph uses Dataview as its query backend."
 		);
 		this.name = "DataviewUnavailableError";
 	}

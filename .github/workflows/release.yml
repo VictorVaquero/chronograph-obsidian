@@ -31,9 +31,9 @@ jobs:
 
       - name: Package release
         run: |
-          mkdir timeline-graph
-          cp main.js manifest.json styles.css timeline-graph/
-          zip -r timeline-graph.zip timeline-graph
+          mkdir chronograph
+          cp main.js manifest.json styles.css chronograph/
+          zip -r chronograph.zip chronograph
 
       - name: Create release
         env:
@@ -43,4 +43,4 @@ jobs:
           gh release create "$tag" \
             --title "$tag" \
             --generate-notes \
-            main.js manifest.json styles.css timeline-graph.zip
+            main.js manifest.json styles.css chronograph.zip

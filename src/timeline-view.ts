@@ -44,7 +44,7 @@ export class TimelineView extends ItemView {
 		} else {
 			renderEmptyState(
 				this.contentEl,
-				"No timeline view configured yet. Add one in Settings → Timeline Graph."
+				"No timeline view configured yet. Add one in Settings → Chronograph."
 			);
 		}
 	}
@@ -62,7 +62,7 @@ export class TimelineView extends ItemView {
 		if (!this.activeConfig) {
 			renderEmptyState(
 				this.contentEl,
-				"No timeline view configured yet. Add one in Settings → Timeline Graph."
+				"No timeline view configured yet. Add one in Settings → Chronograph."
 			);
 			return;
 		}

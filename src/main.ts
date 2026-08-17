@@ -15,7 +15,7 @@ export default class TimelineGraphPlugin extends Plugin {
 			(leaf: WorkspaceLeaf) => new TimelineView(leaf, this)
 		);
 
-		this.addRibbonIcon("calendar-clock", "Open Timeline Graph", () => {
+		this.addRibbonIcon("calendar-clock", "Open Chronograph", () => {
 			void this.activateView();
 		});
 

@@ -28,7 +28,7 @@ export default defineConfig([
 			"@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
 			"@typescript-eslint/no-explicit-any": "warn",
 			"@typescript-eslint/explicit-module-boundary-types": "off",
-			"obsidianmd/ui/sentence-case": ["warn", { brands: ["Dataview", "Timeline Graph"], acronyms: ["DQL"] }],
+			"obsidianmd/ui/sentence-case": ["warn", { brands: ["Dataview", "Chronograph"], acronyms: ["DQL"] }],
 		},
 	},
 	// Standalone dev/preview tooling (see src/dev/), not bundled into the

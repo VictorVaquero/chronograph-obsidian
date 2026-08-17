@@ -61,6 +61,6 @@ describe("renderErrorState", () => {
 		const container = createDiv();
 		renderErrorState(container, "Dataview is not installed");
 		expect(container.querySelector(".timeline-graph-error")).not.toBeNull();
-		expect(container.textContent).toBe("Timeline Graph error: Dataview is not installed");
+		expect(container.textContent).toBe("Chronograph error: Dataview is not installed");
 	});
 });

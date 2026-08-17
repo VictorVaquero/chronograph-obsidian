@@ -20,7 +20,7 @@ export function renderErrorState(container: HTMLElement, message: string): void 
 	const el = createDiv();
 	el.className = "timeline-graph-error";
 	const p = createEl("p");
-	p.textContent = `Timeline Graph error: ${message}`;
+	p.textContent = `Chronograph error: ${message}`;
 	el.appendChild(p);
 	container.appendChild(el);
 }
