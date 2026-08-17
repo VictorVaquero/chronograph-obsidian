@@ -4,6 +4,7 @@ import { mockEvents, ancientMockEvents, randomizedMockEvents } from "./mock-even
 import { parseMockTable, MockTableParseError } from "./mock-table-parser";
 import { MOCK_QUERIES, DEFAULT_MOCK_QUERY, resolveMockQuery } from "./mock-dataview";
 import { queryMockFrontmatter, MOCK_VAULT } from "./mock-frontmatter";
+import { createDefaultView } from "../settings";
 import {
 	TimelineEvent,
 	TimelineLayout,
@@ -46,27 +47,31 @@ const advanced: TimelineAdvancedFeatures = {
 	multiView: false,
 };
 
+// Reuses the real createDefaultView() so the harness's starting field
+// mapping (dateField: "date", endDateField: "enddate", etc.) always matches
+// what a freshly added view actually defaults to.
+const defaults = createDefaultView();
 const view = {
 	sourceType: "table" as TimelineSourceType,
 	dataviewQuery: DEFAULT_MOCK_QUERY,
 	frontmatterTag: "event",
 	frontmatterFolder: "",
-	fields: { dateField: "date", titleField: "title", groupField: "group" } as TimelineFieldMapping,
-	sortOrder: "asc" as "asc" | "desc",
-	layout: "vertical" as TimelineLayout,
-	datePrecision: "day" as TimelineDatePrecision,
-	verticalCardSide: "alternate" as TimelineCardSide,
-	verticalLineStyle: "solid" as TimelineLineStyle,
+	fields: defaults.fields,
+	sortOrder: defaults.sortOrder,
+	layout: defaults.layout,
+	datePrecision: defaults.datePrecision,
+	verticalCardSide: defaults.verticalCardSide,
+	verticalLineStyle: defaults.verticalLineStyle,
 };
 
 const DEFAULT_TABLE_NOTE = `# Timeline events
 
-| date | title | group |
-| --- | --- | --- |
-| 2026-01-05 | Kickoff meeting | Meetings |
-| 2026-01-08 | Literature review | Research |
-| 2026-01-20 | Draft outline | Writing |
-| 2026-02-10 | Public launch | Meetings |
+| date | title | group | enddate | kind |
+| --- | --- | --- | --- | --- |
+| 2026-01-05 | Kickoff meeting | Meetings | | |
+| 2026-01-08 | Literature review | Research | 2026-01-15 | |
+| 2026-01-20 | Draft outline | Writing | | |
+| 2026-02-10 | Public launch | Meetings | | marker |
 `;
 
 let manualEvents: TimelineEvent[] | null = null; // set by the sample/random/ancient buttons; cleared once a source tab is edited
@@ -301,7 +306,7 @@ function renderSettings(): void {
 
 	settingsBody.appendChild(
 		note(
-			"Every view already has sensible defaults for the settings below (no field mappings beyond date, vertical layout, oldest-first, day precision). These toggles don't turn features on or off — they just show the controls to override a default per view. Leave them off if the defaults work for you."
+			'Every view already has sensible defaults for the settings below (a "date"/"title"/"group"/"enddate"/... field mapping, vertical layout, oldest-first, day precision). These toggles don\'t turn features on or off — they just show the controls to change a default per view. Leave them off if the defaults work for you.'
 		)
 	);
 
@@ -309,7 +314,7 @@ function renderSettings(): void {
 	settingsBody.appendChild(
 		settingItem(
 			"Extra field mappings",
-			"Show controls to map additional fields beyond date: end date, title, group, color, kind, and points-to. Without this, views just use the note title and no grouping/color/kind — which is often all you need.",
+			'Show controls to rename the fields used for end date, title, group, color, kind, and points-to (defaults: "enddate", "title", "group", "color", "kind", "pointsto"). Only needed if your notes use different field names.',
 			toggleControl(advanced.extraFields, (v) => {
 				advanced.extraFields = v;
 				renderSettings();

@@ -136,4 +136,18 @@ describe("renderVerticalTimeline", () => {
 		zoomOutBtn.click();
 		expect(spine.style.transform).toBe("scale(1)");
 	});
+
+	it("renders the export button only when onExportSnapshot is provided, and invokes it on click", () => {
+		const container = document.createElement("div");
+		renderVerticalTimeline(container, [makeEvent()], {});
+		expect(container.querySelector(".timeline-graph-export-btn")).toBeNull();
+
+		const withCallback = document.createElement("div");
+		const onExportSnapshot = vi.fn();
+		renderVerticalTimeline(withCallback, [makeEvent()], { onExportSnapshot });
+		const exportBtn = withCallback.querySelector<HTMLButtonElement>(".timeline-graph-export-btn");
+		expect(exportBtn).not.toBeNull();
+		exportBtn?.click();
+		expect(onExportSnapshot).toHaveBeenCalledOnce();
+	});
 });

@@ -36,6 +36,26 @@ describe("renderHorizontalTimeline", () => {
 		expect(container.querySelector(".timeline-graph-fit-btn")).not.toBeNull();
 	});
 
+	it("renders the new-event and export buttons only when their callbacks are provided", () => {
+		const container = document.createElement("div");
+		renderHorizontalTimeline(container, [makeEvent()], {});
+		expect(container.querySelector(".timeline-graph-new-event-btn")).toBeNull();
+		expect(container.querySelector(".timeline-graph-export-btn")).toBeNull();
+
+		const withCallbacks = document.createElement("div");
+		renderHorizontalTimeline(withCallbacks, [makeEvent()], { onCreateEvent: vi.fn(), onExportSnapshot: vi.fn() });
+		expect(withCallbacks.querySelector(".timeline-graph-new-event-btn")).not.toBeNull();
+		expect(withCallbacks.querySelector(".timeline-graph-export-btn")).not.toBeNull();
+	});
+
+	it("invokes onExportSnapshot when the export button is clicked", () => {
+		const container = document.createElement("div");
+		const onExportSnapshot = vi.fn();
+		renderHorizontalTimeline(container, [makeEvent()], { onExportSnapshot });
+		container.querySelector<HTMLButtonElement>(".timeline-graph-export-btn")?.click();
+		expect(onExportSnapshot).toHaveBeenCalledOnce();
+	});
+
 	it("renders one lane per distinct group among plain 'event' kind events", () => {
 		const container = document.createElement("div");
 		const events = [

@@ -25,11 +25,11 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			},
 			{
 				name: "",
-				desc: "Every view already has sensible defaults for the settings below (no field mappings beyond date, vertical layout, oldest-first, day precision). These toggles don't turn features on or off — they just show the controls to override a default per view. Leave them off if the defaults work for you.",
+				desc: 'Every view already has sensible defaults for the settings below (a "date"/"title"/"group"/"enddate"/... field mapping, vertical layout, oldest-first, day precision). These toggles don\'t turn features on or off — they just show the controls to change a default per view. Leave them off if the defaults work for you.',
 			},
 			{
 				name: "Extra field mappings",
-				desc: "Show controls to map additional fields beyond date: end date, title, group, color, kind, and points-to. Without this, views just use the note title and no grouping/color/kind — which is often all you need.",
+				desc: 'Show controls to rename the fields used for end date, title, group, color, kind, and points-to (defaults: "enddate", "title", "group", "color", "kind", "pointsto"). Only needed if your notes use different field names.',
 				render: (setting) => {
 					setting.addToggle((toggle) =>
 						toggle
@@ -241,7 +241,8 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 				},
 			},
 			{
-				name: "End date field (optional)",
+				name: 'End date field (default: "enddate")',
+				desc: "Renders the event as a span instead of a point. Clear the box to stop mapping an end date.",
 				visible: () => this.plugin.settings.advanced.extraFields,
 				render: (setting) => {
 					setting.addText((text) =>
@@ -253,7 +254,8 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 				},
 			},
 			{
-				name: "Title field (optional)",
+				name: 'Title field (default: "title")',
+				desc: "Falls back to the note's file name if the field is missing or cleared.",
 				visible: () => this.plugin.settings.advanced.extraFields,
 				render: (setting) => {
 					setting.addText((text) =>
@@ -265,7 +267,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 				},
 			},
 			{
-				name: "Group field (optional)",
+				name: 'Group field (default: "group")',
 				visible: () => this.plugin.settings.advanced.extraFields,
 				render: (setting) => {
 					setting.addText((text) =>
@@ -277,7 +279,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 				},
 			},
 			{
-				name: "Color field (optional)",
+				name: 'Color field (default: "color")',
 				desc: "Field holding an explicit CSS color (e.g. \"orange\" or \"#ff8800\") for the event. Overrides the color derived from the group.",
 				visible: () => this.plugin.settings.advanced.extraFields,
 				render: (setting) => {
@@ -290,7 +292,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 				},
 			},
 			{
-				name: "Kind field (optional)",
+				name: 'Kind field (default: "kind")',
 				desc: 'Horizontal layout only: field whose value ("event", "period", or "marker") selects how the item renders. Unset/unrecognized values default to "event".',
 				visible: () => this.plugin.settings.advanced.extraFields,
 				render: (setting) => {
@@ -303,7 +305,7 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 				},
 			},
 			{
-				name: "Points-to field (optional)",
+				name: 'Points-to field (default: "pointsto")',
 				desc: "Horizontal layout only: field holding the title of another event in this view to draw a connecting arrow toward.",
 				visible: () => this.plugin.settings.advanced.extraFields,
 				render: (setting) => {

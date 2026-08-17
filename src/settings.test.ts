@@ -7,7 +7,16 @@ describe("createDefaultView", () => {
 		expect(view.name).toBe("All notes");
 		expect(view.sourceType).toBe("dataview");
 		expect(view.dataviewQuery).toBe('FROM ""');
-		expect(view.fields).toEqual({ dateField: "date" });
+		expect(view.fields).toEqual({
+			dateField: "date",
+			endDateField: "enddate",
+			titleField: "title",
+			descriptionField: "description",
+			groupField: "group",
+			colorField: "color",
+			kindField: "kind",
+			pointsToField: "pointsto",
+		});
 		expect(view.sortOrder).toBe("asc");
 		expect(view.layout).toBe("vertical");
 	});

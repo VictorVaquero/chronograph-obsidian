@@ -32,6 +32,16 @@ export class Setting {
 
 export class WorkspaceLeaf {}
 
+// Minimal stand-in for Obsidian's normalizePath: collapses duplicate/
+// trailing slashes and strips a leading slash, same as the real runtime.
+export function normalizePath(path: string): string {
+	return path
+		.replace(/\\/g, "/")
+		.replace(/\/+/g, "/")
+		.replace(/^\//, "")
+		.replace(/\/$/, "");
+}
+
 // Minimal stand-in for Obsidian's getAllTags: combines inline cache.tags
 // with frontmatter tags/tag fields (string, comma-separated string, or
 // array), normalizing each to a leading "#".

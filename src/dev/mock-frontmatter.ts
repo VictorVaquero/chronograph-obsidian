@@ -11,6 +11,9 @@ interface MockNote {
 	frontmatter: Record<string, unknown>;
 }
 
+// Frontmatter keys here match createDefaultView()'s default field mapping
+// (date, enddate, title, group, kind, ...) so this mock vault matches out of
+// the box, the same way a real vault following that convention would.
 export const MOCK_VAULT: MockNote[] = [
 	{
 		path: "Journal/2026-01-05.md",
@@ -20,7 +23,7 @@ export const MOCK_VAULT: MockNote[] = [
 	{
 		path: "Journal/2026-01-08.md",
 		tags: ["#event", "#journal"],
-		frontmatter: { date: "2026-01-08", endDate: "2026-01-15", title: "Literature review", group: "Research" },
+		frontmatter: { date: "2026-01-08", enddate: "2026-01-15", title: "Literature review", group: "Research" },
 	},
 	{
 		path: "Journal/2026-01-20.md",
@@ -35,7 +38,7 @@ export const MOCK_VAULT: MockNote[] = [
 	{
 		path: "Projects/Sprint1.md",
 		tags: ["#project"],
-		frontmatter: { date: "2026-01-05", endDate: "2026-01-19", title: "Sprint 1", kind: "period" },
+		frontmatter: { date: "2026-01-05", enddate: "2026-01-19", title: "Sprint 1", kind: "period" },
 	},
 ];
 

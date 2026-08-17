@@ -11,6 +11,12 @@ export interface TimelineRenderCallbacks {
 	 * timelines with no view config to create events against.
 	 */
 	onCreateEvent?: () => void;
+	/**
+	 * Called when the user clicks the "Export snapshot" toolbar button.
+	 * Omit to hide the button, e.g. for read-only/code-block timelines with
+	 * no view config to name the exported file after.
+	 */
+	onExportSnapshot?: () => void;
 }
 
 export function attachHoverPreview(

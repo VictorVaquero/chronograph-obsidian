@@ -11,6 +11,7 @@ import { queryTimelineEventsFromTasks } from "./sources/tasks-source";
 import { renderEmptyState, renderErrorState, renderTimeline } from "./render/timeline-renderer";
 import { compareTimelineDates } from "./date/timeline-date";
 import { TimelineCreateEventModal } from "./create-event-modal";
+import { exportSnapshot } from "./export-snapshot";
 import type TimelineGraphPlugin from "./main";
 
 export class TimelineView extends ItemView implements HoverParent {
@@ -124,6 +125,9 @@ export class TimelineView extends ItemView implements HoverParent {
 							: () => {
 									new TimelineCreateEventModal(this.app, config, () => void this.refresh()).open();
 								},
+					onExportSnapshot: () => {
+						void exportSnapshot(this.app, config, events);
+					},
 				},
 				{
 					precision: config.datePrecision,

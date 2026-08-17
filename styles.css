@@ -230,7 +230,8 @@
 
 .timeline-graph-zoom-btn,
 .timeline-graph-fit-btn,
-.timeline-graph-new-event-btn {
+.timeline-graph-new-event-btn,
+.timeline-graph-export-btn {
 	cursor: pointer;
 	border: 1px solid var(--background-modifier-border);
 	background: var(--background-primary);
@@ -242,11 +243,20 @@
 
 .timeline-graph-zoom-btn:hover,
 .timeline-graph-fit-btn:hover,
-.timeline-graph-new-event-btn:hover {
+.timeline-graph-new-event-btn:hover,
+.timeline-graph-export-btn:hover {
 	background: var(--background-secondary);
 }
 
 .timeline-graph-new-event-btn {
+	margin-left: auto;
+}
+
+.timeline-graph-new-event-btn + .timeline-graph-export-btn {
+	margin-left: 0;
+}
+
+.timeline-graph-export-btn {
 	margin-left: auto;
 }
 
