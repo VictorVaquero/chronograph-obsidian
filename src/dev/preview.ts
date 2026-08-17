@@ -15,6 +15,10 @@ function logClick(event: TimelineEvent): void {
 	if (!log) return;
 	log.textContent = `Clicked: ${event.title} (${event.sourcePath})`;
 }
+function logHover(event: TimelineEvent): void {
+	if (!log) return;
+	log.textContent = `Hovered: ${event.title} (${event.sourcePath})`;
+}
 
 let layout: TimelineLayout = "vertical";
 let precision: TimelineDatePrecision = "day";
@@ -27,7 +31,7 @@ function render(): void {
 		container!,
 		currentEvents,
 		layout,
-		{ onEventClick: logClick },
+		{ onEventClick: logClick, onEventHover: logHover },
 		{ precision, verticalCardSide: cardSide, verticalLineStyle: lineStyle }
 	);
 }
@@ -81,6 +85,21 @@ document.getElementById("btn-empty")?.addEventListener("click", () => {
 	renderEmptyState(container, "No events matched this view's query and date field.");
 });
 
+// Mirrors the message formats actually thrown by the source modules (see
+// DataviewUnavailableError, the Dataview query-failure Error, and
+// TimelineTableNotFoundError/TimelineTableParseError in src/sources/) so the
+// error state can be eyeballed with realistic content instead of one canned
+// string. Not imported directly: table-source.ts uses `TFile` as a runtime
+// value, and the standalone preview bundle has no real "obsidian" module to
+// resolve it against.
+const sampleErrors = [
+	"Dataview is not installed or enabled. Chronograph uses Dataview as its query backend.",
+	'Dataview query failed: Unknown field "startDate" in WHERE clause.',
+	'Table note not found: "Timeline/Events.md". Set a valid note path in the view\'s settings.',
+	'No markdown table found in "Timeline/Events.md". Add a table with a header row and a "---" divider row.',
+];
+let errorIndex = 0;
 document.getElementById("btn-error")?.addEventListener("click", () => {
-	renderErrorState(container, "Dataview is not installed or enabled.");
+	renderErrorState(container, sampleErrors[errorIndex % sampleErrors.length]);
+	errorIndex++;
 });

@@ -19,6 +19,7 @@ export const mockEvents: TimelineEvent[] = [
 		sourcePath: "Meetings/Kickoff.md",
 		description: "Initial scoping call with the team.",
 		group: "Meetings",
+		pointsTo: "Literature review",
 	},
 	{
 		id: "2",
@@ -35,6 +36,7 @@ export const mockEvents: TimelineEvent[] = [
 		date: day(12),
 		sourcePath: "Writing/Outline.md",
 		group: "Writing",
+		pointsTo: "First draft complete",
 	},
 	{
 		id: "4",
@@ -44,6 +46,7 @@ export const mockEvents: TimelineEvent[] = [
 		sourcePath: "Personal/Vacation.md",
 		description: "Out of office.",
 		group: "Personal",
+		color: "#e67e22",
 	},
 	{
 		id: "5",
@@ -67,6 +70,22 @@ export const mockEvents: TimelineEvent[] = [
 		endDate: day(40),
 		sourcePath: "Research/Follow-up.md",
 		group: "Research",
+	},
+	{
+		id: "8",
+		title: "Sprint 1",
+		date: day(0),
+		endDate: day(14),
+		sourcePath: "Meetings/Sprint1.md",
+		kind: "period",
+	},
+	{
+		id: "9",
+		title: "Public launch",
+		date: day(20),
+		sourcePath: "Meetings/Launch.md",
+		description: "Product goes live.",
+		kind: "marker",
 	},
 ];
 
