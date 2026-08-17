@@ -1,0 +1,50 @@
+.timeline-graph-view {
+	padding: var(--size-4-4);
+}
+
+.timeline-graph-empty,
+.timeline-graph-error {
+	color: var(--text-muted);
+	padding: var(--size-4-4);
+}
+
+.timeline-graph-error {
+	color: var(--text-error);
+}
+
+.timeline-graph-list {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-2);
+	border-left: 2px solid var(--background-modifier-border);
+	padding-left: var(--size-4-4);
+}
+
+.timeline-graph-item {
+	display: flex;
+	flex-direction: column;
+	gap: var(--size-4-1);
+}
+
+.timeline-graph-item-date {
+	font-size: var(--font-smallest);
+	color: var(--text-muted);
+}
+
+.timeline-graph-item-title {
+	font-weight: var(--font-medium);
+	color: var(--text-normal);
+	cursor: pointer;
+}
+
+.timeline-graph-item-desc {
+	font-size: var(--font-small);
+	color: var(--text-muted);
+}
+
+.timeline-graph-view-config {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	padding: var(--size-4-3);
+	margin-bottom: var(--size-4-4);
+}

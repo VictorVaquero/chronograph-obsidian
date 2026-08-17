@@ -1,0 +1,11 @@
+{
+	"id": "timeline-graph",
+	"name": "Timeline Graph",
+	"version": "0.1.0",
+	"minAppVersion": "1.5.0",
+	"description": "A configurable timeline graph view for Obsidian, powered by Dataview queries.",
+	"author": "Victor Vaquero",
+	"authorUrl": "",
+	"fundingUrl": "",
+	"isDesktopOnly": false
+}

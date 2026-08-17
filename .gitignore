@@ -1,0 +1,25 @@
+# Build output
+main.js
+*.js.map
+
+# Dependencies
+node_modules/
+
+# Obsidian
+data.json
+.obsidian/
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Env
+.env
