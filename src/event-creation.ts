@@ -42,6 +42,12 @@ export async function createTimelineEvent(
 	date: string,
 	title: string
 ): Promise<void> {
+	if (config.sourceType === "tasks") {
+		throw new TimelineCreateEventError(
+			`"${config.name}" uses the Obsidian Tasks source; create events as checklist lines directly in a note instead.`
+		);
+	}
+
 	if (!config.fields.dateField) {
 		throw new TimelineCreateEventError(`Set a date field for "${config.name}" before creating events.`);
 	}

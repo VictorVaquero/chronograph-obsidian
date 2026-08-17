@@ -2,7 +2,7 @@
 
 A configurable timeline graph view for [Obsidian](https://obsidian.md).
 
-Define one or more "views," each pulling events from a [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) Query Language (DQL) source string across the vault, a markdown table in a single note, or frontmatter scanned directly (no Dataview dependency), and map fields to build an interactive timeline.
+Define one or more "views," each pulling events from a [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) Query Language (DQL) source string across the vault, a markdown table in a single note, frontmatter scanned directly (no Dataview dependency), or [Obsidian Tasks](https://publish.obsidian.md/tasks/) checklist emoji-dates, and map fields to build an interactive timeline.
 
 Chronograph is simple by default: a new view only asks for a name, a source, and a date field. Everything else — extra field mappings, layout/style, sort order, date granularity, multiple views — is opt-in, off until you turn it on in Settings → Chronograph.
 
@@ -18,6 +18,7 @@ Chronograph is simple by default: a new view only asks for a name, a source, and
    - **Dataview query**: a DQL source string, e.g. `from "Journal" where date`.
    - **Markdown table**: the vault path of a note containing a table with a header row and a `---` divider row.
    - **Frontmatter**: scans vault notes directly via Obsidian's metadata cache, no Dataview needed. Optionally filter by tag and/or folder.
+   - **Obsidian Tasks emoji-dates**: scans vault notes for checklist lines (`- [ ] ...`) carrying an [Obsidian Tasks](https://publish.obsidian.md/tasks/) emoji-date (📅 due, ⏳ scheduled, 🛫 start, ✅ done); each matching line becomes its own event, not just each note. No Dataview needed. Optionally filter by tag and/or folder.
 3. Set the **Date field** — the column header (table source) or frontmatter field (Dataview/frontmatter source) holding each event's date.
 
 That's it. The view renders as a vertical chronological list, oldest first, using each note's file name as the event title — no other setting required. Zoom in/out/fit from the toolbar (or Ctrl/Cmd+wheel) any time; panning is native page scroll.
@@ -79,8 +80,8 @@ These aren't behind a toggle — they work regardless of which advanced groups a
 
 - **Click-to-create events**: a "+ new event" button in the horizontal toolbar prompts for a date/title and creates the event — a new table row for the table source, or a new note with frontmatter for the Dataview/frontmatter sources.
 - **Native hover preview**: hovering an event's title shows Obsidian's built-in note preview popover.
-- **Three event sources**: a Dataview query across the vault, a single-note markdown table, or frontmatter scanned directly via Obsidian's own metadata cache (the latter two need no Dataview dependency) — plus an "Insert timeline event row" command that scaffolds or appends rows to a table source.
-- **Frontmatter source filtering**: narrow the frontmatter source by tag and/or vault folder, so a single view can target e.g. all notes tagged `#event` under `Journal/`.
+- **Four event sources**: a Dataview query across the vault, a single-note markdown table, frontmatter scanned directly via Obsidian's own metadata cache, or Obsidian Tasks checklist emoji-dates (the latter two need no Dataview dependency) — plus an "Insert timeline event row" command that scaffolds or appends rows to a table source.
+- **Frontmatter/Tasks source filtering**: narrow the frontmatter or Tasks source by tag and/or vault folder, so a single view can target e.g. all notes tagged `#event` under `Journal/`.
 - **In-note code-block timelines**: see [In-note code blocks](#in-note-code-blocks) above.
 
 ## Advanced: in-note code block settings
@@ -124,12 +125,25 @@ The rendering logic (`src/render/`) is plain DOM code with no Obsidian dependenc
 pnpm run dev:preview
 ```
 
-This serves `src/dev/preview.html` (default: http://127.0.0.1:8000/src/dev/preview.html)
-with buttons to switch between sample data, randomized data, and the
-empty/error states, plus an "Advanced" checkbox that mirrors the settings
-tab's layout/style/granularity toggles. It rebuilds on save. This only
-exercises the rendering layer — Dataview querying and the real Obsidian
-workspace still require testing inside a vault.
+This serves `src/dev/preview.html` (default: http://127.0.0.1:8000/src/dev/preview.html),
+a mock of the Obsidian window (title bar, ribbon, tab, and a settings modal
+mirroring `settings-tab.ts`'s advanced toggles) around the real timeline
+renderer. Below the toolbar, three tabs simulate editing a view's source
+live, the same way you'd edit it for real:
+
+- **Markdown table**: an editable table in a mock note, parsed on every
+  keystroke with the same logic as `table-source.ts`.
+- **Dataview query**: a query-style text field backed by a handful of canned
+  DQL strings (see the preset buttons) that swap in preset result sets —
+  real Dataview isn't running here, so anything else shows an error.
+- **Frontmatter scan**: tag/folder filters applied live against a small mock
+  vault, mirroring `frontmatter-source.ts`.
+
+Buttons for sample/randomized/ancient/empty/error data remain for quickly
+exercising states outside any single source. It rebuilds on save. This only
+exercises the rendering + settings-shape layer — real Dataview querying, the
+Tasks source, and the real Obsidian workspace still require testing inside a
+vault.
 
 ### Tests
 
@@ -161,6 +175,7 @@ src/
     dataview-api.d.ts      Ambient types for the subset of Dataview's API used
     table-source.ts        Markdown table parsing -> TimelineEvent mapping (no Dataview dep)
     frontmatter-source.ts  Metadata-cache scan (tag/folder filters) -> TimelineEvent mapping (no Dataview dep)
+    tasks-source.ts        Per-line Obsidian Tasks emoji-date scan (tag/folder filters) -> TimelineEvent mapping
     code-block-source.ts   Code-block settings header + inline table -> config/TimelineEvent mapping
   render/
     timeline-renderer.ts   Dispatches to the vertical/horizontal renderer (no Obsidian dep)
@@ -175,6 +190,11 @@ src/
       markers.ts              Lanes, point/range markers, period bands, flag markers, tooltips
       arrows.ts                SVG arrow overlay connecting events via the "points-to" field
   dev/                    Standalone browser preview (see above), not bundled into the plugin
+    preview.ts/.html        Entry point + Obsidian-chrome mock, settings modal, source tabs
+    mock-table-parser.ts    Reimplements table-source.ts's pure parsing for the table tab
+    mock-dataview.ts        Canned query -> preset event-set lookup for the Dataview tab
+    mock-frontmatter.ts     Reimplements frontmatter-source.ts's mapping over a mock vault
+    mock-events.ts          Hand-authored sample/ancient/randomized event sets
   test-utils/             Minimal "obsidian" package mock for Vitest
 styles.css                Plugin styles
 manifest.json              Obsidian plugin manifest

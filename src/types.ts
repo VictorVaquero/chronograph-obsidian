@@ -34,8 +34,10 @@ export type TimelineSortOrder = "asc" | "desc";
 /** "dataview" queries pages across the vault via Dataview. "table" reads a
  * markdown table from a single configured note instead. "frontmatter" scans
  * vault notes directly via Obsidian's own metadata cache (no Dataview
- * dependency), filtered by tag and/or folder. */
-export type TimelineSourceType = "dataview" | "table" | "frontmatter";
+ * dependency), filtered by tag and/or folder. "tasks" scans vault notes for
+ * Obsidian Tasks-style checklist lines with emoji-dates (e.g. `📅
+ * 2024-01-01`), one event per matching line rather than per note. */
+export type TimelineSourceType = "dataview" | "table" | "frontmatter" | "tasks";
 
 export type TimelineLayout = "vertical" | "horizontal";
 
@@ -79,9 +81,9 @@ export interface TimelineViewConfig {
 	dataviewQuery: string;
 	/** Vault path of the note whose body contains the events table, e.g. "Timeline/Events.md". Used when sourceType is "table". */
 	tableNotePath: string;
-	/** Only include notes carrying this tag (with or without a leading "#"), e.g. "event". Used when sourceType is "frontmatter"; leave empty to skip tag filtering. */
+	/** Only include notes carrying this tag (with or without a leading "#"), e.g. "event". Used when sourceType is "frontmatter" or "tasks"; leave empty to skip tag filtering. */
 	frontmatterTag: string;
-	/** Only include notes under this vault folder path, e.g. "Journal". Used when sourceType is "frontmatter"; leave empty to skip folder filtering. */
+	/** Only include notes under this vault folder path, e.g. "Journal". Used when sourceType is "frontmatter" or "tasks"; leave empty to skip folder filtering. */
 	frontmatterFolder: string;
 	fields: TimelineFieldMapping;
 	sortOrder: TimelineSortOrder;

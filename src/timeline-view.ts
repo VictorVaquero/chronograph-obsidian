@@ -7,6 +7,7 @@ import {
 } from "./sources/dataview-source";
 import { queryTimelineEventsFromTable } from "./sources/table-source";
 import { queryTimelineEventsFromFrontmatter } from "./sources/frontmatter-source";
+import { queryTimelineEventsFromTasks } from "./sources/tasks-source";
 import { renderEmptyState, renderErrorState, renderTimeline } from "./render/timeline-renderer";
 import { compareTimelineDates } from "./date/timeline-date";
 import { TimelineCreateEventModal } from "./create-event-modal";
@@ -87,7 +88,13 @@ export class TimelineView extends ItemView implements HoverParent {
 								config.frontmatterFolder,
 								config.fields
 							)
-						: await queryTimelineEvents(this.app, config.dataviewQuery, config.fields);
+						: config.sourceType === "tasks"
+							? await queryTimelineEventsFromTasks(
+									this.app,
+									config.frontmatterTag,
+									config.frontmatterFolder
+								)
+							: await queryTimelineEvents(this.app, config.dataviewQuery, config.fields);
 			events.sort((a, b) =>
 				config.sortOrder === "asc"
 					? compareTimelineDates(a.date, b.date)
@@ -111,9 +118,12 @@ export class TimelineView extends ItemView implements HoverParent {
 							sourcePath: "",
 						});
 					},
-					onCreateEvent: () => {
-						new TimelineCreateEventModal(this.app, config, () => void this.refresh()).open();
-					},
+					onCreateEvent:
+						config.sourceType === "tasks"
+							? undefined
+							: () => {
+									new TimelineCreateEventModal(this.app, config, () => void this.refresh()).open();
+								},
 				},
 				{
 					precision: config.datePrecision,
