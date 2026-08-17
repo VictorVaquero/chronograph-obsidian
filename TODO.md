@@ -45,12 +45,31 @@ View) and against common companion plugins in the ecosystem.
       (`![[Name snapshot.svg]]`), with no new dependency or JS execution
       required (`src/export/svg-export.ts`, `src/export-snapshot.ts`)
 
+- [x] Screenshots in README — vertical layout, horizontal layout, and a
+      BC/AD period-band example, reusing the e2e visual-regression suite's
+      reference PNGs so they stay current with the renderer automatically
+      (`docs/images/`)
+
 ## Feature gaps vs. competing timeline plugins
 
-- [ ] **Visual polish for README.** Add screenshots/GIFs of the timeline in
-      use (vertical and horizontal layouts) and a project logo/wordmark.
-      Needs actual rendered captures from inside Obsidian — can't be
-      generated from source alone.
+- [ ] **Project logo/wordmark for README.** Needs actual brand design work,
+      not something generatable from source or a rendered capture.
+
+## Known issues
+
+- [ ] **`pnpm run test:e2e` is broken (16/18 failing).** `e2e/visual.spec.ts`,
+      `rendering.spec.ts`, and `click-priority.spec.ts` reference
+      `#layout-select`, `#card-side-select`, `#line-style-select` in
+      `src/dev/preview.html`, which no longer exist after the dev-preview
+      harness was rewritten around a settings-modal UI (dropdowns now live
+      inside dynamically rendered `.setting-item`s with no stable IDs, see
+      `renderSettings()` in `src/dev/preview.ts`). The e2e specs need their
+      selectors updated to match (e.g. open `#open-settings` first, then
+      locate controls by their `.setting-item-name` text). Until fixed, the
+      `e2e/visual.spec.ts-snapshots/*.png` reference images can't be
+      regenerated or verified against the current harness, though the
+      existing PNGs (used in README screenshots) are still visually
+      accurate as of `a4b8990`.
 
 ## Notes
 
