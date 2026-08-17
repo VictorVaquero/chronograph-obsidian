@@ -1,4 +1,4 @@
-# Chronograph
+![Chronograph](docs/images/logo.svg)
 
 A configurable timeline graph view for [Obsidian](https://obsidian.md).
 

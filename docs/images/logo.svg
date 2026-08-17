@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="120" viewBox="0 0 560 120" role="img" aria-label="Chronograph logo">
+  <title>Chronograph</title>
+
+  <!-- spine -->
+  <line x1="20" y1="60" x2="150" y2="60" stroke="#888888" stroke-width="3" stroke-linecap="round" />
+
+  <!-- event dots, echoing the plugin's per-group hue palette -->
+  <circle cx="30" cy="60" r="9" fill="#e0813f" />
+  <circle cx="70" cy="60" r="9" fill="#4fae4f" />
+  <circle cx="110" cy="60" r="9" fill="#9a4fd6" />
+  <circle cx="150" cy="60" r="9" fill="#3f9ee0" />
+
+  <!-- wordmark -->
+  <text x="176" y="76" font-family="'Segoe UI', system-ui, sans-serif" font-size="46" font-weight="700" fill="#1a1a1a">Chronograph</text>
+</svg>

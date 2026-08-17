@@ -61,6 +61,7 @@ export default defineConfig([
 		files: ["**/*.test.ts"],
 		rules: {
 			"obsidianmd/prefer-create-el": "off",
+			"obsidianmd/no-nodejs-modules": "off",
 		},
 	},
 ]);

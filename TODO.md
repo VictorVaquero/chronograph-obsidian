@@ -49,11 +49,9 @@ View) and against common companion plugins in the ecosystem.
       BC/AD period-band example, reusing the e2e visual-regression suite's
       reference PNGs so they stay current with the renderer automatically
       (`docs/images/`)
-
-## Feature gaps vs. competing timeline plugins
-
-- [ ] **Project logo/wordmark for README.** Needs actual brand design work,
-      not something generatable from source or a rendered capture.
+- [x] Project logo/wordmark for README — a simple SVG mark (spine + colored
+      event dots, echoing the plugin's own per-group hue palette) plus
+      wordmark, shown at the top of README (`docs/images/logo.svg`)
 
 ## Known issues
 
