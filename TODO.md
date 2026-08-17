@@ -38,6 +38,12 @@ View) and against common companion plugins in the ecosystem.
 - [x] Split developer docs out of README into `CONTRIBUTING.md` (build/dev
       workflow, preview harness, tests, project structure) so README stays
       a non-technical, user-facing overview
+- [x] Export/share snapshot — an "Export snapshot" toolbar button (vertical
+      and horizontal layouts) saves the timeline as a self-contained SVG
+      file into the vault. SVG was chosen specifically because it renders
+      natively as an image both on GitHub and inside Obsidian embeds
+      (`![[Name snapshot.svg]]`), with no new dependency or JS execution
+      required (`src/export/svg-export.ts`, `src/export-snapshot.ts`)
 
 ## Feature gaps vs. competing timeline plugins
 
@@ -45,9 +51,6 @@ View) and against common companion plugins in the ecosystem.
       use (vertical and horizontal layouts) and a project logo/wordmark.
       Needs actual rendered captures from inside Obsidian — can't be
       generated from source alone.
-- [ ] **Export/share snapshot.** Export a timeline view as an image or
-      static HTML. Not offered by any close competitor either — lower
-      priority.
 
 ## Notes
 

@@ -79,6 +79,7 @@ Every view already looks for the default column/frontmatter keys below, whether 
 These aren't behind a toggle — they work regardless of which advanced groups are on:
 
 - **Click-to-create events**: a "+ new event" button in the horizontal toolbar prompts for a date/title and creates the event — a new table row for the table source, or a new note with frontmatter for the Dataview/frontmatter sources.
+- **Export snapshot**: an "Export snapshot" button (vertical and horizontal toolbars) saves the current timeline as an SVG image file into your vault. Embed it anywhere with `![[Name snapshot.svg]]` — it renders directly as an image both in Obsidian and on GitHub, no extra software needed.
 - **Native hover preview**: hovering an event's title shows Obsidian's built-in note preview popover.
 - **Four event sources**: a Dataview query across the vault, a single-note markdown table, frontmatter scanned directly via Obsidian's own metadata cache, or Obsidian Tasks checklist emoji-dates (the latter two need no Dataview dependency) — plus an "Insert timeline event row" command that scaffolds or appends rows to a table source.
 - **Frontmatter/Tasks source filtering**: narrow the frontmatter or Tasks source by tag and/or vault folder, so a single view can target e.g. all notes tagged `#event` under `Journal/`.
