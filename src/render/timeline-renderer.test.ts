@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TimelineEvent } from "./types";
+import { TimelineEvent } from "../types";
 import { renderTimeline } from "./timeline-renderer";
 
 function makeEvent(overrides: Partial<TimelineEvent> = {}): TimelineEvent {

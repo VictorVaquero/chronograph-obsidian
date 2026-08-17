@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { TFile } from "obsidian";
 import { TimelineTableNotFoundError, TimelineTableParseError, queryTimelineEventsFromTable } from "./table-source";
-import { TimelineFieldMapping } from "./types";
+import { TimelineFieldMapping } from "../types";
 
 function fields(overrides: Partial<TimelineFieldMapping> = {}): TimelineFieldMapping {
 	return { dateField: "date", ...overrides };

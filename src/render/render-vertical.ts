@@ -1,4 +1,4 @@
-import { TimelineEvent, TimelineDatePrecision, TimelineCardSide, TimelineLineStyle } from "./types";
+import { TimelineEvent, TimelineDatePrecision, TimelineCardSide, TimelineLineStyle } from "../types";
 import { TimelineRenderCallbacks, colorForGroup, renderEmptyState } from "./render-shared";
 import {
 	bucketOf,
@@ -6,7 +6,7 @@ import {
 	formatTimelineDateRange,
 	hasAnyBCDate,
 	toOrdinal,
-} from "./timeline-date";
+} from "../date/timeline-date";
 
 export function renderVerticalTimeline(
 	container: HTMLElement,

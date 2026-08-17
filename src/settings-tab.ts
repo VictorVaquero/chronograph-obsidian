@@ -1,7 +1,7 @@
 import { App, PluginSettingTab, SettingDefinitionItem, SettingDefinitionPage } from "obsidian";
 import type TimelineGraphPlugin from "./main";
 import { createDefaultView } from "./settings";
-import { isDataviewEnabled } from "./dataview-source";
+import { isDataviewEnabled } from "./sources/dataview-source";
 import { TimelineViewConfig } from "./types";
 
 export class TimelineGraphSettingTab extends PluginSettingTab {

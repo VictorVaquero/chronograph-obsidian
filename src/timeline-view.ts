@@ -4,10 +4,10 @@ import {
 	DataviewUnavailableError,
 	isDataviewEnabled,
 	queryTimelineEvents,
-} from "./dataview-source";
-import { queryTimelineEventsFromTable } from "./table-source";
-import { renderEmptyState, renderErrorState, renderTimeline } from "./timeline-renderer";
-import { compareTimelineDates } from "./timeline-date";
+} from "./sources/dataview-source";
+import { queryTimelineEventsFromTable } from "./sources/table-source";
+import { renderEmptyState, renderErrorState, renderTimeline } from "./render/timeline-renderer";
+import { compareTimelineDates } from "./date/timeline-date";
 import type TimelineGraphPlugin from "./main";
 
 export class TimelineView extends ItemView {

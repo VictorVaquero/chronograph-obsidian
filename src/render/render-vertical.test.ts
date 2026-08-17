@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TimelineEvent } from "./types";
+import { TimelineEvent } from "../types";
 import { renderVerticalTimeline } from "./render-vertical";
 
 function makeEvent(overrides: Partial<TimelineEvent> = {}): TimelineEvent {

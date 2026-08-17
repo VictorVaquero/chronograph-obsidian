@@ -1,4 +1,4 @@
-import { TimelineDate, TimelineDatePrecision } from "./timeline-date";
+import { TimelineDate, TimelineDatePrecision } from "./date/timeline-date";
 
 export const TIMELINE_VIEW_TYPE = "timeline-graph-view";
 
@@ -37,7 +37,7 @@ export type TimelineCardSide = "alternate" | "left" | "right";
 /** Visual style of the vertical layout's central spine line. */
 export type TimelineLineStyle = "solid" | "dashed" | "dotted";
 
-export type { TimelineDatePrecision } from "./timeline-date";
+export type { TimelineDatePrecision } from "./date/timeline-date";
 
 export interface TimelineFieldMapping {
 	/**

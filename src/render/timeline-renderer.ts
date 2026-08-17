@@ -1,12 +1,14 @@
-import { TimelineEvent, TimelineLayout, TimelineDatePrecision, TimelineCardSide, TimelineLineStyle } from "./types";
+import { TimelineEvent, TimelineLayout, TimelineDatePrecision, TimelineCardSide, TimelineLineStyle } from "../types";
 import { TimelineRenderCallbacks } from "./render-shared";
 import { renderVerticalTimeline } from "./render-vertical";
-import { renderHorizontalTimeline } from "./render-horizontal";
+import { renderHorizontalTimeline } from "./horizontal";
 
 // Pure DOM rendering, decoupled from Obsidian's ItemView/App so it can be
 // exercised both inside the plugin and in the standalone dev harness
-// (src/dev/preview.ts) without an Obsidian runtime. Only standard DOM APIs
-// are used here — no Obsidian-only helpers like createDiv/createEl.
+// (src/dev/preview.ts). createDiv/createEl/createSpan are used throughout,
+// same as Obsidian's real runtime provides — the dev harness supplies its
+// own polyfill (src/dev/obsidian-dom-polyfill.ts) so this still runs without
+// a real Obsidian instance.
 
 export type { TimelineRenderCallbacks } from "./render-shared";
 export { renderEmptyState, renderErrorState } from "./render-shared";

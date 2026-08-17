@@ -1,5 +1,5 @@
 import "./obsidian-dom-polyfill";
-import { renderTimeline, renderEmptyState, renderErrorState } from "../timeline-renderer";
+import { renderTimeline, renderEmptyState, renderErrorState } from "../render/timeline-renderer";
 import { mockEvents, ancientMockEvents, randomizedMockEvents } from "./mock-events";
 import { TimelineEvent, TimelineLayout, TimelineDatePrecision, TimelineCardSide, TimelineLineStyle } from "../types";
 

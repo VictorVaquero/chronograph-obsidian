@@ -1,7 +1,7 @@
 import { App } from "obsidian";
 import { DataviewApi, DataviewPage, DataviewPluginLike } from "./dataview-api";
-import { TimelineEvent, TimelineEventKind, TimelineFieldMapping } from "./types";
-import { TimelineDate, parseTimelineDate } from "./timeline-date";
+import { TimelineEvent, TimelineEventKind, TimelineFieldMapping } from "../types";
+import { TimelineDate, parseTimelineDate } from "../date/timeline-date";
 
 export class DataviewUnavailableError extends Error {
 	constructor() {

@@ -1,4 +1,4 @@
-import { TimelineEvent } from "./types";
+import { TimelineEvent } from "../types";
 
 export interface TimelineRenderCallbacks {
 	/** Called when a user activates an event (e.g. clicks its title/marker). */

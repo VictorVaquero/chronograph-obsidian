@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { DataviewUnavailableError, getDataviewApi, isDataviewEnabled, queryTimelineEvents } from "./dataview-source";
 import { DataviewApi, DataviewPage, DataviewQueryResult } from "./dataview-api";
-import { TimelineFieldMapping } from "./types";
+import { TimelineFieldMapping } from "../types";
 
 function makeApp(api: DataviewApi | null): unknown {
 	return {

@@ -1,5 +1,5 @@
 import { TimelineEvent } from "../types";
-import { TimelineDate } from "../timeline-date";
+import { TimelineDate } from "../date/timeline-date";
 
 // Hand-authored sample data standing in for a Dataview query result, used
 // only by the standalone browser preview (src/dev/preview.ts).

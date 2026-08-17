@@ -1,6 +1,6 @@
 import { App, TFile } from "obsidian";
-import { TimelineEvent, TimelineEventKind, TimelineFieldMapping } from "./types";
-import { parseTimelineDate } from "./timeline-date";
+import { TimelineEvent, TimelineEventKind, TimelineFieldMapping } from "../types";
+import { parseTimelineDate } from "../date/timeline-date";
 
 export class TimelineTableNotFoundError extends Error {
 	constructor(notePath: string) {
