@@ -5,6 +5,7 @@ import {
 	isDataviewEnabled,
 	queryTimelineEvents,
 } from "./dataview-source";
+import { queryTimelineEventsFromTable } from "./table-source";
 import { renderEmptyState, renderErrorState, renderTimeline } from "./timeline-renderer";
 import { compareTimelineDates } from "./timeline-date";
 import type TimelineGraphPlugin from "./main";
@@ -66,34 +67,34 @@ export class TimelineView extends ItemView {
 			return;
 		}
 
-		if (!isDataviewEnabled(this.app)) {
+		if (this.activeConfig.sourceType === "dataview" && !isDataviewEnabled(this.app)) {
 			renderErrorState(this.contentEl, new DataviewUnavailableError().message);
 			return;
 		}
 
 		try {
-			const events = await queryTimelineEvents(
-				this.app,
-				this.activeConfig.dataviewQuery,
-				this.activeConfig.fields
-			);
+			const config = this.activeConfig;
+			const events =
+				config.sourceType === "table"
+					? await queryTimelineEventsFromTable(this.app, config.tableNotePath, config.fields)
+					: await queryTimelineEvents(this.app, config.dataviewQuery, config.fields);
 			events.sort((a, b) =>
-				this.activeConfig!.sortOrder === "asc"
+				config.sortOrder === "asc"
 					? compareTimelineDates(a.date, b.date)
 					: compareTimelineDates(b.date, a.date)
 			);
 			renderTimeline(
 				this.contentEl,
 				events,
-				this.activeConfig.layout,
+				config.layout,
 				{
 					onEventClick: (event) =>
 						this.app.workspace.openLinkText(event.sourcePath, "", false),
 				},
 				{
-					precision: this.activeConfig.datePrecision,
-					verticalCardSide: this.activeConfig.verticalCardSide,
-					verticalLineStyle: this.activeConfig.verticalLineStyle,
+					precision: config.datePrecision,
+					verticalCardSide: config.verticalCardSide,
+					verticalLineStyle: config.verticalLineStyle,
 				}
 			);
 		} catch (err) {

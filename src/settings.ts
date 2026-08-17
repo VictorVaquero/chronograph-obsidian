@@ -4,7 +4,9 @@ export function createDefaultView(): TimelineViewConfig {
 	return {
 		id: crypto.randomUUID(),
 		name: "All notes",
+		sourceType: "dataview",
 		dataviewQuery: 'FROM ""',
+		tableNotePath: "",
 		fields: {
 			dateField: "date",
 		},

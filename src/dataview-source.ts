@@ -1,6 +1,6 @@
 import { App } from "obsidian";
 import { DataviewApi, DataviewPage, DataviewPluginLike } from "./dataview-api";
-import { TimelineEvent, TimelineFieldMapping } from "./types";
+import { TimelineEvent, TimelineEventKind, TimelineFieldMapping } from "./types";
 import { TimelineDate, parseTimelineDate } from "./timeline-date";
 
 export class DataviewUnavailableError extends Error {
@@ -53,6 +53,13 @@ function fieldToString(value: unknown): string | undefined {
 	return undefined;
 }
 
+const VALID_KINDS = new Set<TimelineEventKind>(["event", "period", "marker"]);
+
+function toTimelineEventKind(value: unknown): TimelineEventKind {
+	const str = fieldToString(value)?.toLowerCase();
+	return str && VALID_KINDS.has(str as TimelineEventKind) ? (str as TimelineEventKind) : "event";
+}
+
 function pageToEvent(
 	page: DataviewPage,
 	fields: TimelineFieldMapping
@@ -76,6 +83,8 @@ function pageToEvent(
 		? fieldToString(page[fields.groupField])
 		: undefined;
 
+	const kind = fields.kindField ? toTimelineEventKind(page[fields.kindField]) : "event";
+
 	return {
 		id: page.file.path,
 		title,
@@ -84,6 +93,7 @@ function pageToEvent(
 		sourcePath: page.file.path,
 		description,
 		group,
+		kind,
 	};
 }
 

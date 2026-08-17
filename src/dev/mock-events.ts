@@ -141,6 +141,30 @@ export const ancientMockEvents: TimelineEvent[] = [
 		sourcePath: "History/Hastings.md",
 		group: "Medieval",
 	},
+	{
+		id: "a-period-1",
+		title: "Bronze Age",
+		date: { year: -3300 },
+		endDate: { year: -1200 },
+		sourcePath: "History/BronzeAge.md",
+		kind: "period",
+	},
+	{
+		id: "a-period-2",
+		title: "Iron Age",
+		date: { year: -1200 },
+		endDate: { year: -550 },
+		sourcePath: "History/IronAge.md",
+		kind: "period",
+	},
+	{
+		id: "a-marker-1",
+		title: "Eruption of Vesuvius",
+		date: { year: 79 },
+		sourcePath: "History/Vesuvius.md",
+		description: "Destruction of Pompeii and Herculaneum.",
+		kind: "marker",
+	},
 ];
 
 export function randomizedMockEvents(count = 25): TimelineEvent[] {

@@ -18,13 +18,15 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 
 		if (!isDataviewEnabled(this.app)) {
 			new Setting(containerEl).setDesc(
-				"⚠ Dataview is not installed/enabled. Timeline Graph needs it as a query backend to fetch events."
+				"⚠ Dataview is not installed/enabled. Views using the Dataview source need it to fetch events; views using the Table source work regardless."
 			);
 		}
 
 		new Setting(containerEl)
 			.setName("Timeline views")
-			.setDesc("Each view defines a Dataview query and how to map fields to timeline events.")
+			.setDesc(
+				"Each view queries events from Dataview or a markdown table, and maps fields to timeline events."
+			)
 			.addButton((btn) =>
 				btn.setButtonText("Add view").onClick(async () => {
 					const view = createDefaultView();
@@ -52,18 +54,51 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(section)
-			.setName("Dataview query")
-			.setDesc('DQL source, e.g. FROM "Journal" WHERE date')
-			.addTextArea((text) =>
-				text.setValue(view.dataviewQuery).onChange(async (value) => {
-					view.dataviewQuery = value;
-					await this.plugin.saveSettings();
-				})
+			.setName("Source")
+			.setDesc("Where events come from: a Dataview query across the vault, or a markdown table in one note.")
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("dataview", "Dataview query")
+					.addOption("table", "Markdown table")
+					.setValue(view.sourceType)
+					.onChange(async (value) => {
+						view.sourceType = value as TimelineViewConfig["sourceType"];
+						await this.plugin.saveSettings();
+						this.display();
+					})
 			);
+
+		if (view.sourceType === "table") {
+			new Setting(section)
+				.setName("Table note path")
+				.setDesc(
+					'Vault path of the note whose body contains the events table, e.g. "Timeline/Events.md". The table needs a header row and a "---" divider row; column headers are matched against the field names below.'
+				)
+				.addText((text) =>
+					text.setValue(view.tableNotePath).onChange(async (value) => {
+						view.tableNotePath = value;
+						await this.plugin.saveSettings();
+					})
+				);
+		} else {
+			new Setting(section)
+				.setName("Dataview query")
+				.setDesc('DQL source, e.g. FROM "Journal" WHERE date')
+				.addTextArea((text) =>
+					text.setValue(view.dataviewQuery).onChange(async (value) => {
+						view.dataviewQuery = value;
+						await this.plugin.saveSettings();
+					})
+				);
+		}
 
 		new Setting(section)
 			.setName("Date field")
-			.setDesc("Frontmatter/inline field used as the event date.")
+			.setDesc(
+				view.sourceType === "table"
+					? "Table column header used as the event date."
+					: "Frontmatter/inline field used as the event date."
+			)
 			.addText((text) =>
 				text.setValue(view.fields.dateField).onChange(async (value) => {
 					view.fields.dateField = value;
@@ -100,6 +135,18 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 					.setValue(view.fields.groupField ?? "")
 					.onChange(async (value) => {
 						view.fields.groupField = value || undefined;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(section)
+			.setName("Kind field (optional)")
+			.setDesc('Horizontal layout only: field whose value ("event", "period", or "marker") selects how the item renders. Unset/unrecognized values default to "event".')
+			.addText((text) =>
+				text
+					.setValue(view.fields.kindField ?? "")
+					.onChange(async (value) => {
+						view.fields.kindField = value || undefined;
 						await this.plugin.saveSettings();
 					})
 			);

@@ -202,9 +202,36 @@
 
 /* Horizontal axis layout */
 
+.timeline-graph-horizontal-toolbar {
+	display: flex;
+	gap: var(--size-4-1);
+	margin-bottom: var(--size-4-2);
+}
+
+.timeline-graph-zoom-btn,
+.timeline-graph-fit-btn {
+	cursor: pointer;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	border-radius: var(--radius-s);
+	padding: 2px var(--size-4-2);
+	font-size: var(--font-small);
+}
+
+.timeline-graph-zoom-btn:hover,
+.timeline-graph-fit-btn:hover {
+	background: var(--background-secondary);
+}
+
 .timeline-graph-horizontal-scroller {
 	overflow-x: auto;
 	padding-bottom: var(--size-4-2);
+	cursor: grab;
+}
+
+.timeline-graph-horizontal-scroller.is-panning {
+	cursor: grabbing;
 }
 
 .timeline-graph-horizontal-track {
@@ -349,6 +376,7 @@
 .timeline-graph-marker-range {
 	position: absolute;
 	top: 50%;
+	min-width: 8px;
 	transform: translateY(-50%);
 	background: var(--marker-color, var(--interactive-accent));
 	border-radius: 999px;
@@ -379,6 +407,109 @@
 	font-weight: var(--font-medium);
 	color: var(--text-error);
 	white-space: nowrap;
+}
+
+.timeline-graph-period-bands {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	/* Must outrank the lanes' own opaque .is-odd striping background, which
+	   otherwise paints over these bands since lanes come later in the DOM. */
+	z-index: 1;
+}
+
+.timeline-graph-period-band {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	min-width: 4px;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	background: transparent;
+}
+
+/* Tint painted on a pseudo-element (not the button itself) so its opacity
+   doesn't also fade the label text to near-invisibility. */
+.timeline-graph-period-band::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: var(--marker-color, var(--interactive-accent));
+	opacity: 0.12;
+	transition: opacity 120ms ease;
+}
+
+.timeline-graph-period-band:hover::before {
+	opacity: 0.22;
+}
+
+.timeline-graph-period-band-label {
+	position: absolute;
+	top: 4px;
+	left: 6px;
+	font-size: var(--font-smallest);
+	font-weight: var(--font-medium);
+	color: var(--text-normal);
+	white-space: nowrap;
+	pointer-events: none;
+}
+
+.timeline-graph-flag-marker {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 2px;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	background: var(--marker-color, var(--text-error));
+	opacity: 0.7;
+	z-index: 2;
+}
+
+.timeline-graph-flag-marker:hover {
+	opacity: 1;
+}
+
+.timeline-graph-flag-marker span {
+	position: absolute;
+	top: -20px;
+	left: 4px;
+	font-size: var(--font-smallest);
+	font-weight: var(--font-medium);
+	color: var(--marker-color, var(--text-error));
+	white-space: nowrap;
+	pointer-events: none;
+}
+
+.timeline-graph-tooltip {
+	position: fixed;
+	z-index: 100;
+	max-width: 240px;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	padding: var(--size-4-2) var(--size-4-3);
+	pointer-events: none;
+	font-size: var(--font-small);
+	color: var(--text-normal);
+}
+
+.timeline-graph-tooltip-date {
+	font-size: var(--font-smallest);
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+	margin-top: 2px;
+}
+
+.timeline-graph-tooltip-desc {
+	margin-top: var(--size-4-1);
+	color: var(--text-muted);
 }
 
 .timeline-graph-view-config {

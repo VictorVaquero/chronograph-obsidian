@@ -1,8 +1,8 @@
 # Timeline Graph
 
-A configurable timeline graph view for [Obsidian](https://obsidian.md), using [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) as its query backend.
+A configurable timeline graph view for [Obsidian](https://obsidian.md).
 
-Define one or more "views," each backed by a Dataview Query Language (DQL) source string, and map note fields (date, end date, title, description, group) to build an interactive timeline from your vault.
+Define one or more "views," each pulling events from either a [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) Query Language (DQL) source string across the vault, or a markdown table in a single note, and map fields (date, end date, title, description, group) to build an interactive timeline.
 
 ## Status
 
@@ -11,7 +11,7 @@ Early scaffold. The plugin loads, detects Dataview, runs configured queries, and
 ## Requirements
 
 - Obsidian ≥ 1.5.0
-- [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin installed and enabled (optional at install time, but required for the timeline to populate — Timeline Graph will show a notice if it's missing)
+- [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin installed and enabled, only for views using the Dataview source (optional at install time — Timeline Graph will show a notice if it's missing on a Dataview-backed view). Views using the markdown table source don't need Dataview.
 
 ## Development
 
@@ -51,6 +51,7 @@ src/
   timeline-renderer.ts Pure DOM rendering of TimelineEvent[] (no Obsidian dep)
   dataview-source.ts  Dataview API detection + query -> TimelineEvent mapping
   dataview-api.d.ts   Ambient types for the subset of Dataview's API used
+  table-source.ts     Markdown table parsing -> TimelineEvent mapping (no Dataview dep)
   dev/                Standalone browser preview (see above), not bundled into the plugin
 styles.css            Plugin styles
 manifest.json         Obsidian plugin manifest
