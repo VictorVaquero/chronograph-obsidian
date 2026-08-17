@@ -2,16 +2,44 @@
 
 A configurable timeline graph view for [Obsidian](https://obsidian.md).
 
-Define one or more "views," each pulling events from either a [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) Query Language (DQL) source string across the vault, or a markdown table in a single note, and map fields (date, end date, title, description, group) to build an interactive timeline.
+Define one or more "views," each pulling events from either a [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) Query Language (DQL) source string across the vault, or a markdown table in a single note, and map fields to build an interactive timeline.
 
-## Status
+## Features
 
-Early scaffold. The plugin loads, detects Dataview, runs configured queries, and renders a plain chronological list as a placeholder. The graphical timeline (zoom, pan, lanes/grouping, ranged events) is not implemented yet.
+- **Two layouts**: a vertical chronological list with cards alternating (or fixed) on either side of a spine, or a horizontal axis with zoom/pan.
+- **Horizontal axis**: mouse-wheel/pinch zoom and drag-to-pan, grouped lanes (one row per distinct `group` value), full-height translucent period bands for eras/spans, flag markers for single significant dates, a "today" line, and BC/BCE-aware date formatting.
+- **Ranged and point events**: an optional end-date field renders events as a span instead of a single marker.
+- **Grouping & color**: events auto-color by group (deterministic hash), or set an explicit per-event color that overrides the group color.
+- **Connecting arrows**: point one event at another (by title) to draw an arrow between them on the horizontal axis.
+- **Native hover preview**: hovering an event's title shows Obsidian's built-in note preview popover.
+- **Two event sources**: a Dataview query across the vault, or a single-note markdown table (no Dataview dependency) — plus an "Insert timeline event row" command that scaffolds or appends rows to that table.
+- **Date granularity**: from exact day up to millennium, for anything from a daily journal to ancient history.
 
 ## Requirements
 
 - Obsidian ≥ 1.13.0
 - [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin installed and enabled, only for views using the Dataview source (optional at install time — Chronograph will show a notice if it's missing on a Dataview-backed view). Views using the markdown table source don't need Dataview.
+
+## Usage
+
+1. Open the timeline pane via the ribbon icon ("Open Chronograph") or the **Chronograph: Open view** command.
+2. In Settings → Chronograph, add a view and choose its source:
+   - **Dataview query**: a DQL source string, e.g. `from "Journal" where date`.
+   - **Markdown table**: the vault path of a note containing a table with a header row and a `---` divider row.
+3. Map fields to columns/frontmatter keys:
+
+   | Field | Purpose |
+   | --- | --- |
+   | Date | Event start date (required) |
+   | End date | Renders the event as a span instead of a point |
+   | Title | Falls back to the note's file name if unset |
+   | Description | Shown in tooltips and vertical-layout cards |
+   | Group | Buckets events into horizontal lanes and derives a color |
+   | Color | Explicit CSS color, overrides the group-derived color |
+   | Kind | `event` (default), `period` (background band), or `marker` (flag line) — horizontal layout only |
+   | Points-to | Title of another event in the same view to draw a connecting arrow toward — horizontal layout only |
+
+4. Pick a layout, sort order, date granularity, and (for the table source) use **Insert timeline event row** from the command palette while editing that note to scaffold/append rows.
 
 ## Development
 
@@ -31,9 +59,7 @@ Reload Obsidian (`Ctrl+R`/`Cmd+R` in the developer console, or via the community
 
 ### Previewing the timeline UI without Obsidian
 
-The rendering logic (`src/timeline-renderer.ts`) is plain DOM code with no
-Obsidian dependency, so it can be iterated on directly in a browser using
-mock data instead of relaunching Obsidian for every change:
+The rendering logic (`src/render/`) is plain DOM code with no Obsidian dependency, so it can be iterated on directly in a browser using mock data instead of relaunching Obsidian for every change:
 
 ```bash
 pnpm run dev:preview
@@ -45,24 +71,50 @@ empty/error states. It rebuilds on save. This only exercises the rendering
 layer — Dataview querying and the real Obsidian workspace still require
 testing inside a vault.
 
+### Tests
+
+```bash
+pnpm run lint       # eslint
+pnpm run typecheck  # tsc -noEmit
+pnpm run test       # vitest unit tests
+pnpm run test:e2e   # playwright end-to-end/visual tests
+pnpm run review     # lint + typecheck + test + build, runs automatically pre-commit
+```
+
 ## Project structure
 
 ```
 src/
-  main.ts            Plugin entry point, view registration, commands
-  types.ts           Shared types (TimelineEvent, settings schema)
-  settings.ts        Default settings
-  settings-tab.ts     Settings UI for defining timeline views
-  timeline-view.ts    ItemView wiring Obsidian lifecycle to the renderer
-  timeline-renderer.ts Pure DOM rendering of TimelineEvent[] (no Obsidian dep)
-  dataview-source.ts  Dataview API detection + query -> TimelineEvent mapping
-  dataview-api.d.ts   Ambient types for the subset of Dataview's API used
-  table-source.ts     Markdown table parsing -> TimelineEvent mapping (no Dataview dep)
-  dev/                Standalone browser preview (see above), not bundled into the plugin
-styles.css            Plugin styles
-manifest.json         Obsidian plugin manifest
-esbuild.config.mjs    Plugin build config
-esbuild.preview.mjs   Standalone preview build/serve config
+  main.ts               Plugin entry point, view/command registration
+  types.ts               Shared types (TimelineEvent, field mapping, settings schema)
+  settings.ts             Default settings
+  settings-tab.ts          Settings UI for defining timeline views
+  commands.ts              "Insert timeline event row" editor command
+  timeline-view.ts         ItemView wiring Obsidian lifecycle (incl. hover preview) to the renderer
+  date/
+    timeline-date.ts       Signed-year date model (BC/BCE support), parsing, formatting
+  sources/
+    dataview-source.ts     Dataview API detection + query -> TimelineEvent mapping
+    dataview-api.d.ts      Ambient types for the subset of Dataview's API used
+    table-source.ts        Markdown table parsing -> TimelineEvent mapping (no Dataview dep)
+  render/
+    timeline-renderer.ts   Dispatches to the vertical/horizontal renderer (no Obsidian dep)
+    render-shared.ts       Shared render helpers: colors, hover preview, empty/error states
+    render-vertical.ts     Vertical card-list layout
+    horizontal/
+      index.ts             Horizontal axis orchestration
+      scale.ts              Date <-> percentage-position scale
+      ticks.ts               Axis ticks/labels, period lines
+      zoom-pan.ts             Wheel/pinch zoom and drag-to-pan
+      markers.ts              Lanes, point/range markers, period bands, flag markers, tooltips
+      arrows.ts                SVG arrow overlay connecting events via the "points-to" field
+  dev/                    Standalone browser preview (see above), not bundled into the plugin
+  test-utils/             Minimal "obsidian" package mock for Vitest
+styles.css                Plugin styles
+manifest.json              Obsidian plugin manifest
+esbuild.config.mjs          Plugin build config
+esbuild.preview.mjs         Standalone preview build/serve config
+e2e/                        Playwright end-to-end/visual tests
 ```
 
 ## License
