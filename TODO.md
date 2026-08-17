@@ -13,13 +13,13 @@ View) and against common companion plugins in the ecosystem.
 - [x] In-note code-block rendering — a self-contained ` ```chronograph `
       fenced block with an inline table and optional settings header
       (`src/sources/code-block-source.ts`, `src/code-block-view.ts`)
+- [x] Click-to-create note from timeline — a "+ new event" button in the
+      horizontal toolbar opens a date/title prompt; creates a table row
+      (table source) or a new note with frontmatter (Dataview/frontmatter
+      sources) (`src/event-creation.ts`, `src/create-event-modal.ts`)
 
 ## Feature gaps vs. competing timeline plugins
 
-- [ ] **Click-to-create note from timeline.** Clicking an empty spot on the
-      axis creates a new note with the date field pre-filled. Consider
-      using a Templater template for the new note if Templater is
-      installed, matching how vaults already create dated notes.
 - [ ] **Vertical-layout zoom/pan parity.** Only the horizontal layout has
       zoom/pan today; vertical is the default layout and lacks it.
 - [ ] **Collapse/compress sparse date ranges.** For long timelines (century+

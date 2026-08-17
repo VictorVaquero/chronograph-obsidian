@@ -121,6 +121,8 @@ src/
   settings.ts             Default settings
   settings-tab.ts          Settings UI for defining timeline views
   commands.ts              "Insert timeline event row" editor command
+  event-creation.ts        Click-to-create: writes a new table row or note for a view's source
+  create-event-modal.ts    Date/title prompt for click-to-create
   timeline-view.ts         ItemView wiring Obsidian lifecycle (incl. hover preview) to the renderer
   code-block-view.ts       `chronograph` fenced-code-block processor, renders inline in notes
   date/
