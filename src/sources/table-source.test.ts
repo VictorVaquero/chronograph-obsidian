@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { TFile } from "obsidian";
-import { TimelineTableNotFoundError, TimelineTableParseError, queryTimelineEventsFromTable } from "./table-source";
+import {
+	TimelineTableNotFoundError,
+	TimelineTableParseError,
+	locateMarkdownTable,
+	queryTimelineEventsFromTable,
+} from "./table-source";
 import { TimelineFieldMapping } from "../types";
 
 function fields(overrides: Partial<TimelineFieldMapping> = {}): TimelineFieldMapping {
@@ -154,5 +159,34 @@ describe("queryTimelineEventsFromTable", () => {
 		);
 		expect(events).toHaveLength(1);
 		expect(events[0].title).toBe("In table");
+	});
+});
+
+describe("locateMarkdownTable", () => {
+	it("returns null when there's no table", () => {
+		expect(locateMarkdownTable("Just some prose.")).toBeNull();
+	});
+
+	it("points at the delimiter row when the table has no data rows yet", () => {
+		const content = ["| date | title |", "| --- | --- |"].join("\n");
+		expect(locateMarkdownTable(content)).toEqual({
+			headers: ["date", "title"],
+			delimiterLineIndex: 1,
+			lastLineIndex: 1,
+		});
+	});
+
+	it("points at the last contiguous data row", () => {
+		const content = [
+			"| date | title |",
+			"| --- | --- |",
+			"| 2024-01-01 | First |",
+			"| 2024-02-01 | Second |",
+		].join("\n");
+		expect(locateMarkdownTable(content)).toEqual({
+			headers: ["date", "title"],
+			delimiterLineIndex: 1,
+			lastLineIndex: 3,
+		});
 	});
 });

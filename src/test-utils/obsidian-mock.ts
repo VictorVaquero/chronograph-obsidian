@@ -20,6 +20,10 @@ export class Plugin {}
 
 export class ItemView {}
 
+export class MarkdownView {
+	file: TFile | null = null;
+}
+
 export class PluginSettingTab {}
 
 export class Setting {

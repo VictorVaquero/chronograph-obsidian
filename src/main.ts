@@ -3,6 +3,7 @@ import { TIMELINE_VIEW_TYPE, TimelineGraphSettings } from "./types";
 import { DEFAULT_SETTINGS } from "./settings";
 import { TimelineView } from "./timeline-view";
 import { TimelineGraphSettingTab } from "./settings-tab";
+import { registerCommands } from "./commands";
 
 export default class TimelineGraphPlugin extends Plugin {
 	settings!: TimelineGraphSettings;
@@ -29,6 +30,8 @@ export default class TimelineGraphPlugin extends Plugin {
 			display: "Chronograph",
 			defaultMod: false,
 		});
+
+		registerCommands(this);
 
 		this.addSettingTab(new TimelineGraphSettingTab(this.app, this));
 	}

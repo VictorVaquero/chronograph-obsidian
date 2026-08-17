@@ -54,8 +54,16 @@ function splitTableRow(line: string): string[] {
 
 const DELIMITER_CELL_RE = /^:?-+:?$/;
 
-/** Finds the first GFM-style table (header row + `---` delimiter row) in `content`. */
-function findMarkdownTable(content: string): { headers: string[]; rows: string[][] } | null {
+export interface MarkdownTableLocation {
+	headers: string[];
+	/** 0-based line index of the `---` delimiter row. */
+	delimiterLineIndex: number;
+	/** 0-based line index of the last data row, or of the delimiter row itself if the table has no rows yet. */
+	lastLineIndex: number;
+}
+
+/** Finds the first GFM-style table (header row + `---` delimiter row) in `content`, by line position. */
+export function locateMarkdownTable(content: string): MarkdownTableLocation | null {
 	const lines = content.split(/\r?\n/);
 
 	for (let i = 0; i < lines.length - 1; i++) {
@@ -66,16 +74,28 @@ function findMarkdownTable(content: string): { headers: string[]; rows: string[]
 		if (delimCells.length === 0 || !delimCells.every((c) => DELIMITER_CELL_RE.test(c))) continue;
 
 		const headers = splitTableRow(headerLine).map((h) => h.toLowerCase());
-		const rows: string[][] = [];
+		let lastLineIndex = i + 1;
 		for (let j = i + 2; j < lines.length; j++) {
 			const rowLine = lines[j];
 			if (rowLine.trim() === "" || !rowLine.includes("|")) break;
-			rows.push(splitTableRow(rowLine));
+			lastLineIndex = j;
 		}
-		return { headers, rows };
+		return { headers, delimiterLineIndex: i + 1, lastLineIndex };
 	}
 
 	return null;
+}
+
+function findMarkdownTable(content: string): { headers: string[]; rows: string[][] } | null {
+	const lines = content.split(/\r?\n/);
+	const location = locateMarkdownTable(content);
+	if (!location) return null;
+
+	const rows: string[][] = [];
+	for (let j = location.delimiterLineIndex + 1; j <= location.lastLineIndex; j++) {
+		rows.push(splitTableRow(lines[j]));
+	}
+	return { headers: location.headers, rows };
 }
 
 function cellFor(headers: string[], row: string[], fieldName: string | undefined): string | undefined {
