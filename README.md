@@ -6,6 +6,20 @@ Define one or more "views," each pulling events from a [Dataview](https://blacks
 
 Chronograph is simple by default: a new view only asks for a name, a source, and a date field. Everything else — extra field mappings, layout/style, sort order, date granularity, multiple views — already works with sensible defaults (`title`/`group`/`enddate`/... field names, vertical layout, oldest-first, day precision); the corresponding toggle in Settings → Chronograph just reveals the controls to override that default per view, so the settings tab stays uncluttered until you need to change something.
 
+## Screenshots
+
+**Vertical layout** — a chronological card list alternating on either side of a spine:
+
+![Vertical timeline with alternating cards](docs/images/vertical-timeline.png)
+
+**Horizontal layout** — a zoomable axis with grouped lanes:
+
+![Horizontal timeline with grouped lanes](docs/images/horizontal-timeline.png)
+
+**BC/AD-aware, with period bands** — for history and ancient-timeline use cases:
+
+![Horizontal timeline showing ancient history with period bands](docs/images/horizontal-ancient.png)
+
 ## Requirements
 
 - Obsidian ≥ 1.13.0
@@ -20,6 +34,8 @@ Chronograph is simple by default: a new view only asks for a name, a source, and
    - **Frontmatter**: scans vault notes directly via Obsidian's metadata cache, no Dataview needed. Optionally filter by tag and/or folder.
    - **Obsidian Tasks emoji-dates**: scans vault notes for checklist lines (`- [ ] ...`) carrying an [Obsidian Tasks](https://publish.obsidian.md/tasks/) emoji-date (📅 due, ⏳ scheduled, 🛫 start, ✅ done); each matching line becomes its own event, not just each note. No Dataview needed. Optionally filter by tag and/or folder.
 3. Set the **Date field** — the column header (table source) or frontmatter field (Dataview/frontmatter source) holding each event's date.
+
+Dates accept a plain year with a BC/BCE (or AD/CE) suffix (`44 BC`), or a full `YYYY-MM-DD` date with the same suffix for day precision (`44-03-15 BC`) — write the calendar year as-is, the suffix handles the conversion.
 
 That's it. The view renders as a vertical chronological list, oldest first — no other setting required. It already looks for a `title` field for the event title (falling back to the note's file name), plus `group`, `color`, `enddate`, and more (see [Extra field mappings](#extra-field-mappings) below); rename any of these in Settings → Chronograph if your notes use different field names. Zoom in/out/fit from the toolbar (or Ctrl/Cmd+wheel) any time; panning is native page scroll.
 
