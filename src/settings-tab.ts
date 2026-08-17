@@ -161,11 +161,23 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 				},
 			},
 			{
-				name: "Group/color field (optional)",
+				name: "Group field (optional)",
 				render: (setting) => {
 					setting.addText((text) =>
 						text.setValue(view.fields.groupField ?? "").onChange(async (value) => {
 							view.fields.groupField = value || undefined;
+							await this.plugin.saveSettings();
+						})
+					);
+				},
+			},
+			{
+				name: "Color field (optional)",
+				desc: "Field holding an explicit CSS color (e.g. \"orange\" or \"#ff8800\") for the event. Overrides the color derived from the group.",
+				render: (setting) => {
+					setting.addText((text) =>
+						text.setValue(view.fields.colorField ?? "").onChange(async (value) => {
+							view.fields.colorField = value || undefined;
 							await this.plugin.saveSettings();
 						})
 					);

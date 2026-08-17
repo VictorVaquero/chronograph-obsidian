@@ -110,6 +110,21 @@ describe("queryTimelineEventsFromTable", () => {
 		expect(events.map((e) => e.kind)).toEqual(["period", "marker", "event", "event"]);
 	});
 
+	it("maps the color field, overriding any group-derived color", async () => {
+		const content = [
+			"| date | group | tint |",
+			"| --- | --- | --- |",
+			"| 2024-01-01 | Research | #ff8800 |",
+		].join("\n");
+		const app = makeApp(TABLE_NOTE, content);
+		const events = await queryTimelineEventsFromTable(
+			app as never,
+			TABLE_NOTE,
+			fields({ groupField: "group", colorField: "tint" })
+		);
+		expect(events[0].color).toBe("#ff8800");
+	});
+
 	it("handles escaped pipes within cell content", async () => {
 		const content = ["| date | title |", "| --- | --- |", String.raw`| 2024-01-01 | A \| B |`].join(
 			"\n"

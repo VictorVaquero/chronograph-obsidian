@@ -112,6 +112,18 @@ describe("queryTimelineEvents", () => {
 		expect(events[0].description).toBe("Some notes");
 	});
 
+	it("maps the color field, overriding any group-derived color", async () => {
+		const page = makePage({ date: "2024-01-01", cat: "Research", tint: "#ff8800" });
+		const api = makeApi({ successful: true, value: { type: "table", values: [page] } });
+		const app = makeApp(api);
+		const events = await queryTimelineEvents(
+			app as never,
+			"",
+			fields({ groupField: "cat", colorField: "tint" })
+		);
+		expect(events[0].color).toBe("#ff8800");
+	});
+
 	it("maps the kind field, defaulting to 'event' for unset/unrecognized values", async () => {
 		const period = makePage({
 			file: { path: "P.md", name: "P", link: undefined },

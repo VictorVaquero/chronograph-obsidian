@@ -54,6 +54,8 @@ export interface TimelineFieldMapping {
 	descriptionField?: string;
 	/** Field used to group/color events (e.g. a category). */
 	groupField?: string;
+	/** Field holding an explicit event color (any valid CSS color); overrides the color derived from groupField. */
+	colorField?: string;
 	/** Field whose value ("event" | "period" | "marker") selects the render kind; unset/unrecognized values default to "event". */
 	kindField?: string;
 }

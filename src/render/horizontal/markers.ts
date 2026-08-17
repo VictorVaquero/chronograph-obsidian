@@ -1,6 +1,6 @@
 import { TimelineEvent, TimelineDatePrecision } from "../../types";
 import { TimelineDate, formatTimelineDate, toOrdinal } from "../../date/timeline-date";
-import { TimelineRenderCallbacks, attachHoverPreview, colorForGroup } from "../render-shared";
+import { TimelineRenderCallbacks, attachHoverPreview, colorForEvent, colorForGroup } from "../render-shared";
 import { Scale, xFor } from "./scale";
 
 export function todayAsTimelineDate(): TimelineDate {
@@ -56,9 +56,7 @@ function renderMarker(
 	precision: TimelineDatePrecision,
 	showEra: boolean
 ): HTMLElement {
-	const color = event.group
-		? colorForGroup(event.group)
-		: "var(--interactive-accent, #7c3aed)";
+	const color = colorForEvent(event) ?? "var(--interactive-accent, #7c3aed)";
 	const startX = xFor(toOrdinal(event.date), scale);
 
 	const el = createEl("button");
@@ -176,7 +174,7 @@ export function renderPeriodBands(
 		band.className = "timeline-graph-period-band";
 		band.style.left = `${startX}%`;
 		band.style.width = `${width}%`;
-		const color = period.group ? colorForGroup(period.group) : undefined;
+		const color = colorForEvent(period);
 		if (color) band.style.setProperty("--marker-color", color);
 		band.addEventListener("click", () => callbacks.onEventClick?.(period));
 		attachTooltip(band, period, precision, showEra);
@@ -207,7 +205,7 @@ export function renderFlagMarker(
 	line.type = "button";
 	line.className = "timeline-graph-flag-marker";
 	line.style.left = `${xFor(toOrdinal(marker.date), scale)}%`;
-	const color = marker.group ? colorForGroup(marker.group) : undefined;
+	const color = colorForEvent(marker);
 	if (color) line.style.setProperty("--marker-color", color);
 	line.addEventListener("click", () => callbacks.onEventClick?.(marker));
 	attachTooltip(line, marker, precision, showEra);

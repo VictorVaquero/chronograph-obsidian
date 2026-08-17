@@ -89,6 +89,8 @@ function pageToEvent(
 
 	const kind = fields.kindField ? toTimelineEventKind(page[fields.kindField]) : "event";
 
+	const color = fields.colorField ? fieldToString(page[fields.colorField]) : undefined;
+
 	return {
 		id: page.file.path,
 		title,
@@ -98,6 +100,7 @@ function pageToEvent(
 		description,
 		group,
 		kind,
+		color,
 	};
 }
 

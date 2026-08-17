@@ -49,6 +49,12 @@ export function colorForGroup(group: string): string {
 	return `hsl(${hue}, 65%, 55%)`;
 }
 
+// An explicit event.color always wins; otherwise fall back to the
+// deterministic per-group color, if any.
+export function colorForEvent(event: TimelineEvent): string | undefined {
+	return event.color || (event.group ? colorForGroup(event.group) : undefined);
+}
+
 export function groupsOf(events: TimelineEvent[]): string[] {
 	const seen = new Set<string>();
 	const groups: string[] = [];

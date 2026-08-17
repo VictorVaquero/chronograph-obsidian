@@ -104,6 +104,7 @@ function rowToEvent(
 	const description = cellFor(headers, row, fields.descriptionField);
 	const group = cellFor(headers, row, fields.groupField);
 	const kind = toTimelineEventKind(cellFor(headers, row, fields.kindField));
+	const color = cellFor(headers, row, fields.colorField);
 
 	return {
 		id: `${notePath}::row-${rowIndex}`,
@@ -114,6 +115,7 @@ function rowToEvent(
 		description,
 		group,
 		kind,
+		color,
 	};
 }
 

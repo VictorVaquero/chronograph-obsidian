@@ -1,5 +1,5 @@
 import { TimelineEvent, TimelineDatePrecision, TimelineCardSide, TimelineLineStyle } from "../types";
-import { TimelineRenderCallbacks, attachHoverPreview, colorForGroup, renderEmptyState } from "./render-shared";
+import { TimelineRenderCallbacks, attachHoverPreview, colorForEvent, renderEmptyState } from "./render-shared";
 import {
 	bucketOf,
 	compareTimelineDates,
@@ -76,7 +76,7 @@ function renderNode(
 	const node = createDiv();
 	node.className = `timeline-graph-node ${alignLeft ? "is-left" : "is-right"}`;
 
-	const color = event.group ? colorForGroup(event.group) : undefined;
+	const color = colorForEvent(event);
 
 	const dot = createDiv();
 	dot.className = "timeline-graph-node-dot";
