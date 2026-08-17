@@ -12,50 +12,149 @@
 	color: var(--text-error);
 }
 
-.timeline-graph-list {
-	display: flex;
-	flex-direction: column;
-	gap: var(--size-4-2);
-	border-left: 2px solid var(--background-modifier-border);
-	padding-left: var(--size-4-4);
+/* Vertical layout: central spine with alternating cards */
+
+.timeline-graph-spine {
+	position: relative;
+	max-width: 720px;
+	margin: 0 auto;
+	padding: var(--size-4-4) 0;
 }
 
-.timeline-graph-item {
+.timeline-graph-spine-line {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 50%;
+	width: 2px;
+	background: linear-gradient(
+		to bottom,
+		transparent,
+		var(--background-modifier-border) 4%,
+		var(--background-modifier-border) 96%,
+		transparent
+	);
+	transform: translateX(-50%);
+}
+
+.timeline-graph-node {
+	position: relative;
+	display: flex;
+	width: 100%;
+	margin-bottom: var(--size-4-4);
+}
+
+.timeline-graph-node.is-left {
+	justify-content: flex-start;
+}
+
+.timeline-graph-node.is-right {
+	justify-content: flex-end;
+}
+
+.timeline-graph-node-dot {
+	position: absolute;
+	top: var(--size-4-3);
+	left: 50%;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	transform: translateX(-50%);
+	background: var(--marker-color, var(--interactive-accent));
+	border: 3px solid var(--background-primary);
+	box-shadow: 0 0 0 2px var(--marker-color, var(--interactive-accent));
+	z-index: 2;
+}
+
+.timeline-graph-card {
+	position: relative;
+	width: calc(50% - var(--size-4-4));
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	padding: var(--size-4-3);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+	transition: box-shadow 120ms ease, transform 120ms ease;
 	display: flex;
 	flex-direction: column;
 	gap: var(--size-4-1);
 }
 
-.timeline-graph-item-date {
-	font-size: var(--font-smallest);
-	color: var(--text-muted);
+.timeline-graph-card::before {
+	content: "";
+	position: absolute;
+	top: var(--size-4-3);
+	width: var(--size-4-4);
+	height: 2px;
+	background: var(--marker-color, var(--background-modifier-border));
 }
 
-.timeline-graph-item-title {
+.is-left .timeline-graph-card::before {
+	right: calc(-1 * var(--size-4-4));
+}
+
+.is-right .timeline-graph-card::before {
+	left: calc(-1 * var(--size-4-4));
+}
+
+.timeline-graph-card:hover {
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16), 0 2px 4px rgba(0, 0, 0, 0.1);
+	transform: translateY(-1px);
+}
+
+.timeline-graph-card-date {
+	font-size: var(--font-smallest);
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+}
+
+.timeline-graph-card-title {
 	font-weight: var(--font-medium);
+	font-size: var(--font-ui-medium, 1.05em);
 	color: var(--text-normal);
 	cursor: pointer;
-	border-left: 3px solid transparent;
-	padding-left: var(--size-4-2);
 	text-decoration: none;
 }
 
-.timeline-graph-item-title:hover {
-	text-decoration: underline;
+.timeline-graph-card-title:hover {
+	color: var(--interactive-accent);
 }
 
-.timeline-graph-item-badge {
+.timeline-graph-card-badge {
 	display: inline-block;
 	width: fit-content;
 	font-size: var(--font-smallest);
-	color: #fff;
+	color: var(--text-on-accent, #fff);
+	background: var(--marker-color, var(--interactive-accent));
 	padding: 1px var(--size-4-2);
 	border-radius: 999px;
 }
 
-.timeline-graph-item-desc {
+.timeline-graph-card-desc {
 	font-size: var(--font-small);
 	color: var(--text-muted);
+	margin: 0;
+}
+
+.timeline-graph-today {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: var(--size-4-2) 0;
+	z-index: 2;
+}
+
+.timeline-graph-today span {
+	background: var(--text-error);
+	color: var(--text-on-accent, #fff);
+	font-size: var(--font-smallest);
+	font-weight: var(--font-medium);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	padding: 2px var(--size-4-2);
+	border-radius: 999px;
 }
 
 /* Horizontal axis layout */
@@ -94,28 +193,29 @@
 }
 
 .timeline-graph-lane {
+	position: relative;
 	display: flex;
 	align-items: stretch;
-	min-height: 40px;
-	border-top: 1px solid var(--background-modifier-border);
+	min-height: 44px;
 }
 
-.timeline-graph-lane:last-child {
-	border-bottom: 1px solid var(--background-modifier-border);
+.timeline-graph-lane.is-odd {
+	background: var(--background-secondary);
 }
 
 .timeline-graph-lane-label {
 	position: sticky;
 	left: 0;
-	z-index: 1;
+	z-index: 3;
 	flex: 0 0 auto;
 	display: flex;
 	align-items: center;
 	width: 120px;
 	padding: var(--size-4-1) var(--size-4-2);
 	font-size: var(--font-small);
-	color: var(--text-muted);
-	background: var(--background-primary);
+	font-weight: var(--font-medium);
+	color: var(--text-normal);
+	background: inherit;
 	border-left: 3px solid var(--background-modifier-border);
 }
 
@@ -124,11 +224,28 @@
 	flex: 1 1 auto;
 }
 
-.timeline-graph-marker {
+.timeline-graph-marker-point-wrapper {
 	position: absolute;
-	top: 50%;
-	transform: translate(-50%, -50%);
-	background: var(--marker-color, var(--interactive-accent));
+	top: 0;
+	bottom: 0;
+	transform: translateX(-50%);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.timeline-graph-marker-stem {
+	position: absolute;
+	top: 4px;
+	bottom: 4px;
+	width: 2px;
+	background: var(--marker-color, var(--background-modifier-border));
+	opacity: 0.35;
+}
+
+.timeline-graph-marker {
+	position: relative;
 	border: none;
 	cursor: pointer;
 	color: var(--text-on-accent, #fff);
@@ -137,21 +254,70 @@
 	max-width: 160px;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	padding: 2px var(--size-4-2);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+	transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.timeline-graph-marker:hover {
+	transform: scale(1.08);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+	z-index: 2;
 }
 
 .timeline-graph-marker-point {
-	border-radius: 999px;
+	background: var(--marker-color, var(--interactive-accent));
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	padding: 0;
+	border: 2px solid var(--background-primary);
+}
+
+.timeline-graph-marker-point .timeline-graph-marker-label {
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	margin-top: 4px;
+	color: var(--text-normal);
+	background: var(--background-primary);
+	padding: 1px 4px;
+	border-radius: var(--radius-s);
 }
 
 .timeline-graph-marker-range {
+	position: absolute;
+	top: 50%;
 	transform: translateY(-50%);
-	border-radius: var(--radius-s);
+	background: var(--marker-color, var(--interactive-accent));
+	border-radius: 999px;
 	text-align: left;
+	padding: 3px var(--size-4-2);
 }
 
 .timeline-graph-marker-label {
 	pointer-events: none;
+}
+
+.timeline-graph-today-line {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 2px;
+	background: var(--text-error);
+	opacity: 0.7;
+	z-index: 2;
+	pointer-events: none;
+}
+
+.timeline-graph-today-line span {
+	position: absolute;
+	top: -20px;
+	left: 4px;
+	font-size: var(--font-smallest);
+	font-weight: var(--font-medium);
+	color: var(--text-error);
+	white-space: nowrap;
 }
 
 .timeline-graph-view-config {

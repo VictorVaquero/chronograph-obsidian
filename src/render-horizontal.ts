@@ -48,9 +48,14 @@ export function renderHorizontalTimeline(
 	track.style.width = `${totalWidth}px`;
 	track.appendChild(renderAxis(scale));
 
-	for (const group of groupsOf(events)) {
+	groupsOf(events).forEach((group, laneIndex) => {
 		const laneEvents = events.filter((e) => (e.group ?? "") === group);
-		track.appendChild(renderLane(group, laneEvents, scale, callbacks));
+		track.appendChild(renderLane(group, laneEvents, scale, laneIndex, callbacks));
+	});
+
+	const now = Date.now();
+	if (now >= scale.minDate && now <= scale.maxDate) {
+		track.appendChild(renderTodayLine(now, scale));
 	}
 
 	scroller.appendChild(track);
@@ -92,10 +97,11 @@ function renderLane(
 	group: string,
 	laneEvents: TimelineEvent[],
 	scale: Scale,
+	laneIndex: number,
 	callbacks: TimelineRenderCallbacks
 ): HTMLElement {
 	const lane = document.createElement("div");
-	lane.className = "timeline-graph-lane";
+	lane.className = `timeline-graph-lane ${laneIndex % 2 === 0 ? "is-even" : "is-odd"}`;
 
 	const label = document.createElement("div");
 	label.className = "timeline-graph-lane-label";
@@ -113,6 +119,18 @@ function renderLane(
 
 	lane.appendChild(laneTrack);
 	return lane;
+}
+
+function renderTodayLine(now: number, scale: Scale): HTMLElement {
+	const line = document.createElement("div");
+	line.className = "timeline-graph-today-line";
+	line.style.left = `${xFor(now, scale)}px`;
+
+	const label = document.createElement("span");
+	label.textContent = "Today";
+	line.appendChild(label);
+
+	return line;
 }
 
 function renderMarker(
@@ -141,11 +159,23 @@ function renderMarker(
 		el.className = "timeline-graph-marker timeline-graph-marker-range";
 		el.style.left = `${startX}px`;
 		el.style.width = `${width}px`;
-	} else {
-		el.className = "timeline-graph-marker timeline-graph-marker-point";
-		el.style.left = `${startX}px`;
+		el.appendChild(labelEl);
+		return el;
 	}
 
+	const wrapper = document.createElement("div");
+	wrapper.className = "timeline-graph-marker-point-wrapper";
+	wrapper.style.left = `${startX}px`;
+	wrapper.style.setProperty("--marker-color", color);
+
+	const stem = document.createElement("div");
+	stem.className = "timeline-graph-marker-stem";
+	wrapper.appendChild(stem);
+
+	el.className = "timeline-graph-marker timeline-graph-marker-point";
+	el.style.removeProperty("left");
 	el.appendChild(labelEl);
-	return el;
+	wrapper.appendChild(el);
+
+	return wrapper;
 }

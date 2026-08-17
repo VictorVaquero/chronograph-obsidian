@@ -14,50 +14,93 @@ export function renderVerticalTimeline(
 		return;
 	}
 
-	const list = document.createElement("div");
-	list.className = "timeline-graph-list";
+	const spine = document.createElement("div");
+	spine.className = "timeline-graph-spine";
 
-	for (const event of events) {
-		const item = document.createElement("div");
-		item.className = "timeline-graph-item";
+	const line = document.createElement("div");
+	line.className = "timeline-graph-spine-line";
+	spine.appendChild(line);
 
-		const dateEl = document.createElement("span");
-		dateEl.className = "timeline-graph-item-date";
-		dateEl.textContent = formatDateRange(event);
-		item.appendChild(dateEl);
+	const todayIndex = findTodayInsertionIndex(events);
 
-		const link = document.createElement("a");
-		link.className = "timeline-graph-item-title";
-		link.textContent = event.title;
-		link.href = "#";
-		if (event.group) {
-			link.style.borderLeftColor = colorForGroup(event.group);
+	events.forEach((event, index) => {
+		if (index === todayIndex) {
+			spine.appendChild(renderTodayMarker());
 		}
-		link.addEventListener("click", (evt) => {
-			evt.preventDefault();
-			callbacks.onEventClick?.(event);
-		});
-		item.appendChild(link);
-
-		if (event.group) {
-			const badge = document.createElement("span");
-			badge.className = "timeline-graph-item-badge";
-			badge.textContent = event.group;
-			badge.style.backgroundColor = colorForGroup(event.group);
-			item.appendChild(badge);
-		}
-
-		if (event.description) {
-			const descEl = document.createElement("span");
-			descEl.className = "timeline-graph-item-desc";
-			descEl.textContent = event.description;
-			item.appendChild(descEl);
-		}
-
-		list.appendChild(item);
+		spine.appendChild(renderNode(event, index % 2 === 0, callbacks));
+	});
+	if (todayIndex === events.length) {
+		spine.appendChild(renderTodayMarker());
 	}
 
-	container.appendChild(list);
+	container.appendChild(spine);
+}
+
+function renderNode(
+	event: TimelineEvent,
+	alignLeft: boolean,
+	callbacks: TimelineRenderCallbacks
+): HTMLElement {
+	const node = document.createElement("div");
+	node.className = `timeline-graph-node ${alignLeft ? "is-left" : "is-right"}`;
+
+	const dot = document.createElement("div");
+	dot.className = "timeline-graph-node-dot";
+	if (event.group) dot.style.setProperty("--marker-color", colorForGroup(event.group));
+	node.appendChild(dot);
+
+	const card = document.createElement("div");
+	card.className = "timeline-graph-card";
+	if (event.group) card.style.setProperty("--marker-color", colorForGroup(event.group));
+
+	const dateEl = document.createElement("span");
+	dateEl.className = "timeline-graph-card-date";
+	dateEl.textContent = formatDateRange(event);
+	card.appendChild(dateEl);
+
+	const link = document.createElement("a");
+	link.className = "timeline-graph-card-title";
+	link.textContent = event.title;
+	link.href = "#";
+	link.addEventListener("click", (evt) => {
+		evt.preventDefault();
+		callbacks.onEventClick?.(event);
+	});
+	card.appendChild(link);
+
+	if (event.group) {
+		const badge = document.createElement("span");
+		badge.className = "timeline-graph-card-badge";
+		badge.textContent = event.group;
+		card.appendChild(badge);
+	}
+
+	if (event.description) {
+		const descEl = document.createElement("p");
+		descEl.className = "timeline-graph-card-desc";
+		descEl.textContent = event.description;
+		card.appendChild(descEl);
+	}
+
+	node.appendChild(card);
+	return node;
+}
+
+function renderTodayMarker(): HTMLElement {
+	const marker = document.createElement("div");
+	marker.className = "timeline-graph-today";
+	const label = document.createElement("span");
+	label.textContent = "Today";
+	marker.appendChild(label);
+	return marker;
+}
+
+function findTodayInsertionIndex(events: TimelineEvent[]): number {
+	const now = Date.now();
+	const ascending = events.length < 2 || events[0].date <= events[events.length - 1].date;
+	const index = events.findIndex((e) => (ascending ? e.date > now : e.date < now));
+	if (index === -1) return events.length;
+	return index;
 }
 
 function formatDateRange(event: TimelineEvent): string {

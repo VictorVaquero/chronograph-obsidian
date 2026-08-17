@@ -20,8 +20,12 @@ const context = await esbuild.context({
 
 if (watch) {
 	await context.watch();
-	const serveResult = await context.serve({ servedir: "src/dev" }, {});
-	console.log(`Preview server: http://${serveResult.host}:${serveResult.port}/preview.html`);
+	// Served from the project root (not src/dev) so preview.html can load
+	// the real styles.css via a root-relative path instead of "../../".
+	const serveResult = await context.serve({ servedir: "." }, {});
+	console.log(
+		`Preview server: http://${serveResult.host}:${serveResult.port}/src/dev/preview.html`
+	);
 } else {
 	await context.rebuild();
 	await context.dispose();

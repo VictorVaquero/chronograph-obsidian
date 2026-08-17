@@ -33,7 +33,7 @@ mock data instead of relaunching Obsidian for every change:
 pnpm run dev:preview
 ```
 
-This serves `src/dev/preview.html` (default: http://127.0.0.1:8000/preview.html)
+This serves `src/dev/preview.html` (default: http://127.0.0.1:8000/src/dev/preview.html)
 with buttons to switch between sample data, randomized data, and the
 empty/error states. It rebuilds on save. This only exercises the rendering
 layer — Dataview querying and the real Obsidian workspace still require
