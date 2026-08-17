@@ -11,6 +11,7 @@ Define one or more "views," each pulling events from a [Dataview](https://blacks
 - **Ranged and point events**: an optional end-date field renders events as a span instead of a single marker.
 - **Grouping & color**: events auto-color by group (deterministic hash), or set an explicit per-event color that overrides the group color.
 - **Connecting arrows**: point one event at another (by title) to draw an arrow between them on the horizontal axis.
+- **Click-to-create events**: a "+ new event" button in the horizontal toolbar prompts for a date/title and creates the event — a new table row for the table source, or a new note with frontmatter for the Dataview/frontmatter sources.
 - **Native hover preview**: hovering an event's title shows Obsidian's built-in note preview popover.
 - **Three event sources**: a Dataview query across the vault, a single-note markdown table, or frontmatter scanned directly via Obsidian's own metadata cache (the latter two need no Dataview dependency) — plus an "Insert timeline event row" command that scaffolds or appends rows to a table source.
 - **Frontmatter source filtering**: optionally narrow the frontmatter source by tag and/or vault folder, so a single view can target e.g. all notes tagged `#event` under `Journal/`.
@@ -43,6 +44,7 @@ Define one or more "views," each pulling events from a [Dataview](https://blacks
    | Points-to | Title of another event in the same view to draw a connecting arrow toward — horizontal layout only |
 
 4. Pick a layout, sort order, date granularity, and (for the table source) use **Insert timeline event row** from the command palette while editing that note to scaffold/append rows.
+5. On the horizontal layout, click **+ new event** in the toolbar to create an event without leaving the timeline: table-source views get a new row appended to the table note, Dataview-source views get a new note at the vault root, and frontmatter-source views get a new note in the view's folder filter (or vault root, if unset). The note's file name is the entered title, or the date if no title is given.
 
 ### In-note code blocks
 

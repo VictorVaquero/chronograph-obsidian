@@ -8,13 +8,18 @@ const ZOOM_STEP = 1.15;
 // recompute needed on every wheel tick. Pan is just native scroll. Zooming
 // keeps the pointer's calendar position fixed under the cursor by adjusting
 // scrollLeft after the resize; dragging pans via scrollLeft deltas.
+//
+// Elements measured in absolute pixels (like the arrow overlay) aren't
+// percent-positioned and don't rescale for free, so callers can pass
+// onZoomChange to redo that kind of layout whenever the track is resized.
 export function setupZoomAndPan(
 	scroller: HTMLElement,
 	track: HTMLElement,
 	baseWidth: number,
 	zoomInBtn: HTMLButtonElement,
 	zoomOutBtn: HTMLButtonElement,
-	fitBtn: HTMLButtonElement
+	fitBtn: HTMLButtonElement,
+	onZoomChange?: () => void
 ): void {
 	let zoom = 1;
 
@@ -31,6 +36,7 @@ export function setupZoomAndPan(
 
 		const newContentX = ratio * baseWidth * zoom;
 		scroller.scrollLeft = newContentX - scrollerOffsetX;
+		onZoomChange?.();
 	}
 
 	scroller.addEventListener(
@@ -78,5 +84,6 @@ export function setupZoomAndPan(
 		zoom = 1;
 		track.style.width = `${baseWidth}px`;
 		scroller.scrollLeft = 0;
+		onZoomChange?.();
 	});
 }

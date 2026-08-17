@@ -3,7 +3,9 @@ import { TFile } from "obsidian";
 import {
 	TimelineTableNotFoundError,
 	TimelineTableParseError,
+	insertTableRow,
 	locateMarkdownTable,
+	orderedTableHeaders,
 	queryTimelineEventsFromTable,
 } from "./table-source";
 import { TimelineFieldMapping } from "../types";
@@ -203,5 +205,62 @@ describe("locateMarkdownTable", () => {
 			delimiterLineIndex: 1,
 			lastLineIndex: 3,
 		});
+	});
+});
+
+describe("orderedTableHeaders", () => {
+	it("orders required-then-optional fields and drops unmapped ones", () => {
+		expect(orderedTableHeaders(fields({ titleField: "title", groupField: "group" }))).toEqual([
+			"date",
+			"title",
+			"group",
+		]);
+	});
+});
+
+describe("insertTableRow", () => {
+	it("scaffolds a header/delimiter/row block when the content has no table yet", () => {
+		const result = insertTableRow("Some prose.", fields({ titleField: "title" }), {
+			date: "2024-01-01",
+			title: "Kickoff",
+		});
+		const rows = result.trim().split("\n").slice(-3);
+		expect(rows[0]).toBe("| date | title |");
+		expect(rows[1]).toBe("| --- | --- |");
+		expect(rows[2]).toBe("| 2024-01-01 | Kickoff |");
+	});
+
+	it("scaffolds a table in otherwise-empty content", () => {
+		const result = insertTableRow("", fields(), { date: "2024-01-01" });
+		expect(result).toBe("| date |\n| --- |\n| 2024-01-01 |\n");
+	});
+
+	it("appends a new row after the last row of an existing table", () => {
+		const content = ["| date | title |", "| --- | --- |", "| 2024-01-01 | First |"].join("\n");
+		const result = insertTableRow(content, fields({ titleField: "title" }), {
+			date: "2024-02-01",
+			title: "Second",
+		});
+		expect(result.split("\n")).toEqual([
+			"| date | title |",
+			"| --- | --- |",
+			"| 2024-01-01 | First |",
+			"| 2024-02-01 | Second |",
+		]);
+	});
+
+	it("leaves unmapped cells blank", () => {
+		const content = ["| date | title |", "| --- | --- |"].join("\n");
+		const result = insertTableRow(content, fields({ titleField: "title" }), { date: "2024-01-01" });
+		expect(result.split("\n")[2]).toBe("| 2024-01-01 |  |");
+	});
+
+	it("matches columns case-insensitively", () => {
+		const content = ["| Date | Title |", "| --- | --- |"].join("\n");
+		const result = insertTableRow(content, fields({ titleField: "title" }), {
+			date: "2024-01-01",
+			title: "Kickoff",
+		});
+		expect(result.split("\n")[2]).toBe("| 2024-01-01 | Kickoff |");
 	});
 });

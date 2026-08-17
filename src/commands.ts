@@ -1,25 +1,10 @@
 import { MarkdownView, Notice } from "obsidian";
 import type TimelineGraphPlugin from "./main";
-import { TimelineFieldMapping, TimelineViewConfig } from "./types";
-import { locateMarkdownTable } from "./sources/table-source";
+import { TimelineViewConfig } from "./types";
+import { locateMarkdownTable, orderedTableHeaders } from "./sources/table-source";
 
 function todayIso(): string {
 	return new Date().toISOString().slice(0, 10);
-}
-
-// Column order for a freshly-scaffolded table: required fields first, then
-// whichever optional fields this view actually maps.
-function orderedHeaders(fields: TimelineFieldMapping): string[] {
-	return [
-		fields.dateField,
-		fields.endDateField,
-		fields.titleField,
-		fields.descriptionField,
-		fields.groupField,
-		fields.colorField,
-		fields.kindField,
-		fields.pointsToField,
-	].filter((f): f is string => !!f);
 }
 
 export function registerCommands(plugin: TimelineGraphPlugin): void {
@@ -48,7 +33,7 @@ export function registerCommands(plugin: TimelineGraphPlugin): void {
 			const location = locateMarkdownTable(content);
 
 			if (!location) {
-				const headers = orderedHeaders(config.fields);
+				const headers = orderedTableHeaders(config.fields);
 				const dateIdx = headers.indexOf(config.fields.dateField);
 				const cells = headers.map((h, i) => (i === dateIdx ? todayIso() : ""));
 				const block = [

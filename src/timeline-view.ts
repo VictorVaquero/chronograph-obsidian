@@ -9,6 +9,7 @@ import { queryTimelineEventsFromTable } from "./sources/table-source";
 import { queryTimelineEventsFromFrontmatter } from "./sources/frontmatter-source";
 import { renderEmptyState, renderErrorState, renderTimeline } from "./render/timeline-renderer";
 import { compareTimelineDates } from "./date/timeline-date";
+import { TimelineCreateEventModal } from "./create-event-modal";
 import type TimelineGraphPlugin from "./main";
 
 export class TimelineView extends ItemView implements HoverParent {
@@ -109,6 +110,9 @@ export class TimelineView extends ItemView implements HoverParent {
 							linktext: event.sourcePath,
 							sourcePath: "",
 						});
+					},
+					onCreateEvent: () => {
+						new TimelineCreateEventModal(this.app, config, () => void this.refresh()).open();
 					},
 				},
 				{

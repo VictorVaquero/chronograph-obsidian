@@ -56,6 +56,16 @@ export function renderHorizontalTimeline(
 
 	toolbar.append(zoomOutBtn, zoomInBtn, fitBtn);
 
+	if (callbacks.onCreateEvent) {
+		const newEventBtn = createEl("button");
+		newEventBtn.type = "button";
+		newEventBtn.className = "timeline-graph-new-event-btn";
+		newEventBtn.textContent = "+ new event";
+		newEventBtn.title = "Create a new event";
+		newEventBtn.addEventListener("click", () => callbacks.onCreateEvent?.());
+		toolbar.append(newEventBtn);
+	}
+
 	const scroller = createDiv();
 	scroller.className = "timeline-graph-horizontal-scroller";
 
@@ -91,5 +101,7 @@ export function renderHorizontalTimeline(
 
 	renderArrows(track, events);
 
-	setupZoomAndPan(scroller, track, totalWidth, zoomInBtn, zoomOutBtn, fitBtn);
+	setupZoomAndPan(scroller, track, totalWidth, zoomInBtn, zoomOutBtn, fitBtn, () =>
+		renderArrows(track, events)
+	);
 }

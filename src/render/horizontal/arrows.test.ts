@@ -79,4 +79,30 @@ describe("renderArrows", () => {
 		renderArrows(track, events);
 		expect(track.querySelectorAll(".timeline-graph-arrow-line")).toHaveLength(1);
 	});
+
+	it("replaces the previous overlay instead of stacking a second one when called again", () => {
+		const events = [
+			makeEvent({ id: "a", title: "Kickoff", pointsTo: "review" }),
+			makeEvent({ id: "b", title: "Review" }),
+		];
+		const track = trackWithMarkers(events);
+		renderArrows(track, events);
+		renderArrows(track, events);
+		expect(track.querySelectorAll(".timeline-graph-arrows")).toHaveLength(1);
+		expect(track.querySelectorAll(".timeline-graph-arrow-line")).toHaveLength(1);
+	});
+
+	it("removes a stale overlay when re-rendered with no pointsTo left to draw", () => {
+		const events = [
+			makeEvent({ id: "a", title: "Kickoff", pointsTo: "review" }),
+			makeEvent({ id: "b", title: "Review" }),
+		];
+		const track = trackWithMarkers(events);
+		renderArrows(track, events);
+		expect(track.querySelector(".timeline-graph-arrows")).not.toBeNull();
+
+		const withoutTargets = events.map((e) => ({ ...e, pointsTo: undefined }));
+		renderArrows(track, withoutTargets);
+		expect(track.querySelector(".timeline-graph-arrows")).toBeNull();
+	});
 });

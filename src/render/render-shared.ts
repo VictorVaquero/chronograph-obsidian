@@ -5,6 +5,12 @@ export interface TimelineRenderCallbacks {
 	onEventClick?: (event: TimelineEvent) => void;
 	/** Called on mouseover of an event's title/marker, to trigger Obsidian's native hover-link preview popover. */
 	onEventHover?: (event: TimelineEvent, evt: MouseEvent, targetEl: HTMLElement) => void;
+	/**
+	 * Called when the user clicks the "+ New event" toolbar button (horizontal
+	 * layout only). Omit to hide the button, e.g. for read-only/code-block
+	 * timelines with no view config to create events against.
+	 */
+	onCreateEvent?: () => void;
 }
 
 export function attachHoverPreview(

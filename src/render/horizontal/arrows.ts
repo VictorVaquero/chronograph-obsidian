@@ -9,13 +9,16 @@ const ARROWHEAD_ID = "timeline-graph-arrowhead";
  * Must run after the track is attached to the document, since it reads
  * marker positions via getBoundingClientRect.
  *
- * The SVG's viewBox is fixed to the track's pixel size at render time, with
- * width/height set to 100% via CSS and preserveAspectRatio="none" — so
- * horizontal zoom (which only resizes the track's width) rescales arrow
- * x-coordinates for free, the same way percentage-positioned markers do,
- * while the vertical scale (track height never changes) stays 1:1.
+ * Markers are positioned with a mix of fixed pixel axis padding and
+ * percentage offsets (see xFor/AXIS_PADDING_PX in scale.ts), so their
+ * fractional position within the track is not scroll/zoom-invariant — a
+ * viewBox captured once at render time drifts out of alignment as soon as
+ * the track is resized. Callers must call this again (it replaces any
+ * previous overlay) whenever zoom changes the track's width.
  */
 export function renderArrows(track: HTMLElement, events: TimelineEvent[]): void {
+	track.querySelector(".timeline-graph-arrows")?.remove();
+
 	const withTargets = events.filter((e) => e.pointsTo);
 	if (withTargets.length === 0) return;
 

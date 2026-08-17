@@ -166,6 +166,53 @@ export function parseTimelineEventsFromTableContent(
 	return events;
 }
 
+// Column order for a freshly-scaffolded/appended row: required fields
+// first, then whichever optional fields the view actually maps.
+export function orderedTableHeaders(fields: TimelineFieldMapping): string[] {
+	return [
+		fields.dateField,
+		fields.endDateField,
+		fields.titleField,
+		fields.descriptionField,
+		fields.groupField,
+		fields.colorField,
+		fields.kindField,
+		fields.pointsToField,
+	].filter((f): f is string => !!f);
+}
+
+/**
+ * Returns `content` with a new table row appended, or a freshly-scaffolded
+ * table (header + divider + one row) if `content` has no table yet. Each
+ * cell in the new row is set from `cellValues` (matched by field name,
+ * e.g. `{ [fields.dateField]: "2024-01-01" }`); unmapped cells are blank.
+ */
+export function insertTableRow(
+	content: string,
+	fields: TimelineFieldMapping,
+	cellValues: Record<string, string>
+): string {
+	const location = locateMarkdownTable(content);
+
+	if (!location) {
+		const headers = orderedTableHeaders(fields);
+		const cells = headers.map((h) => cellValues[h] ?? "");
+		const block = [
+			`| ${headers.join(" | ")} |`,
+			`| ${headers.map(() => "---").join(" | ")} |`,
+			`| ${cells.join(" | ")} |`,
+		].join("\n");
+		return content.trim() ? `${content.trimEnd()}\n\n${block}\n` : `${block}\n`;
+	}
+
+	const cells = location.headers.map((h) => cellValues[h.trim().toLowerCase()] ?? "");
+	const rowText = `| ${cells.join(" | ")} |`;
+
+	const lines = content.split(/\r?\n/);
+	lines.splice(location.lastLineIndex + 1, 0, rowText);
+	return lines.join("\n");
+}
+
 /**
  * Reads the first markdown table found in `notePath`'s body and maps its
  * rows into TimelineEvents using the given field mapping. Column headers
