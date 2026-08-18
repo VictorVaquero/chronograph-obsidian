@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { closeSettings, openLayoutAndStyleSettings } from "./helpers";
 
 // Regression coverage for the click-priority fix in styles.css
 // (.timeline-graph-lane needs z-index: 2 to outrank .timeline-graph-period-bands'
@@ -8,7 +9,9 @@ import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
 	await page.goto("/src/dev/preview.html");
+	await openLayoutAndStyleSettings(page);
 	await page.selectOption("#layout-select", "horizontal");
+	await closeSettings(page);
 	await page.click("#btn-ancient");
 });
 

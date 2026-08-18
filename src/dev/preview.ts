@@ -273,8 +273,14 @@ function textControl(value: string, onChange: (value: string) => void): HTMLElem
 	return input;
 }
 
-function dropdownControl(value: string, options: [string, string][], onChange: (value: string) => void): HTMLElement {
+function dropdownControl(
+	value: string,
+	options: [string, string][],
+	onChange: (value: string) => void,
+	id?: string
+): HTMLElement {
 	const select = document.createElement("select");
+	if (id) select.id = id;
 	options.forEach(([optValue, label]) => {
 		const opt = document.createElement("option");
 		opt.value = optValue;
@@ -470,7 +476,8 @@ function renderSettings(): void {
 					(v) => {
 						view.layout = v as TimelineLayout;
 						reRunActiveSource();
-					}
+					},
+					"layout-select"
 				)
 			)
 		);
@@ -488,7 +495,8 @@ function renderSettings(): void {
 					(v) => {
 						view.verticalCardSide = v as TimelineCardSide;
 						reRunActiveSource();
-					}
+					},
+					"card-side-select"
 				)
 			)
 		);
@@ -506,7 +514,8 @@ function renderSettings(): void {
 					(v) => {
 						view.verticalLineStyle = v as TimelineLineStyle;
 						reRunActiveSource();
-					}
+					},
+					"line-style-select"
 				)
 			)
 		);
