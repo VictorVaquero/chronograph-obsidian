@@ -79,6 +79,16 @@ query: from "Journal" where date
 		expect(config.dataviewQuery).toBe('from "Journal" where date');
 	});
 
+	it("parses a dataview source header with no --- divider, since dataview blocks take no body", () => {
+		const source = `source: dataview
+query: from "Journal" where date
+titlefield: aliases`;
+		const { config } = parseCodeBlockConfig(source);
+		expect(config.sourceType).toBe("dataview");
+		expect(config.dataviewQuery).toBe('from "Journal" where date');
+		expect(config.fields.titleField).toBe("aliases");
+	});
+
 	it("parses a frontmatter source header with tag/folder filters", () => {
 		const source = `source: frontmatter
 tag: event

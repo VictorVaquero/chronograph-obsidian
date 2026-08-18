@@ -119,13 +119,16 @@ function applySettingLine(config: TimelineCodeBlockConfig, key: string, rawValue
 /**
  * Splits a `chronograph` code-block source into an optional YAML-ish
  * settings header and the markdown table body. A lone "---" line on its own
- * separates the two; if no such line exists, the whole source is treated as
- * the table body and defaults apply to every setting.
+ * separates the two; if no such line exists, the whole source is scanned for
+ * settings lines *and* used as the table body — a source/query/tag/folder
+ * header (which needs no body) and a header-less inline table (which has no
+ * settings lines) both parse correctly this way, since table rows don't
+ * contain the "key: value" shape the header scan looks for.
  */
 function splitHeaderAndBody(source: string): { header: string; body: string } {
 	const lines = source.split(/\r?\n/);
 	const dividerIndex = lines.findIndex((line) => line.trim() === "---");
-	if (dividerIndex === -1) return { header: "", body: source };
+	if (dividerIndex === -1) return { header: source, body: source };
 	return {
 		header: lines.slice(0, dividerIndex).join("\n"),
 		body: lines.slice(dividerIndex + 1).join("\n"),
