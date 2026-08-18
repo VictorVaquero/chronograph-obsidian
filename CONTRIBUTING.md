@@ -17,6 +17,8 @@ To test in a vault, set `OBSIDIAN_VAULT` to the vault's root directory and every
 OBSIDIAN_VAULT=/path/to/your/vault pnpm run dev
 ```
 
+Alternatively, create a `.env` file (gitignored) in the repo root with `OBSIDIAN_VAULT=/path/to/your/vault` — the `dev` and `build` scripts load it automatically, so you can just run `pnpm run dev`.
+
 Reload Obsidian (`Ctrl+R`/`Cmd+R` in the developer console, or via the community [Hot-Reload](https://github.com/pjeby/hot-reload) plugin) to pick up changes without a manual copy step.
 
 ### Previewing the timeline UI without Obsidian
