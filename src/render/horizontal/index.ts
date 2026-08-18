@@ -69,6 +69,16 @@ export function renderHorizontalTimeline(
 		toolbar.append(newEventBtn);
 	}
 
+	if (callbacks.onConfigure) {
+		const configureBtn = createEl("button");
+		configureBtn.type = "button";
+		configureBtn.className = "timeline-graph-configure-btn";
+		configureBtn.textContent = "⚙";
+		configureBtn.title = "Edit this timeline's settings";
+		configureBtn.addEventListener("click", () => callbacks.onConfigure?.());
+		toolbar.append(configureBtn);
+	}
+
 	if (callbacks.onExportSnapshot) {
 		const exportBtn = createEl("button");
 		exportBtn.type = "button";

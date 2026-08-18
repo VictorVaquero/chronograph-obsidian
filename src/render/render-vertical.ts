@@ -1,4 +1,4 @@
-import { TimelineEvent, TimelineDatePrecision, TimelineCardSide, TimelineLineStyle } from "../types";
+import { TimelineEvent, TimelineDatePrecision, TimelineCardSide, TimelineLineStyle, TimelineDensity } from "../types";
 import {
 	TimelineRenderCallbacks,
 	TimelineTheme,
@@ -24,7 +24,8 @@ export function renderVerticalTimeline(
 	precision: TimelineDatePrecision = "day",
 	cardSide: TimelineCardSide = "alternate",
 	lineStyle: TimelineLineStyle = "solid",
-	theme: TimelineTheme = "light"
+	theme: TimelineTheme = "light",
+	density: TimelineDensity = "comfortable"
 ): void {
 	if (events.length === 0) {
 		renderEmptyState(
@@ -60,7 +61,7 @@ export function renderVerticalTimeline(
 		previousBucketKey = bucket.key;
 
 		const alignLeft = cardSide === "alternate" ? index % 2 === 0 : cardSide === "left";
-		spine.appendChild(renderNode(event, alignLeft, callbacks, precision, showEra, groupColors));
+		spine.appendChild(renderNode(event, alignLeft, callbacks, precision, showEra, groupColors, density));
 	});
 	if (todayIndex === events.length) {
 		spine.appendChild(renderTodayMarker());
@@ -91,6 +92,16 @@ export function renderVerticalTimeline(
 	fitBtn.title = "Reset zoom";
 
 	toolbar.append(zoomOutBtn, zoomInBtn, fitBtn);
+
+	if (callbacks.onConfigure) {
+		const configureBtn = createEl("button");
+		configureBtn.type = "button";
+		configureBtn.className = "timeline-graph-configure-btn";
+		configureBtn.textContent = "⚙";
+		configureBtn.title = "Edit this timeline's settings";
+		configureBtn.addEventListener("click", () => callbacks.onConfigure?.());
+		toolbar.append(configureBtn);
+	}
 
 	if (callbacks.onExportSnapshot) {
 		const exportBtn = createEl("button");
@@ -123,7 +134,8 @@ function renderNode(
 	callbacks: TimelineRenderCallbacks,
 	precision: TimelineDatePrecision,
 	showEra: boolean,
-	groupColors: Map<string, string>
+	groupColors: Map<string, string>,
+	density: TimelineDensity
 ): HTMLElement {
 	const node = createDiv();
 	node.className = `timeline-graph-node ${alignLeft ? "is-left" : "is-right"}`;
@@ -144,9 +156,36 @@ function renderNode(
 	card.className = "timeline-graph-card";
 	if (color) card.style.setProperty("--marker-color", color);
 
+	const dateText = formatTimelineDateRange(event.date, event.endDate, precision, showEra);
+
+	// Compact density drops the description/badge and puts date + title on
+	// one line ("1600 — Art") instead of the stacked date/title/badge/desc
+	// block the other densities use, so a compact timeline reads as a dense
+	// scannable list rather than a column of cards.
+	if (density === "compact") {
+		const dateEl = createSpan();
+		dateEl.className = "timeline-graph-card-date timeline-graph-card-date-inline";
+		dateEl.textContent = dateText;
+		card.appendChild(dateEl);
+
+		const link = createEl("a");
+		link.className = "timeline-graph-card-title timeline-graph-card-title-inline";
+		link.textContent = event.title;
+		link.href = "#";
+		link.addEventListener("click", (evt) => {
+			evt.preventDefault();
+			callbacks.onEventClick?.(event);
+		});
+		attachHoverPreview(link, event, callbacks);
+		card.appendChild(link);
+
+		node.appendChild(card);
+		return node;
+	}
+
 	const dateEl = createSpan();
 	dateEl.className = "timeline-graph-card-date";
-	dateEl.textContent = formatTimelineDateRange(event.date, event.endDate, precision, showEra);
+	dateEl.textContent = dateText;
 	card.appendChild(dateEl);
 
 	const link = createEl("a");

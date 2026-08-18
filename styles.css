@@ -171,6 +171,26 @@
 	margin: 0;
 }
 
+/* Compact density: date + title on one line ("1600 — Art") instead of the
+   stacked date/title/badge/desc block the other densities use. */
+.timeline-graph-card:has(.timeline-graph-card-date-inline) {
+	flex-direction: row;
+	align-items: baseline;
+	gap: var(--size-4-1);
+	white-space: nowrap;
+}
+
+.timeline-graph-card-date-inline::after {
+	content: "—";
+	margin-left: var(--size-4-1);
+	color: var(--text-faint);
+}
+
+.timeline-graph-card-title-inline {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .timeline-graph-today {
 	position: relative;
 	display: flex;
@@ -231,6 +251,7 @@
 .timeline-graph-zoom-btn,
 .timeline-graph-fit-btn,
 .timeline-graph-new-event-btn,
+.timeline-graph-configure-btn,
 .timeline-graph-export-btn {
 	cursor: pointer;
 	border: 1px solid var(--background-modifier-border);
@@ -244,6 +265,7 @@
 .timeline-graph-zoom-btn:hover,
 .timeline-graph-fit-btn:hover,
 .timeline-graph-new-event-btn:hover,
+.timeline-graph-configure-btn:hover,
 .timeline-graph-export-btn:hover {
 	background: var(--background-secondary);
 }
@@ -252,7 +274,16 @@
 	margin-left: auto;
 }
 
-.timeline-graph-new-event-btn + .timeline-graph-export-btn {
+.timeline-graph-new-event-btn + .timeline-graph-configure-btn {
+	margin-left: 0;
+}
+
+.timeline-graph-configure-btn {
+	margin-left: auto;
+}
+
+.timeline-graph-new-event-btn + .timeline-graph-export-btn,
+.timeline-graph-configure-btn + .timeline-graph-export-btn {
 	margin-left: 0;
 }
 

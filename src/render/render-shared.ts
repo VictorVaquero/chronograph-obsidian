@@ -17,6 +17,12 @@ export interface TimelineRenderCallbacks {
 	 * no view config to name the exported file after.
 	 */
 	onExportSnapshot?: () => void;
+	/**
+	 * Called when the user clicks the "Configure" toolbar button. Omit to
+	 * hide the button, e.g. for the sidebar Timeline view, which already has
+	 * full settings via Settings → Chronograph and no self-editing header.
+	 */
+	onConfigure?: () => void;
 }
 
 export function attachHoverPreview(

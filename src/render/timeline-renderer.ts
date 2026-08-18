@@ -60,7 +60,8 @@ export function renderTimeline(
 			precision,
 			options.verticalCardSide ?? "alternate",
 			options.verticalLineStyle ?? "solid",
-			theme
+			theme,
+			options.styleVars?.density ?? "comfortable"
 		);
 	}
 }

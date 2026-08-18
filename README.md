@@ -150,6 +150,11 @@ Recognized settings keys:
 | `sort` | `asc` / `desc` | Sort order |
 | `cardside` | `alternate` / `left` / `right` | Vertical layout only |
 | `linestyle` | `solid` / `dashed` / `dotted` | Vertical layout only |
+| `density` | `compact` / `comfortable` (default) / `spacious` | Card padding, node margin, and lane min-height |
+| `cardradius` | `none` / `small` / `medium` (default) / `large` | Corner radius for cards, tooltips, and badges |
+| `markersize` | `small` / `medium` (default) / `large` | Diameter of the vertical spine dot / horizontal point marker |
+| `spinethickness` | `thin` / `medium` (default) / `thick` | Thickness of the vertical spine line / horizontal connector |
+| `shadowintensity` | `none` / `subtle` (default) / `normal` | Elevation of card/tooltip shadows |
 | `<field>field` | a column header or frontmatter field name | Field mapping override, one per field in the [extra field mappings](#extra-field-mappings) table (e.g. `titlefield`, `groupfield`), plus `descriptionfield` for the description shown in tooltips and vertical-layout cards |
 
 Unrecognized keys/values are ignored.

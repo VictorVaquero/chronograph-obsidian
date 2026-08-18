@@ -1,5 +1,10 @@
-import { HoverParent, HoverPopover, MarkdownPostProcessorContext, MarkdownRenderChild } from "obsidian";
-import { parseCodeBlockConfig, TimelineCodeBlockConfig, TimelineCodeBlockParseError } from "./sources/code-block-source";
+import { HoverParent, HoverPopover, MarkdownPostProcessorContext, MarkdownRenderChild, MarkdownSectionInformation, Notice, TFile } from "obsidian";
+import {
+	parseCodeBlockConfig,
+	TimelineCodeBlockConfig,
+	TimelineCodeBlockParseError,
+	upsertSettingLines,
+} from "./sources/code-block-source";
 import { parseTimelineEventsFromTableContent, queryTimelineEventsFromTable } from "./sources/table-source";
 import { queryTimelineEventsFromFrontmatter } from "./sources/frontmatter-source";
 import { queryTimelineEventsFromTasks } from "./sources/tasks-source";
@@ -12,6 +17,7 @@ import {
 import { TimelineEvent } from "./types";
 import { renderErrorState, renderTimeline } from "./render/timeline-renderer";
 import { compareTimelineDates } from "./date/timeline-date";
+import { CodeBlockConfigModal, CodeBlockConfigModalValues } from "./code-block-config-modal";
 import type TimelineGraphPlugin from "./main";
 import { log } from "./log";
 
@@ -89,6 +95,33 @@ async function resolveCodeBlockEvents(
 	return events;
 }
 
+function extractInnerSource(info: MarkdownSectionInformation): string {
+	return info.text.split(/\r?\n/).slice(info.lineStart + 1, info.lineEnd).join("\n");
+}
+
+function diffToHeaderKeys(
+	current: CodeBlockConfigModalValues,
+	values: CodeBlockConfigModalValues
+): Record<string, string> {
+	const changes: Record<string, string> = {};
+	if (values.layout !== current.layout) changes.layout = values.layout;
+	if (values.precision !== current.precision) changes.precision = values.precision;
+	if (values.density !== current.density) changes.density = values.density;
+	if (values.linestyle !== current.linestyle) changes.linestyle = values.linestyle;
+	return changes;
+}
+
+function rewriteSection(info: MarkdownSectionInformation, changes: Record<string, string>): string {
+	const innerSource = extractInnerSource(info);
+	const newInner = upsertSettingLines(innerSource, changes);
+	const allLines = info.text.split(/\r?\n/);
+	return [
+		...allLines.slice(0, info.lineStart + 1),
+		...newInner.split("\n"),
+		...allLines.slice(info.lineEnd),
+	].join("\n");
+}
+
 async function renderCodeBlock(
 	plugin: TimelineGraphPlugin,
 	source: string,
@@ -129,16 +162,51 @@ async function renderCodeBlock(
 						sourcePath: ctx.sourcePath,
 					});
 				},
+				onConfigure: () => {
+					const info = ctx.getSectionInfo(el);
+					if (!info) {
+						new Notice("Can't locate this code block in its file — try reopening the note.");
+						return;
+					}
+					const innerSource = extractInnerSource(info);
+					const current = parseCodeBlockConfig(innerSource).config;
+					const currentValues: CodeBlockConfigModalValues = {
+						layout: current.layout,
+						precision: current.precision,
+						density: current.density,
+						linestyle: current.verticalLineStyle,
+					};
+					new CodeBlockConfigModal(plugin.app, currentValues, async (values) => {
+						const changes = diffToHeaderKeys(currentValues, values);
+						if (Object.keys(changes).length === 0) return;
+
+						const freshInfo = ctx.getSectionInfo(el);
+						if (!freshInfo) {
+							throw new Error("Can't locate this code block in its file anymore — try reopening the note.");
+						}
+
+						const file = plugin.app.vault.getAbstractFileByPath(ctx.sourcePath);
+						if (!(file instanceof TFile)) {
+							throw new Error(`Note not found: "${ctx.sourcePath}".`);
+						}
+
+						const rewritten = rewriteSection(freshInfo, changes);
+						await plugin.app.vault.process(file, () => rewritten);
+						new Notice("Timeline settings saved.");
+					}).open();
+				},
 			},
 			{
-				// Style presets (density/cardRadius/markerSize/spineThickness/
-				// shadowIntensity) are deliberately not threaded here — code
-				// blocks have no per-view config to hold them and always render
-				// at the defaults, same as Phase 1's palette/shadow fixes apply
-				// unconditionally. A power user can still reach for a CSS snippet.
 				precision: config.precision,
 				verticalCardSide: config.verticalCardSide,
 				verticalLineStyle: config.verticalLineStyle,
+				styleVars: {
+					density: config.density,
+					cardRadius: config.cardRadius,
+					markerSize: config.markerSize,
+					spineThickness: config.spineThickness,
+					shadowIntensity: config.shadowIntensity,
+				},
 			}
 		);
 	} catch (err) {

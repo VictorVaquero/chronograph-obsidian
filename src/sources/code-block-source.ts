@@ -1,11 +1,16 @@
 import {
+	TimelineCardRadius,
 	TimelineCardSide,
 	TimelineDatePrecision,
+	TimelineDensity,
 	TimelineFieldMapping,
 	TimelineLayout,
 	TimelineLineStyle,
+	TimelineMarkerSize,
+	TimelineShadowIntensity,
 	TimelineSortOrder,
 	TimelineSourceType,
+	TimelineSpineThickness,
 } from "../types";
 
 export class TimelineCodeBlockParseError extends Error {
@@ -30,6 +35,16 @@ export interface TimelineCodeBlockConfig {
 	sortOrder: TimelineSortOrder;
 	verticalCardSide: TimelineCardSide;
 	verticalLineStyle: TimelineLineStyle;
+	/** Card padding, node margin, and lane min-height preset. */
+	density: TimelineDensity;
+	/** Corner-radius preset for cards, tooltips, and badges. */
+	cardRadius: TimelineCardRadius;
+	/** Diameter preset for the vertical spine dot and horizontal point marker. */
+	markerSize: TimelineMarkerSize;
+	/** Thickness preset for the vertical spine line and horizontal connector. */
+	spineThickness: TimelineSpineThickness;
+	/** Elevation preset for card/tooltip shadows. */
+	shadowIntensity: TimelineShadowIntensity;
 	fields: TimelineFieldMapping;
 }
 
@@ -48,6 +63,11 @@ export function defaultCodeBlockConfig(): TimelineCodeBlockConfig {
 		sortOrder: "asc",
 		verticalCardSide: "alternate",
 		verticalLineStyle: "solid",
+		density: "comfortable",
+		cardRadius: "medium",
+		markerSize: "medium",
+		spineThickness: "medium",
+		shadowIntensity: "subtle",
 		fields: {
 			dateField: "date",
 			endDateField: "enddate",
@@ -69,6 +89,11 @@ const VALID_PRECISIONS = new Set<TimelineDatePrecision>([
 const VALID_SORT_ORDERS = new Set<TimelineSortOrder>(["asc", "desc"]);
 const VALID_CARD_SIDES = new Set<TimelineCardSide>(["alternate", "left", "right"]);
 const VALID_LINE_STYLES = new Set<TimelineLineStyle>(["solid", "dashed", "dotted"]);
+const VALID_DENSITIES = new Set<TimelineDensity>(["compact", "comfortable", "spacious"]);
+const VALID_CARD_RADII = new Set<TimelineCardRadius>(["none", "small", "medium", "large"]);
+const VALID_MARKER_SIZES = new Set<TimelineMarkerSize>(["small", "medium", "large"]);
+const VALID_SPINE_THICKNESSES = new Set<TimelineSpineThickness>(["thin", "medium", "thick"]);
+const VALID_SHADOW_INTENSITIES = new Set<TimelineShadowIntensity>(["none", "subtle", "normal"]);
 
 const FIELD_KEYS: Record<string, keyof TimelineFieldMapping> = {
 	datefield: "dateField",
@@ -111,6 +136,16 @@ function applySettingLine(config: TimelineCodeBlockConfig, key: string, rawValue
 		config.verticalCardSide = vLower as TimelineCardSide;
 	} else if (k === "linestyle" && VALID_LINE_STYLES.has(vLower as TimelineLineStyle)) {
 		config.verticalLineStyle = vLower as TimelineLineStyle;
+	} else if (k === "density" && VALID_DENSITIES.has(vLower as TimelineDensity)) {
+		config.density = vLower as TimelineDensity;
+	} else if (k === "cardradius" && VALID_CARD_RADII.has(vLower as TimelineCardRadius)) {
+		config.cardRadius = vLower as TimelineCardRadius;
+	} else if (k === "markersize" && VALID_MARKER_SIZES.has(vLower as TimelineMarkerSize)) {
+		config.markerSize = vLower as TimelineMarkerSize;
+	} else if (k === "spinethickness" && VALID_SPINE_THICKNESSES.has(vLower as TimelineSpineThickness)) {
+		config.spineThickness = vLower as TimelineSpineThickness;
+	} else if (k === "shadowintensity" && VALID_SHADOW_INTENSITIES.has(vLower as TimelineShadowIntensity)) {
+		config.shadowIntensity = vLower as TimelineShadowIntensity;
 	} else if (k in FIELD_KEYS) {
 		config.fields[FIELD_KEYS[k]] = v;
 	}
@@ -133,6 +168,67 @@ function splitHeaderAndBody(source: string): { header: string; body: string } {
 		header: lines.slice(0, dividerIndex).join("\n"),
 		body: lines.slice(dividerIndex + 1).join("\n"),
 	};
+}
+
+const SETTING_LINE_PATTERN = /^[A-Za-z][\w-]*\s*:/;
+
+function looksLikeSettingLine(line: string): boolean {
+	return SETTING_LINE_PATTERN.test(line.trim());
+}
+
+// Rewrites the settings-header lines identified by `applySettingLine`,
+// touching only the given keys and leaving everything else — other header
+// lines, the "---" divider (if any), and the whole table/query body —
+// byte-for-byte untouched. Used by the code-block "Configure" button to save
+// a minimal diff back into the note instead of regenerating the header from
+// the fully-resolved (and therefore default-filled) config object, which
+// would clobber user formatting and any settings this feature doesn't know
+// about.
+export function upsertSettingLines(source: string, changes: Record<string, string>): string {
+	const { header, body } = splitHeaderAndBody(source);
+	const hasDivider = source.split(/\r?\n/).some((line) => line.trim() === "---");
+	const headerHasSettingLine = header.split(/\r?\n/).some(looksLikeSettingLine);
+
+	if (!hasDivider && !headerHasSettingLine && source.trim() !== "") {
+		// Case C: bare inline table (or other body-only source) with no
+		// existing header at all — prepend a fresh header + divider.
+		const newHeaderLines = Object.entries(changes).map(([key, value]) => `${key}: ${value}`);
+		return `${newHeaderLines.join("\n")}\n---\n${source}`;
+	}
+
+	const rewrittenHeader = rewriteHeaderLines(header, changes);
+
+	if (!hasDivider) {
+		// Case B: no divider, and the whole source is settings (e.g. a
+		// dataview header with no table body) — rewrite in place, no divider.
+		return rewrittenHeader;
+	}
+
+	// Case A: explicit divider — only the header above it changes.
+	return `${rewrittenHeader}\n---\n${body}`;
+}
+
+function rewriteHeaderLines(header: string, changes: Record<string, string>): string {
+	const pending = new Map<string, string>();
+	for (const [key, value] of Object.entries(changes)) {
+		pending.set(key.toLowerCase(), value);
+	}
+
+	const lines = header.split(/\r?\n/).map((line) => {
+		const colonIndex = line.indexOf(":");
+		if (colonIndex === -1) return line;
+		const k = line.slice(0, colonIndex).trim().toLowerCase();
+		if (!pending.has(k)) return line;
+		const value = pending.get(k)!;
+		pending.delete(k);
+		return `${line.slice(0, colonIndex)}: ${value}`;
+	});
+
+	for (const [key, value] of pending) {
+		lines.push(`${key}: ${value}`);
+	}
+
+	return lines.join("\n");
 }
 
 /**

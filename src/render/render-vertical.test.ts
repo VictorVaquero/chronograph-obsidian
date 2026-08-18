@@ -95,6 +95,26 @@ describe("renderVerticalTimeline", () => {
 		expect(container.querySelector(".timeline-graph-card-desc")?.textContent).toBe("Some notes");
 	});
 
+	it("renders date + title on one line and omits badge/description in compact density", () => {
+		const container = document.createElement("div");
+		renderVerticalTimeline(
+			container,
+			[makeEvent({ title: "Art", group: "Painting", description: "Some notes", date: { year: 1600 } })],
+			{},
+			"year",
+			"alternate",
+			"solid",
+			"light",
+			"compact"
+		);
+		const dateEl = container.querySelector(".timeline-graph-card-date-inline");
+		const titleEl = container.querySelector(".timeline-graph-card-title-inline");
+		expect(dateEl?.textContent).toBe("1600");
+		expect(titleEl?.textContent).toBe("Art");
+		expect(container.querySelector(".timeline-graph-card-badge")).toBeNull();
+		expect(container.querySelector(".timeline-graph-card-desc")).toBeNull();
+	});
+
 	it("inserts a 'today' marker between past and future events", () => {
 		const container = document.createElement("div");
 		const events = [
