@@ -1,7 +1,26 @@
-import { App } from "obsidian";
+import { App, Events } from "obsidian";
 import { DataviewApi, DataviewPage, DataviewPluginLike } from "./dataview-api";
 import { TimelineEvent, TimelineEventKind, TimelineFieldMapping } from "../types";
 import { TimelineDate, parseTimelineDate } from "../date/timeline-date";
+import { log } from "../log";
+
+// Dataview triggers this on `app.workspace` once its initial vault index
+// finishes (which happens asynchronously, after Obsidian may have already
+// rendered dataview-source blocks/views once) and again after every
+// subsequent metadata change. Its own built-in query views listen for it to
+// know when to re-render.
+export const DATAVIEW_REFRESH_EVENT = "dataview:refresh-views";
+
+/**
+ * Listens for Dataview's index-ready/refresh signal. `Workspace`'s own
+ * typings declare a closed list of event-name overloads (inherited from
+ * `Events`, whose generic `on(name: string, ...)` catch-all they shadow
+ * rather than extend), so a third-party plugin event like this one has to
+ * go through the base `Events.on` signature directly to typecheck.
+ */
+export function onDataviewRefresh(app: App, callback: () => void): ReturnType<Events["on"]> {
+	return (app.workspace as unknown as Events).on(DATAVIEW_REFRESH_EVENT, callback);
+}
 
 export class DataviewUnavailableError extends Error {
 	constructor() {
@@ -64,6 +83,35 @@ function toTimelineEventKind(value: unknown): TimelineEventKind {
 	return str && VALID_KINDS.has(str as TimelineEventKind) ? (str as TimelineEventKind) : "event";
 }
 
+// Dataview's public query() API returns "table" results as positional row
+// arrays (one entry per selected column, in `headers` order, with column 0
+// always the implicit File link) rather than field-keyed objects — unlike
+// "list"/"task" results, which are already DataviewPage-shaped. This folds
+// a raw row of either shape into a DataviewPage-like object so the rest of
+// this file can keep doing plain `page[fieldName]` lookups either way.
+function normalizeRow(row: unknown, headers: string[] | undefined): DataviewPage {
+	if (!Array.isArray(row)) return row as DataviewPage;
+
+	const page: Record<string, unknown> = { file: row[0] };
+	if (headers) {
+		for (let i = 1; i < headers.length; i++) {
+			page[headers[i]] = row[i];
+		}
+	}
+	return page as unknown as DataviewPage;
+}
+
+// `page.file` is object-shaped ({path, name, ...}) for "list"/"task" results,
+// but for "table" results it's Dataview's raw Link object, which has `.path`
+// but no `.name` — so the basename is always derived from `.path` here
+// rather than trusting a `.name` property that may not exist.
+function fileBasename(file: DataviewPage["file"]): string {
+	const path = file?.path ?? "";
+	const withoutExt = path.replace(/\.[^./]+$/, "");
+	const slashIndex = withoutExt.lastIndexOf("/");
+	return slashIndex === -1 ? withoutExt : withoutExt.slice(slashIndex + 1);
+}
+
 function pageToEvent(
 	page: DataviewPage,
 	fields: TimelineFieldMapping
@@ -77,7 +125,7 @@ function pageToEvent(
 
 	const title =
 		(fields.titleField && fieldToString(page[fields.titleField])) ||
-		page.file.name;
+		fileBasename(page.file);
 
 	const description = fields.descriptionField
 		? fieldToString(page[fields.descriptionField])
@@ -118,17 +166,23 @@ export async function queryTimelineEvents(
 	fields: TimelineFieldMapping
 ): Promise<TimelineEvent[]> {
 	const api = getDataviewApi(app);
-	if (!api) throw new DataviewUnavailableError();
-
-	const result = await api.query(dataviewQuery);
-	if (!result.successful) {
-		throw new Error(`Dataview query failed: ${result.error}`);
+	if (!api) {
+		log.warn("Dataview query attempted but Dataview is unavailable", { dataviewQuery });
+		throw new DataviewUnavailableError();
 	}
 
+	log.debug("Running Dataview query", { dataviewQuery });
+	const result = await api.query(dataviewQuery);
+	if (!result.successful) {
+		log.error("Dataview query failed", { dataviewQuery, error: result.error });
+		throw new Error(`Dataview query failed: ${result.error}`);
+	}
 	const events: TimelineEvent[] = [];
-	for (const page of result.value.values) {
+	for (const row of result.value.values) {
+		const page = normalizeRow(row, result.value.headers);
 		const event = pageToEvent(page, fields);
 		if (event) events.push(event);
 	}
+	log.debug("Dataview query resolved", { dataviewQuery, pages: result.value.values.length, events: events.length });
 	return events;
 }

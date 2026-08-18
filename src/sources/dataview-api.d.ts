@@ -21,7 +21,13 @@ export interface DataviewQueryResultSuccess {
 	successful: true;
 	value: {
 		type: "table" | "list" | "task";
-		values: DataviewPage[];
+		// "table" results are positional: each row is an array with one entry
+		// per selected column, in the same order as `headers` (column 0 is
+		// always the implicit File link). "list"/"task" results are DataviewPage
+		// objects keyed by field name. See dataview-source.ts's `normalizeRow`.
+		values: DataviewPage[] | unknown[][];
+		/** Column names for "table" results, parallel to each row array. */
+		headers?: string[];
 	};
 }
 

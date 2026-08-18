@@ -170,4 +170,61 @@ describe("queryTimelineEvents", () => {
 		const events = await queryTimelineEvents(app as never, "", fields());
 		expect(events[0].date.year).toBe(2024);
 	});
+
+	// A `TABLE` DQL query's real result shape: each row is a positional array
+	// (File link, then one entry per selected column in `headers` order)
+	// rather than a field-keyed object like "list"/"task" results produce.
+	describe("with real TABLE-shaped (positional row + headers) results", () => {
+		it("maps a row array using the parallel headers array", async () => {
+			const fileLink = { path: "Pintura/Barroco.md", embed: false, type: "file" };
+			const api = makeApi({
+				successful: true,
+				value: {
+					type: "table",
+					headers: ["File", "date", "aliases"],
+					values: [[fileLink, "1600", ["Barroco"]]],
+				},
+			});
+			const app = makeApp(api);
+			const events = await queryTimelineEvents(
+				app as never,
+				'table date, aliases from "Pintura"',
+				fields({ titleField: "aliases" })
+			);
+			expect(events).toHaveLength(1);
+			expect(events[0].date).toEqual({ year: 1600 });
+			expect(events[0].title).toBe("Barroco");
+			expect(events[0].sourcePath).toBe("Pintura/Barroco.md");
+		});
+
+		it("falls back to the file basename (derived from path, not a .name property) when no title field matches", async () => {
+			const fileLink = { path: "Pintura/Fases del arte/Barroco (~1600-1700 d.C).md", embed: false, type: "file" };
+			const api = makeApi({
+				successful: true,
+				value: {
+					type: "table",
+					headers: ["File", "date"],
+					values: [[fileLink, "1600"]],
+				},
+			});
+			const app = makeApp(api);
+			const events = await queryTimelineEvents(app as never, 'table date from "Pintura"', fields());
+			expect(events[0].title).toBe("Barroco (~1600-1700 d.C)");
+		});
+
+		it("drops rows missing the configured date field", async () => {
+			const fileLink = { path: "Pintura/NoDate.md", embed: false, type: "file" };
+			const api = makeApi({
+				successful: true,
+				value: {
+					type: "table",
+					headers: ["File", "aliases"],
+					values: [[fileLink, ["Something"]]],
+				},
+			});
+			const app = makeApp(api);
+			const events = await queryTimelineEvents(app as never, 'table aliases from "Pintura"', fields());
+			expect(events).toHaveLength(0);
+		});
+	});
 });

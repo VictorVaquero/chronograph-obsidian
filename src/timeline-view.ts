@@ -3,6 +3,7 @@ import { TIMELINE_VIEW_TYPE, TimelineViewConfig } from "./types";
 import {
 	DataviewUnavailableError,
 	isDataviewEnabled,
+	onDataviewRefresh,
 	queryTimelineEvents,
 } from "./sources/dataview-source";
 import { queryTimelineEventsFromTable } from "./sources/table-source";
@@ -13,6 +14,7 @@ import { compareTimelineDates } from "./date/timeline-date";
 import { TimelineCreateEventModal } from "./create-event-modal";
 import { exportSnapshot } from "./export-snapshot";
 import type TimelineGraphPlugin from "./main";
+import { log } from "./log";
 
 export class TimelineView extends ItemView implements HoverParent {
 	private plugin: TimelineGraphPlugin;
@@ -38,6 +40,14 @@ export class TimelineView extends ItemView implements HoverParent {
 
 	async onOpen(): Promise<void> {
 		this.contentEl.addClass("timeline-graph-view");
+
+		// Dataview finishes indexing the vault asynchronously after Obsidian
+		// starts, often after this view has already opened and refreshed once —
+		// a dataview-source view opened at startup would otherwise show zero
+		// events and never update. Dataview's own built-in query views listen
+		// for this same event to know when to re-render; see code-block-view.ts
+		// for the equivalent code-block-side fix.
+		this.registerEvent(onDataviewRefresh(this.app, () => void this.refresh()));
 
 		const config =
 			this.plugin.settings.views.find(
@@ -79,6 +89,7 @@ export class TimelineView extends ItemView implements HoverParent {
 
 		try {
 			const config = this.activeConfig;
+			log.debug("Refreshing view", { view: config.name, sourceType: config.sourceType });
 			const events =
 				config.sourceType === "table"
 					? await queryTimelineEventsFromTable(this.app, config.tableNotePath, config.fields)
@@ -143,6 +154,7 @@ export class TimelineView extends ItemView implements HoverParent {
 				}
 			);
 		} catch (err) {
+			log.error("Failed to refresh view", { view: this.activeConfig?.name }, err);
 			renderErrorState(
 				this.contentEl,
 				err instanceof Error ? err.message : String(err)

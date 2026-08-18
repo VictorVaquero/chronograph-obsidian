@@ -1,13 +1,19 @@
-import { HoverParent, HoverPopover, MarkdownPostProcessorContext } from "obsidian";
+import { HoverParent, HoverPopover, MarkdownPostProcessorContext, MarkdownRenderChild } from "obsidian";
 import { parseCodeBlockConfig, TimelineCodeBlockConfig, TimelineCodeBlockParseError } from "./sources/code-block-source";
 import { parseTimelineEventsFromTableContent, queryTimelineEventsFromTable } from "./sources/table-source";
 import { queryTimelineEventsFromFrontmatter } from "./sources/frontmatter-source";
 import { queryTimelineEventsFromTasks } from "./sources/tasks-source";
-import { DataviewUnavailableError, isDataviewEnabled, queryTimelineEvents } from "./sources/dataview-source";
+import {
+	DataviewUnavailableError,
+	isDataviewEnabled,
+	onDataviewRefresh,
+	queryTimelineEvents,
+} from "./sources/dataview-source";
 import { TimelineEvent } from "./types";
 import { renderErrorState, renderTimeline } from "./render/timeline-renderer";
 import { compareTimelineDates } from "./date/timeline-date";
 import type TimelineGraphPlugin from "./main";
+import { log } from "./log";
 
 /**
  * Registers the `chronograph` fenced-code-block processor: renders an
@@ -20,6 +26,23 @@ import type TimelineGraphPlugin from "./main";
 export function registerCodeBlockProcessor(plugin: TimelineGraphPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor("chronograph", (source, el, ctx) => {
 		void renderCodeBlock(plugin, source, el, ctx);
+
+		// Dataview finishes indexing the vault asynchronously after Obsidian
+		// starts, well after code blocks first render — a block that queries
+		// Dataview before that completes would otherwise resolve zero events
+		// and never update. Dataview's own built-in query views re-render on
+		// this same "dataview:refresh-views" workspace event (fired once the
+		// index is ready, and again after every subsequent metadata change),
+		// so listening for it here keeps a dataview-source block in sync the
+		// same way. Harmless to register for every source type: other sources
+		// just never see it refire, or refire cheaply if they do.
+		const child = new MarkdownRenderChild(el);
+		child.registerEvent(
+			onDataviewRefresh(plugin.app, () => {
+				void renderCodeBlock(plugin, source, el, ctx);
+			})
+		);
+		ctx.addChild(child);
 	});
 }
 
@@ -30,7 +53,10 @@ async function resolveCodeBlockEvents(
 	sourcePath: string
 ): Promise<TimelineEvent[]> {
 	if (config.sourceType === "dataview") {
-		if (!isDataviewEnabled(plugin.app)) throw new DataviewUnavailableError();
+		if (!isDataviewEnabled(plugin.app)) {
+			log.warn("Code block uses Dataview source but Dataview is unavailable", { sourcePath });
+			throw new DataviewUnavailableError();
+		}
 		return queryTimelineEvents(plugin.app, config.dataviewQuery, config.fields);
 	}
 
@@ -55,6 +81,7 @@ async function resolveCodeBlockEvents(
 
 	const events = parseTimelineEventsFromTableContent(body, sourcePath, config.fields);
 	if (!events) {
+		log.warn("No markdown table found in code block", { sourcePath });
 		throw new TimelineCodeBlockParseError(
 			'No markdown table found in this chronograph block. Add a table with a header row and a "---" divider row, or set a `source`/`path`.'
 		);
@@ -77,6 +104,7 @@ async function renderCodeBlock(
 
 	try {
 		const { config, body } = parseCodeBlockConfig(source);
+		log.debug("Rendering code block", { sourcePath: ctx.sourcePath, sourceType: config.sourceType });
 		const events = await resolveCodeBlockEvents(plugin, config, body, ctx.sourcePath);
 		events.sort((a, b) =>
 			config.sortOrder === "asc"
@@ -114,6 +142,7 @@ async function renderCodeBlock(
 			}
 		);
 	} catch (err) {
+		log.error("Failed to render code block", { sourcePath: ctx.sourcePath }, err);
 		renderErrorState(
 			el,
 			err instanceof TimelineCodeBlockParseError || err instanceof Error
