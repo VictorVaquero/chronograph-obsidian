@@ -119,6 +119,18 @@ function diffToHeaderKeys(
 	if (values.density !== current.density) changes.density = values.density;
 	if (values.linestyle !== current.linestyle) changes.linestyle = values.linestyle;
 	if (values.height !== current.height) changes.height = String(values.height);
+	if (values.sortOrder !== current.sortOrder) changes.sort = values.sortOrder;
+	if (values.cardSide !== current.cardSide) changes.cardside = values.cardSide;
+	if (values.cardRadius !== current.cardRadius) changes.cardradius = values.cardRadius;
+	if (values.markerSize !== current.markerSize) changes.markersize = values.markerSize;
+	if (values.spineThickness !== current.spineThickness) changes.spinethickness = values.spineThickness;
+	if (values.shadowIntensity !== current.shadowIntensity) changes.shadowintensity = values.shadowIntensity;
+	if (values.endDateField !== current.endDateField) changes.enddatefield = values.endDateField;
+	if (values.titleField !== current.titleField) changes.titlefield = values.titleField;
+	if (values.groupField !== current.groupField) changes.groupfield = values.groupField;
+	if (values.colorField !== current.colorField) changes.colorfield = values.colorField;
+	if (values.kindField !== current.kindField) changes.kindfield = values.kindField;
+	if (values.pointsToField !== current.pointsToField) changes.pointstofield = values.pointsToField;
 	return changes;
 }
 
@@ -188,8 +200,20 @@ async function renderCodeBlock(
 						density: current.density,
 						linestyle: current.verticalLineStyle,
 						height: current.height,
+						sortOrder: current.sortOrder,
+						cardSide: current.verticalCardSide,
+						cardRadius: current.cardRadius,
+						markerSize: current.markerSize,
+						spineThickness: current.spineThickness,
+						shadowIntensity: current.shadowIntensity,
+						endDateField: current.fields.endDateField ?? "",
+						titleField: current.fields.titleField ?? "",
+						groupField: current.fields.groupField ?? "",
+						colorField: current.fields.colorField ?? "",
+						kindField: current.fields.kindField ?? "",
+						pointsToField: current.fields.pointsToField ?? "",
 					};
-					new CodeBlockConfigModal(plugin.app, currentValues, async (values) => {
+					new CodeBlockConfigModal(plugin.app, currentValues, plugin.settings.advanced, async (values) => {
 						const changes = diffToHeaderKeys(currentValues, values);
 						if (Object.keys(changes).length === 0) return;
 

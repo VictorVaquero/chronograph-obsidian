@@ -20,18 +20,16 @@ const vaultPath = process.env.OBSIDIAN_VAULT;
 const copyToVaultPlugin = {
 	name: "copy-to-vault",
 	setup(build) {
-		build.onEnd((result) => {
+		build.onEnd(async (result) => {
 			if (!vaultPath || result.errors.length > 0) return;
 			const pluginDir = path.join(vaultPath, ".obsidian", "plugins", "chronograph");
-			void (async () => {
-				await mkdir(pluginDir, { recursive: true });
-				await Promise.all(
-					["main.js", "manifest.json", "styles.css"].map((file) =>
-						copyFile(file, path.join(pluginDir, file))
-					)
-				);
-				console.log(`Deployed to ${pluginDir}`);
-			})();
+			await mkdir(pluginDir, { recursive: true });
+			await Promise.all(
+				["main.js", "manifest.json", "styles.css"].map((file) =>
+					copyFile(file, path.join(pluginDir, file))
+				)
+			);
+			console.log(`Deployed to ${pluginDir}`);
 		});
 	},
 };

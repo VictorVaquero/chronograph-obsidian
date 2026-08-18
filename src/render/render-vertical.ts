@@ -40,8 +40,17 @@ export function renderVerticalTimeline(
 
 	const showEra = hasAnyBCDate(events.flatMap((e) => (e.endDate ? [e.date, e.endDate] : [e.date])));
 
+	// Compact density is a dense scannable list, not a two-column layout — so
+	// unless the user explicitly picked a side, force everything to one side
+	// instead of alternating. That keeps every row's date/range clutter on the
+	// same side of the spine, away from the title text, rather than flipping
+	// per row.
+	const effectiveCardSide = density === "compact" && cardSide === "alternate" ? "right" : cardSide;
+
 	const spine = createDiv();
-	spine.className = `timeline-graph-spine timeline-graph-spine-${cardSide}`;
+	spine.className = `timeline-graph-spine timeline-graph-spine-${effectiveCardSide}${
+		density === "compact" ? " timeline-graph-spine-compact" : ""
+	}`;
 
 	const line = createDiv();
 	line.className = `timeline-graph-spine-line timeline-graph-spine-line-${lineStyle}`;
@@ -57,12 +66,14 @@ export function renderVerticalTimeline(
 
 		const bucket = bucketOf(event.date, precision, showEra);
 		if (bucket.label && bucket.key !== previousBucketKey) {
-			spine.appendChild(renderPeriodDivider(bucket.label));
+			spine.appendChild(renderPeriodDivider(bucket.label, density));
 		}
 		previousBucketKey = bucket.key;
 
-		const alignLeft = cardSide === "alternate" ? index % 2 === 0 : cardSide === "left";
-		spine.appendChild(renderNode(event, alignLeft, callbacks, precision, showEra, groupColors, density));
+		const alignLeft = effectiveCardSide === "alternate" ? index % 2 === 0 : effectiveCardSide === "left";
+		spine.appendChild(
+			renderNode(event, alignLeft, effectiveCardSide !== "alternate", callbacks, precision, showEra, groupColors, density)
+		);
 	});
 	if (todayIndex === events.length) {
 		spine.appendChild(renderTodayMarker());
@@ -114,17 +125,27 @@ export function renderVerticalTimeline(
 		toolbar.append(exportBtn);
 	}
 
-	root.append(toolbar, spine);
+	// CSS `zoom` (used for the +/- zoom controls) is a real layout property,
+	// so this scroll region picks up the extra scrollWidth for free and the
+	// overflowing side can be scrolled into view — see vertical-zoom-pan.ts.
+	const scrollRegion = createDiv();
+	scrollRegion.className = "timeline-graph-vertical-scroll";
+	scrollRegion.appendChild(spine);
+
+	root.append(toolbar, scrollRegion);
 	container.appendChild(root);
 
 	renderRangeBars(spine, events);
 
-	setupVerticalZoom(root, spine, zoomInBtn, zoomOutBtn, fitBtn, () => renderRangeBars(spine, events));
+	setupVerticalZoom(scrollRegion, spine, zoomInBtn, zoomOutBtn, fitBtn, () => renderRangeBars(spine, events));
 }
 
-function renderPeriodDivider(label: string): HTMLElement {
+function renderPeriodDivider(label: string, density: TimelineDensity): HTMLElement {
 	const divider = createDiv();
-	divider.className = "timeline-graph-period-divider";
+	divider.className =
+		density === "compact"
+			? "timeline-graph-period-divider timeline-graph-period-divider-compact"
+			: "timeline-graph-period-divider";
 	const span = createSpan();
 	span.textContent = label;
 	divider.appendChild(span);
@@ -134,6 +155,7 @@ function renderPeriodDivider(label: string): HTMLElement {
 function renderNode(
 	event: TimelineEvent,
 	alignLeft: boolean,
+	fixedSide: boolean,
 	callbacks: TimelineRenderCallbacks,
 	precision: TimelineDatePrecision,
 	showEra: boolean,
@@ -144,10 +166,20 @@ function renderNode(
 	node.className = `timeline-graph-node ${alignLeft ? "is-left" : "is-right"}`;
 
 	const color = colorForEvent(event, groupColors);
+	const dateText = formatTimelineDateRange(event.date, event.endDate, precision, showEra);
+
+	// Compact density drops the description/badge/connector entirely and
+	// splits the row across the spine instead: the date (plus any range-bar
+	// clutter) goes on the side opposite the title, so the title text always
+	// reads cleanly with nothing but the spine's dot next to it.
+	if (density === "compact") {
+		return renderCompactNode(event, alignLeft, fixedSide, callbacks, dateText, color);
+	}
 
 	const dot = createDiv();
 	dot.className = "timeline-graph-node-dot";
 	dot.dataset.timelineEventId = event.id;
+	dot.dataset.timelineCardSide = alignLeft ? "left" : "right";
 	if (color) dot.style.setProperty("--marker-color", color);
 	node.appendChild(dot);
 
@@ -159,33 +191,6 @@ function renderNode(
 	const card = createDiv();
 	card.className = "timeline-graph-card";
 	if (color) card.style.setProperty("--marker-color", color);
-
-	const dateText = formatTimelineDateRange(event.date, event.endDate, precision, showEra);
-
-	// Compact density drops the description/badge and puts date + title on
-	// one line ("1600 — Art") instead of the stacked date/title/badge/desc
-	// block the other densities use, so a compact timeline reads as a dense
-	// scannable list rather than a column of cards.
-	if (density === "compact") {
-		const dateEl = createSpan();
-		dateEl.className = "timeline-graph-card-date timeline-graph-card-date-inline";
-		dateEl.textContent = dateText;
-		card.appendChild(dateEl);
-
-		const link = createEl("a");
-		link.className = "timeline-graph-card-title timeline-graph-card-title-inline";
-		link.textContent = event.title;
-		link.href = "#";
-		link.addEventListener("click", (evt) => {
-			evt.preventDefault();
-			callbacks.onEventClick?.(event);
-		});
-		attachHoverPreview(link, event, callbacks);
-		card.appendChild(link);
-
-		node.appendChild(card);
-		return node;
-	}
 
 	const dateEl = createSpan();
 	dateEl.className = "timeline-graph-card-date";
@@ -218,6 +223,55 @@ function renderNode(
 	}
 
 	node.appendChild(card);
+	return node;
+}
+
+function renderCompactNode(
+	event: TimelineEvent,
+	alignLeft: boolean,
+	fixedSide: boolean,
+	callbacks: TimelineRenderCallbacks,
+	dateText: string,
+	color: string | undefined
+): HTMLElement {
+	const node = createDiv();
+	node.className = `timeline-graph-node timeline-graph-node-compact ${alignLeft ? "is-left" : "is-right"}${
+		fixedSide ? " timeline-graph-node-compact-fixed-side" : ""
+	}`;
+
+	const dot = createDiv();
+	dot.className = "timeline-graph-node-dot timeline-graph-node-dot-compact";
+	dot.dataset.timelineEventId = event.id;
+	// The range bar's clutter (date, stub, line) renders on the side opposite
+	// the title in compact mode, so the bar must offset toward that same
+	// opposite side to stay next to the date column it's annotating.
+	dot.dataset.timelineCardSide = alignLeft ? "right" : "left";
+	if (color) dot.style.setProperty("--marker-color", color);
+	node.appendChild(dot);
+
+	const dateEl = createSpan();
+	dateEl.className = "timeline-graph-card-date timeline-graph-card-date-compact";
+	dateEl.textContent = dateText;
+
+	const link = createEl("a");
+	link.className = "timeline-graph-card-title timeline-graph-card-title-compact";
+	link.textContent = event.title;
+	link.href = "#";
+	link.addEventListener("click", (evt) => {
+		evt.preventDefault();
+		callbacks.onEventClick?.(event);
+	});
+	attachHoverPreview(link, event, callbacks);
+
+	// The dot is positioned absolutely (out of flex flow), so only these two
+	// remain in flex order — append title-then-date or date-then-title to
+	// match which side the title belongs on.
+	if (alignLeft) {
+		node.append(link, dateEl);
+	} else {
+		node.append(dateEl, link);
+	}
+
 	return node;
 }
 

@@ -107,13 +107,40 @@ describe("renderVerticalTimeline", () => {
 			"light",
 			"compact"
 		);
-		const dateEl = container.querySelector(".timeline-graph-card-date-inline");
-		const titleEl = container.querySelector(".timeline-graph-card-title-inline");
+		const dateEl = container.querySelector(".timeline-graph-card-date-compact");
+		const titleEl = container.querySelector(".timeline-graph-card-title-compact");
 		expect(dateEl?.textContent).toBe("1600");
 		expect(titleEl?.textContent).toBe("Art");
 		expect(container.querySelector(".timeline-graph-card-badge")).toBeNull();
 		expect(container.querySelector(".timeline-graph-card-desc")).toBeNull();
 	});
+
+	it("forces every card to one side (not alternating) in compact density unless a side is explicit", () => {
+		const container = document.createElement("div");
+		const events = [makeEvent({ id: "a" }), makeEvent({ id: "b" }), makeEvent({ id: "c" })];
+		renderVerticalTimeline(container, events, {}, "day", "alternate", "solid", "light", "compact");
+		const nodes = container.querySelectorAll(".timeline-graph-node");
+		nodes.forEach((n) => expect(n.classList.contains("is-right")).toBe(true));
+	});
+
+	it("puts the range-bar dot's card-side dataset opposite the title side in compact density", () => {
+		const container = document.createElement("div");
+		renderVerticalTimeline(container, [makeEvent()], {}, "day", "left", "solid", "light", "compact");
+		const node = container.querySelector(".timeline-graph-node")!;
+		const dot = container.querySelector<HTMLElement>(".timeline-graph-node-dot")!;
+		expect(node.classList.contains("is-left")).toBe(true);
+		expect(dot.dataset.timelineCardSide).toBe("right");
+	});
+
+	it("offsets the spine and node grid off-center in compact density with a fixed card side", () => {
+		const container = document.createElement("div");
+		renderVerticalTimeline(container, [makeEvent()], {}, "day", "right", "solid", "light", "compact");
+		const spine = container.querySelector(".timeline-graph-spine")!;
+		const node = container.querySelector(".timeline-graph-node")!;
+		expect(spine.classList.contains("timeline-graph-spine-compact")).toBe(true);
+		expect(node.classList.contains("timeline-graph-node-compact-fixed-side")).toBe(true);
+	});
+
 
 	it("inserts a 'today' marker between past and future events", () => {
 		const container = document.createElement("div");
@@ -148,13 +175,13 @@ describe("renderVerticalTimeline", () => {
 		const [zoomOutBtn, zoomInBtn, fitBtn] = [buttons[0], buttons[1], buttons[2]];
 
 		zoomInBtn.click();
-		expect(spine.style.transform).toBe("scale(1.15)");
+		expect(spine.style.zoom).toBe("1.15");
 
 		fitBtn.click();
-		expect(spine.style.transform).toBe("scale(1)");
+		expect(spine.style.zoom).toBe("1");
 
 		zoomOutBtn.click();
-		expect(spine.style.transform).toBe("scale(1)");
+		expect(spine.style.zoom).toBe("1");
 	});
 
 	it("renders the export button only when onExportSnapshot is provided, and invokes it on click", () => {

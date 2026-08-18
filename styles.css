@@ -42,12 +42,31 @@
 	margin-right: auto;
 }
 
+/* Wraps the spine so zooming in (CSS `zoom` on the spine, see
+   vertical-zoom-pan.ts) has somewhere to go instead of clipping at the pane
+   edge — `zoom` grows the spine's real layout box, so this picks up the
+   extra scrollWidth automatically and the overflow becomes scrollable.
+   Centers via flexbox rather than the spine's own `margin: 0 auto`: auto
+   margins center a box within its container by giving it an equal, and at
+   zoom > 1 a *negative*, offset on each side — which overflow:auto renders
+   as unreachable underflow to the left instead of scrollable content, so
+   zooming in just clips the spine into a smaller and smaller visible sliver
+   on the right with a growing dead zone on the left. A flex `justify-content:
+   center` container centers the same way at rest, but once the spine's zoomed
+   width exceeds the row's, it lets the row overflow scrollable on both sides
+   instead of clipping. */
+.timeline-graph-vertical-scroll {
+	display: flex;
+	justify-content: center;
+	overflow-x: auto;
+	overflow-y: visible;
+}
+
 .timeline-graph-spine {
 	position: relative;
 	max-width: 720px;
-	margin: 0 auto;
+	flex: 0 0 auto;
 	padding: var(--size-4-4) 0;
-	transform-origin: top center;
 }
 
 .timeline-graph-spine-line {
@@ -59,6 +78,21 @@
 	transform: translateX(-50%);
 	-webkit-mask-image: linear-gradient(to bottom, transparent, black 4%, black 96%, transparent);
 	mask-image: linear-gradient(to bottom, transparent, black 4%, black 96%, transparent);
+}
+
+/* Compact density with a fixed (non-alternating) card side puts every row's
+   title on one side of the spine and its date/range-bar clutter on the
+   other, so the spine itself shifts off-center to match — left-of-center
+   when titles are on the right, right-of-center when titles are on the
+   left — instead of splitting the row evenly between a wide title column and
+   a narrow date column. Alternating layouts keep the spine centered, and
+   comfortable/spacious layouts are unaffected (their grid is symmetric). */
+.timeline-graph-spine-right.timeline-graph-spine-compact .timeline-graph-spine-line {
+	left: 30%;
+}
+
+.timeline-graph-spine-left.timeline-graph-spine-compact .timeline-graph-spine-line {
+	left: 70%;
 }
 
 .timeline-graph-spine-line-solid {
@@ -91,15 +125,21 @@
 	overflow: visible;
 }
 
+.timeline-graph-range-bar-stub {
+	stroke: var(--marker-color, var(--interactive-accent));
+	stroke-width: var(--timeline-spine-thickness, 2px);
+	opacity: 0.65;
+}
+
 .timeline-graph-range-bar-line {
 	stroke: var(--marker-color, var(--interactive-accent));
-	stroke-width: var(--timeline-spine-thickness, 3px);
-	opacity: 0.55;
+	stroke-width: calc(var(--timeline-spine-thickness, 2px) + 1px);
+	opacity: 0.65;
 }
 
 .timeline-graph-range-bar-end {
 	fill: var(--marker-color, var(--interactive-accent));
-	opacity: 0.55;
+	opacity: 0.65;
 }
 
 .timeline-graph-node {
@@ -130,6 +170,16 @@
 	border: 3px solid var(--background-primary);
 	box-shadow: 0 0 0 2px var(--marker-color, var(--interactive-accent));
 	z-index: 3;
+}
+
+/* Compact density: just the inner fill circle, no outer ring/border — the
+   list is dense enough that the full marker reads as visual clutter. */
+.timeline-graph-node-dot-compact {
+	width: calc(var(--timeline-marker-size, 12px) / 2);
+	height: calc(var(--timeline-marker-size, 12px) / 2);
+	margin-top: calc(var(--size-4-3) - (var(--timeline-marker-size, 12px) / 4));
+	border: none;
+	box-shadow: none;
 }
 
 .timeline-graph-connector {
@@ -202,24 +252,96 @@
 	margin: 0;
 }
 
-/* Compact density: date + title on one line ("1600 — Art") instead of the
-   stacked date/title/badge/desc block the other densities use. */
-.timeline-graph-card:has(.timeline-graph-card-date-inline) {
-	flex-direction: row;
+/* Compact density: a plain single-line row split across the spine — date on
+   one side, title on the other, dot in the middle — instead of a boxed card.
+   The date (and any range-bar clutter drawn next to it) sits opposite the
+   title so the title text always reads cleanly next to just the dot.
+   The split point defaults to dead center (50%) for alternating rows, and is
+   overridden to 30%/70% for a fixed card side (see the -fixed-side rules
+   below) to match the spine line's own offset exactly — both read the same
+   --timeline-node-split value, so the dot is guaranteed to land exactly on
+   the spine line instead of drifting from it the way an `auto`-sized grid
+   column would. */
+.timeline-graph-node-compact {
+	--timeline-node-split: 50%;
+	position: relative;
+	display: flex;
 	align-items: baseline;
-	gap: var(--size-4-1);
+	margin-bottom: var(--timeline-density-gap, var(--size-4-2));
+	min-height: var(--timeline-marker-size, 12px);
+}
+
+.timeline-graph-node-compact-fixed-side.is-right {
+	--timeline-node-split: 30%;
+}
+
+.timeline-graph-node-compact-fixed-side.is-left {
+	--timeline-node-split: 70%;
+}
+
+.timeline-graph-node-compact .timeline-graph-node-dot-compact {
+	position: absolute;
+	top: 50%;
+	left: var(--timeline-node-split);
+	transform: translate(-50%, -50%);
+	margin-top: 0;
+	z-index: 3;
+}
+
+/* The date column's basis must stay pinned to --timeline-node-split, the
+   same value the dot's absolute `left` uses — the dot has no idea how wide
+   the date text actually is, so if the column were allowed to grow past the
+   split to fit a long date *range* ("16 MAR 2026 → 20 MAR 2026"), the
+   right-aligned text would overshoot the dot and run into the title
+   instead of stopping at it. Overflow is clipped with an ellipsis instead
+   (matching the title's own truncation) so a long range shortens rather
+   than pushing past the dot it's supposed to line up with. */
+.timeline-graph-node-compact.is-right .timeline-graph-card-date-compact {
+	width: var(--timeline-node-split);
+	flex: 0 0 var(--timeline-node-split);
+	padding-right: var(--size-4-3);
+	text-align: right;
+}
+
+.timeline-graph-node-compact.is-right .timeline-graph-card-title-compact {
+	flex: 1 1 auto;
+	padding-left: var(--size-4-3);
+	text-align: left;
+}
+
+.timeline-graph-node-compact.is-left .timeline-graph-card-title-compact {
+	flex: 1 1 auto;
+	padding-right: var(--size-4-3);
+	text-align: right;
+}
+
+.timeline-graph-node-compact.is-left .timeline-graph-card-date-compact {
+	width: calc(100% - var(--timeline-node-split));
+	flex: 0 0 calc(100% - var(--timeline-node-split));
+	padding-left: var(--size-4-3);
+	text-align: left;
+}
+
+.timeline-graph-card-date-compact {
+	font-size: var(--font-smallest);
+	color: var(--text-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.timeline-graph-card-title-compact {
+	font-weight: var(--font-medium);
+	color: var(--text-normal);
+	cursor: pointer;
+	text-decoration: none;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.timeline-graph-card-date-inline::after {
-	content: "—";
-	margin-left: var(--size-4-1);
-	color: var(--text-faint);
-}
-
-.timeline-graph-card-title-inline {
-	overflow: hidden;
-	text-overflow: ellipsis;
+.timeline-graph-card-title-compact:hover {
+	color: var(--interactive-accent);
 }
 
 .timeline-graph-today {
@@ -269,6 +391,21 @@
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 999px;
 	background: var(--background-primary);
+}
+
+/* Compact density: just the label, no pill/border chrome, tighter margins —
+   as minimal as the divider can get while still breaking up the list. */
+.timeline-graph-period-divider-compact {
+	margin: var(--size-4-1) 0;
+}
+
+.timeline-graph-period-divider-compact span {
+	padding: 0 var(--size-4-1);
+	margin: 0 var(--size-4-1);
+	font-size: var(--font-smallest);
+	border: none;
+	border-radius: 0;
+	background: none;
 }
 
 /* Horizontal axis layout */

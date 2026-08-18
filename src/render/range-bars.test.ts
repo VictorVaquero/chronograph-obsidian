@@ -12,12 +12,13 @@ function makeEvent(overrides: Partial<TimelineEvent> = {}): TimelineEvent {
 	};
 }
 
-function spineWithDots(events: TimelineEvent[]): HTMLElement {
+function spineWithDots(events: TimelineEvent[], sideById: Record<string, "left" | "right"> = {}): HTMLElement {
 	const spine = document.createElement("div");
 	for (const event of events) {
 		const dot = document.createElement("div");
 		dot.className = "timeline-graph-node-dot";
 		dot.dataset.timelineEventId = event.id;
+		dot.dataset.timelineCardSide = sideById[event.id] ?? "right";
 		spine.appendChild(dot);
 	}
 	return spine;
@@ -91,6 +92,40 @@ describe("renderRangeBars", () => {
 		renderRangeBars(spine, events);
 		expect(spine.querySelectorAll(".timeline-graph-range-bars")).toHaveLength(1);
 		expect(spine.querySelectorAll(".timeline-graph-range-bar-line")).toHaveLength(1);
+	});
+
+	it("draws a start stub and offsets the bar toward the owning card's side", () => {
+		const events = [
+			makeEvent({ id: "a", date: { year: 2000 }, endDate: { year: 2010 } }),
+			makeEvent({ id: "b", date: { year: 2005 } }),
+		];
+		const spine = spineWithDots(events, { a: "left" });
+		renderRangeBars(spine, events);
+
+		const stub = spine.querySelector(".timeline-graph-range-bar-stub");
+		expect(stub).not.toBeNull();
+		const stubX1 = Number(stub!.getAttribute("x1"));
+		const stubX2 = Number(stub!.getAttribute("x2"));
+		// Offset goes toward the left side, i.e. the bar's x is less than the dot's x.
+		expect(stubX2).toBeLessThan(stubX1);
+
+		const line = spine.querySelector(".timeline-graph-range-bar-line");
+		expect(line!.getAttribute("x1")).toBe(String(stubX2));
+		expect(line!.getAttribute("x2")).toBe(String(stubX2));
+	});
+
+	it("offsets the bar toward the right when the owning card is on the right", () => {
+		const events = [
+			makeEvent({ id: "a", date: { year: 2000 }, endDate: { year: 2010 } }),
+			makeEvent({ id: "b", date: { year: 2005 } }),
+		];
+		const spine = spineWithDots(events, { a: "right" });
+		renderRangeBars(spine, events);
+
+		const stub = spine.querySelector(".timeline-graph-range-bar-stub");
+		const stubX1 = Number(stub!.getAttribute("x1"));
+		const stubX2 = Number(stub!.getAttribute("x2"));
+		expect(stubX2).toBeGreaterThan(stubX1);
 	});
 
 	it("removes a stale overlay when re-rendered with no ranges left to draw", () => {

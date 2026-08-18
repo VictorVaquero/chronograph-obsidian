@@ -4,12 +4,16 @@ const ZOOM_STEP = 1.15;
 
 // Unlike the horizontal axis (percent-positioned children rescale for free
 // off a resized track), the vertical layout is a normal flowing card list
-// with no inherent "scale" concept. Zoom here is a CSS transform: scale()
-// on the spine, which enlarges cards/spacing/fonts together uniformly.
-// Panning is left to native page/pane scroll rather than a nested scroll
-// region, since the vertical layout has no fixed height to scroll within.
+// with no inherent "scale" concept. Zoom here uses the CSS `zoom` property
+// (not `transform: scale()`) on the spine, which enlarges cards/spacing/fonts
+// together uniformly. `zoom` (unlike `transform`) is a real layout property —
+// it grows the element's own box, so an `overflow-x: auto` ancestor picks up
+// the extra scrollWidth for free and the overflowing side can be scrolled
+// into view. `transform: scale()` was tried first, but transforms are
+// paint-only and never affect layout size, so nothing made the overflow
+// reachable — panning is left to native scroll here as a result.
 export function setupVerticalZoom(
-	container: HTMLElement,
+	scrollRegion: HTMLElement,
 	spine: HTMLElement,
 	zoomInBtn: HTMLButtonElement,
 	zoomOutBtn: HTMLButtonElement,
@@ -20,11 +24,11 @@ export function setupVerticalZoom(
 
 	function applyZoom(newZoom: number): void {
 		zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, newZoom));
-		spine.style.transform = `scale(${zoom})`;
+		spine.setCssStyles({ zoom: String(zoom) });
 		onZoomChange?.();
 	}
 
-	container.addEventListener(
+	scrollRegion.addEventListener(
 		"wheel",
 		(evt) => {
 			if (!evt.ctrlKey && !evt.metaKey) return;

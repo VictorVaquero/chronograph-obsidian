@@ -3,6 +3,16 @@ import { compareTimelineDates } from "../date/timeline-date";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
 
+// How far the bar sits off the spine's centerline, and how far the start
+// stub reaches from the dot to meet it — keeps the bar from drawing directly
+// on top of the spine line while staying close enough to read as "attached"
+// to its owning dot rather than floating free. Bounded on both sides: wide
+// enough to clear sibling rows' dots it passes on its way down (a smaller
+// offset used to graze right through them), but must stay inside the
+// compact date/title column's padding gap (--size-4-3, 12px in Obsidian's
+// default spacing scale) or it draws on top of that row's text.
+const BAR_OFFSET = 8;
+
 /**
  * Draws a bar parallel to the spine for each event that has an `endDate`,
  * running from that event's dot down to the dot of the last sibling event
@@ -11,6 +21,11 @@ const SVG_NS = "http://www.w3.org/2000/svg";
  * pointsTo arrows. The vertical layout has no proportional time axis, so the
  * bar's length reflects how many rendered rows the range covers rather than
  * its actual duration.
+ *
+ * The bar is offset to the same side as its owning event's card (left/right)
+ * so it never overlaps the spine's own centerline, and a short stub connects
+ * the owning dot to the bar's start so it's unambiguous which event the bar
+ * belongs to even when it passes by unrelated sibling dots on its way down.
  *
  * Must run after the spine is attached to the document, since it reads dot
  * positions via getBoundingClientRect. Callers must call this again (it
@@ -30,7 +45,7 @@ export function renderRangeBars(spine: HTMLElement, events: TimelineEvent[]): vo
 
 	const spineRect = spine.getBoundingClientRect();
 
-	const bars: { x: number; y1: number; y2: number; color: string }[] = [];
+	const bars: { xDot: number; xBar: number; y1: number; y2: number; color: string }[] = [];
 	for (const event of ranged) {
 		const startDot = dotById.get(event.id);
 		if (!startDot) continue;
@@ -42,8 +57,11 @@ export function renderRangeBars(spine: HTMLElement, events: TimelineEvent[]): vo
 		const startRect = startDot.getBoundingClientRect();
 		const endRect = endDot.getBoundingClientRect();
 		const color = startDot.style.getPropertyValue("--marker-color") || "var(--interactive-accent)";
+		const side = startDot.dataset.timelineCardSide === "left" ? -1 : 1;
+		const xDot = startRect.left + startRect.width / 2 - spineRect.left;
 		bars.push({
-			x: startRect.left + startRect.width / 2 - spineRect.left,
+			xDot,
+			xBar: xDot + side * BAR_OFFSET,
 			y1: startRect.top + startRect.height / 2 - spineRect.top,
 			y2: endRect.top + endRect.height / 2 - spineRect.top,
 			color,
@@ -56,18 +74,27 @@ export function renderRangeBars(spine: HTMLElement, events: TimelineEvent[]): vo
 	svg.setAttribute("viewBox", `0 0 ${spineRect.width} ${spineRect.height}`);
 	svg.setAttribute("preserveAspectRatio", "none");
 
-	for (const { x, y1, y2, color } of bars) {
+	for (const { xDot, xBar, y1, y2, color } of bars) {
+		const stub = document.createElementNS(SVG_NS, "line");
+		stub.setAttribute("x1", String(xDot));
+		stub.setAttribute("y1", String(y1));
+		stub.setAttribute("x2", String(xBar));
+		stub.setAttribute("y2", String(y1));
+		stub.setAttribute("class", "timeline-graph-range-bar-stub");
+		stub.style.setProperty("--marker-color", color);
+		svg.appendChild(stub);
+
 		const line = document.createElementNS(SVG_NS, "line");
-		line.setAttribute("x1", String(x));
+		line.setAttribute("x1", String(xBar));
 		line.setAttribute("y1", String(y1));
-		line.setAttribute("x2", String(x));
+		line.setAttribute("x2", String(xBar));
 		line.setAttribute("y2", String(y2));
 		line.setAttribute("class", "timeline-graph-range-bar-line");
 		line.style.setProperty("--marker-color", color);
 		svg.appendChild(line);
 
 		const endCap = document.createElementNS(SVG_NS, "circle");
-		endCap.setAttribute("cx", String(x));
+		endCap.setAttribute("cx", String(xBar));
 		endCap.setAttribute("cy", String(y2));
 		endCap.setAttribute("r", "4");
 		endCap.setAttribute("class", "timeline-graph-range-bar-end");
