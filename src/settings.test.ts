@@ -19,6 +19,11 @@ describe("createDefaultView", () => {
 		});
 		expect(view.sortOrder).toBe("asc");
 		expect(view.layout).toBe("vertical");
+		expect(view.density).toBe("comfortable");
+		expect(view.cardRadius).toBe("medium");
+		expect(view.markerSize).toBe("medium");
+		expect(view.spineThickness).toBe("medium");
+		expect(view.shadowIntensity).toBe("subtle");
 	});
 
 	it("assigns a unique id on each call", () => {
@@ -40,6 +45,7 @@ describe("DEFAULT_SETTINGS", () => {
 			layoutAndStyle: false,
 			sortAndGranularity: false,
 			multiView: false,
+			styleOverrides: false,
 		});
 	});
 });

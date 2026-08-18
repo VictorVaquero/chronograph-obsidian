@@ -18,6 +18,11 @@ function baseView(overrides: Partial<TimelineViewConfig> = {}): TimelineViewConf
 		datePrecision: "day",
 		verticalCardSide: "alternate",
 		verticalLineStyle: "solid",
+		density: "comfortable",
+		cardRadius: "medium",
+		markerSize: "medium",
+		spineThickness: "medium",
+		shadowIntensity: "subtle",
 		...overrides,
 	};
 }

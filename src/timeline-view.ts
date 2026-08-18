@@ -133,6 +133,13 @@ export class TimelineView extends ItemView implements HoverParent {
 					precision: config.datePrecision,
 					verticalCardSide: config.verticalCardSide,
 					verticalLineStyle: config.verticalLineStyle,
+					styleVars: {
+						density: config.density,
+						cardRadius: config.cardRadius,
+						markerSize: config.markerSize,
+						spineThickness: config.spineThickness,
+						shadowIntensity: config.shadowIntensity,
+					},
 				}
 			);
 		} catch (err) {

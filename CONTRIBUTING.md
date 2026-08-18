@@ -98,7 +98,9 @@ src/
     mock-frontmatter.ts     Reimplements frontmatter-source.ts's mapping over a mock vault
     mock-events.ts          Hand-authored sample/ancient/randomized event sets
   test-utils/             Minimal "obsidian" package mock for Vitest
-styles.css                Plugin styles
+styles.css                Plugin styles. Class names and custom properties are a stable,
+                           documented surface for end-user CSS snippets — see README's
+                           "Custom styling via CSS snippets" section before renaming any
 manifest.json              Obsidian plugin manifest
 esbuild.config.mjs          Plugin build config
 esbuild.preview.mjs         Standalone preview build/serve config

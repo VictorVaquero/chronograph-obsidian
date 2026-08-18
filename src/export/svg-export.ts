@@ -1,6 +1,6 @@
 import { TimelineDatePrecision, TimelineEvent, TimelineSortOrder } from "../types";
 import { compareTimelineDates, formatTimelineDateRange, hasAnyBCDate } from "../date/timeline-date";
-import { colorForEvent } from "../render/render-shared";
+import { TimelineTheme, buildGroupColorMap, colorForEvent, groupsOf } from "../render/render-shared";
 
 const ROW_HEIGHT = 56;
 const PADDING = 24;
@@ -36,12 +36,14 @@ export function exportTimelineSvg(
 	events: TimelineEvent[],
 	precision: TimelineDatePrecision,
 	sortOrder: TimelineSortOrder,
-	title?: string
+	title?: string,
+	theme: TimelineTheme = "light"
 ): string {
 	const sorted = [...events].sort((a, b) =>
 		sortOrder === "asc" ? compareTimelineDates(a.date, b.date) : compareTimelineDates(b.date, a.date)
 	);
 
+	const groupColors = buildGroupColorMap(groupsOf(sorted), theme);
 	const showEra = hasAnyBCDate(sorted.flatMap((e) => (e.endDate ? [e.date, e.endDate] : [e.date])));
 
 	const headerHeight = title ? ROW_HEIGHT : 0;
@@ -52,7 +54,7 @@ export function exportTimelineSvg(
 		.map((event, index) => {
 			const y = PADDING + headerHeight + index * ROW_HEIGHT;
 			const centerY = y + ROW_HEIGHT / 2;
-			const color = colorForEvent(event) ?? "#888888";
+			const color = colorForEvent(event, groupColors) ?? "#888888";
 			const dateText = escapeXml(formatTimelineDateRange(event.date, event.endDate, precision, showEra));
 			const titleText = escapeXml(truncate(event.title, MAX_TITLE_CHARS));
 

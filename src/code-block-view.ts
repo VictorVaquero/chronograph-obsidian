@@ -103,6 +103,11 @@ async function renderCodeBlock(
 				},
 			},
 			{
+				// Style presets (density/cardRadius/markerSize/spineThickness/
+				// shadowIntensity) are deliberately not threaded here — code
+				// blocks have no per-view config to hold them and always render
+				// at the defaults, same as Phase 1's palette/shadow fixes apply
+				// unconditionally. A power user can still reach for a CSS snippet.
 				precision: config.precision,
 				verticalCardSide: config.verticalCardSide,
 				verticalLineStyle: config.verticalLineStyle,

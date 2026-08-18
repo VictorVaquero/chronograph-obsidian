@@ -46,7 +46,7 @@
 	top: 0;
 	bottom: 0;
 	left: 50%;
-	width: 2px;
+	width: var(--timeline-spine-thickness, 2px);
 	transform: translateX(-50%);
 	-webkit-mask-image: linear-gradient(to bottom, transparent, black 4%, black 96%, transparent);
 	mask-image: linear-gradient(to bottom, transparent, black 4%, black 96%, transparent);
@@ -59,7 +59,7 @@
 .timeline-graph-spine-line-dashed,
 .timeline-graph-spine-line-dotted {
 	width: 0;
-	border-left-width: 2px;
+	border-left-width: var(--timeline-spine-thickness, 2px);
 	border-left-color: var(--background-modifier-border);
 }
 
@@ -76,7 +76,7 @@
 	display: grid;
 	grid-template-columns: 1fr var(--size-4-4) var(--size-4-4) var(--size-4-4) 1fr;
 	align-items: start;
-	margin-bottom: var(--size-4-4);
+	margin-bottom: var(--timeline-density-gap, var(--size-4-4));
 }
 
 .timeline-graph-node.is-left .timeline-graph-card {
@@ -90,9 +90,9 @@
 .timeline-graph-node-dot {
 	grid-column: 3;
 	grid-row: 1;
-	width: 12px;
-	height: 12px;
-	margin-top: calc(var(--size-4-3) - 6px);
+	width: var(--timeline-marker-size, 12px);
+	height: var(--timeline-marker-size, 12px);
+	margin-top: calc(var(--size-4-3) - (var(--timeline-marker-size, 12px) / 2));
 	justify-self: center;
 	border-radius: 50%;
 	background: var(--marker-color, var(--interactive-accent));
@@ -103,7 +103,7 @@
 
 .timeline-graph-connector {
 	grid-row: 1;
-	height: 3px;
+	height: var(--timeline-spine-thickness, 3px);
 	margin-top: var(--size-4-3);
 	background: var(--marker-color, var(--interactive-accent));
 }
@@ -121,9 +121,9 @@
 	position: relative;
 	background: var(--background-primary);
 	border: 1px solid var(--background-modifier-border);
-	border-radius: var(--radius-m);
-	padding: var(--size-4-3);
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+	border-radius: var(--timeline-card-radius, var(--radius-m));
+	padding: var(--timeline-density-gap, var(--size-4-3));
+	box-shadow: var(--timeline-card-shadow, 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 1px rgba(0, 0, 0, 0.04));
 	transition: box-shadow 120ms ease, transform 120ms ease;
 	display: flex;
 	flex-direction: column;
@@ -132,7 +132,7 @@
 }
 
 .timeline-graph-card:hover {
-	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16), 0 2px 4px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--timeline-card-shadow-hover, 0 2px 6px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06));
 	transform: translateY(-1px);
 }
 
@@ -162,7 +162,7 @@
 	color: var(--text-on-accent, #fff);
 	background: var(--marker-color, var(--interactive-accent));
 	padding: 1px var(--size-4-2);
-	border-radius: 999px;
+	border-radius: var(--timeline-card-radius, 999px);
 }
 
 .timeline-graph-card-desc {
@@ -354,7 +354,7 @@
 	z-index: 2;
 	display: flex;
 	align-items: stretch;
-	min-height: 44px;
+	min-height: calc(32px + var(--timeline-density-gap, var(--size-4-3)));
 }
 
 .timeline-graph-lane.is-odd {
@@ -424,8 +424,8 @@
 
 .timeline-graph-marker-point {
 	background: var(--marker-color, var(--interactive-accent));
-	width: 14px;
-	height: 14px;
+	width: var(--timeline-marker-size, 14px);
+	height: var(--timeline-marker-size, 14px);
 	border-radius: 50%;
 	padding: 0;
 	border: 2px solid var(--background-primary);
@@ -491,13 +491,13 @@
 }
 
 .timeline-graph-arrow-line {
-	stroke: var(--interactive-accent, #7c3aed);
+	stroke: var(--interactive-accent);
 	stroke-width: 1.5;
 	opacity: 0.6;
 }
 
 .timeline-graph-arrowhead-fill {
-	fill: var(--interactive-accent, #7c3aed);
+	fill: var(--interactive-accent);
 	opacity: 0.6;
 }
 
@@ -583,8 +583,8 @@
 	max-width: 240px;
 	background: var(--background-primary);
 	border: 1px solid var(--background-modifier-border);
-	border-radius: var(--radius-m);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+	border-radius: var(--timeline-card-radius, var(--radius-m));
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 	padding: var(--size-4-2) var(--size-4-3);
 	pointer-events: none;
 	font-size: var(--font-small);

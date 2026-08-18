@@ -30,6 +30,11 @@ export function createDefaultView(): TimelineViewConfig {
 		datePrecision: "day",
 		verticalCardSide: "alternate",
 		verticalLineStyle: "solid",
+		density: "comfortable",
+		cardRadius: "medium",
+		markerSize: "medium",
+		spineThickness: "medium",
+		shadowIntensity: "subtle",
 	};
 }
 
@@ -41,5 +46,6 @@ export const DEFAULT_SETTINGS: TimelineGraphSettings = {
 		layoutAndStyle: false,
 		sortAndGranularity: false,
 		multiView: false,
+		styleOverrides: false,
 	},
 };

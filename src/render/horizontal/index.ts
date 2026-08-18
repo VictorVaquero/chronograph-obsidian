@@ -1,5 +1,5 @@
 import { TimelineEvent, TimelineDatePrecision } from "../../types";
-import { TimelineRenderCallbacks, groupsOf, renderEmptyState } from "../render-shared";
+import { TimelineRenderCallbacks, TimelineTheme, buildGroupColorMap, groupsOf, renderEmptyState } from "../render-shared";
 import { hasAnyBCDate, toOrdinal } from "../../date/timeline-date";
 import { AXIS_PADDING_PX, buildScale } from "./scale";
 import { computeTicks, renderAxis, renderCompressionMarkers, renderPeriodLines } from "./ticks";
@@ -11,7 +11,8 @@ export function renderHorizontalTimeline(
 	container: HTMLElement,
 	events: TimelineEvent[],
 	callbacks: TimelineRenderCallbacks,
-	precision: TimelineDatePrecision = "day"
+	precision: TimelineDatePrecision = "day",
+	theme: TimelineTheme = "light"
 ): void {
 	const laneEvents = events.filter((e) => (e.kind ?? "event") === "event");
 	const periodEvents = events.filter((e) => e.kind === "period");
@@ -24,6 +25,8 @@ export function renderHorizontalTimeline(
 		);
 		return;
 	}
+
+	const groupColors = buildGroupColorMap(groupsOf(events), theme);
 
 	const scale = buildScale(events);
 	const totalWidth = scale.trackWidth + AXIS_PADDING_PX * 2;
@@ -84,7 +87,7 @@ export function renderHorizontalTimeline(
 	track.style.width = `${totalWidth}px`;
 
 	const ticks = computeTicks(scale, precision, showEra);
-	track.appendChild(renderPeriodBands(periodEvents, scale, callbacks, precision, showEra));
+	track.appendChild(renderPeriodBands(periodEvents, scale, callbacks, precision, showEra, groupColors));
 	track.appendChild(renderAxis(ticks, scale));
 	track.appendChild(renderPeriodLines(ticks, scale));
 	track.appendChild(renderCompressionMarkers(scale));
@@ -92,12 +95,12 @@ export function renderHorizontalTimeline(
 	groupsOf(laneEvents).forEach((group, laneIndex) => {
 		const eventsInLane = laneEvents.filter((e) => (e.group ?? "") === group);
 		track.appendChild(
-			renderLane(group, eventsInLane, scale, laneIndex, callbacks, precision, showEra)
+			renderLane(group, eventsInLane, scale, laneIndex, callbacks, precision, showEra, groupColors)
 		);
 	});
 
 	for (const marker of markerEvents) {
-		track.appendChild(renderFlagMarker(marker, scale, callbacks, precision, showEra));
+		track.appendChild(renderFlagMarker(marker, scale, callbacks, precision, showEra, groupColors));
 	}
 
 	const now = toOrdinal(todayAsTimelineDate());

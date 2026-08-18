@@ -14,6 +14,11 @@ import {
 	TimelineFieldMapping,
 	TimelineSourceType,
 	TimelineAdvancedFeatures,
+	TimelineDensity,
+	TimelineCardRadius,
+	TimelineMarkerSize,
+	TimelineSpineThickness,
+	TimelineShadowIntensity,
 } from "../types";
 
 // Entry point for the standalone browser preview (see src/dev/preview.html).
@@ -45,6 +50,7 @@ const advanced: TimelineAdvancedFeatures = {
 	layoutAndStyle: false,
 	sortAndGranularity: false,
 	multiView: false,
+	styleOverrides: false,
 };
 
 // Reuses the real createDefaultView() so the harness's starting field
@@ -62,6 +68,11 @@ const view = {
 	datePrecision: defaults.datePrecision,
 	verticalCardSide: defaults.verticalCardSide,
 	verticalLineStyle: defaults.verticalLineStyle,
+	density: defaults.density,
+	cardRadius: defaults.cardRadius,
+	markerSize: defaults.markerSize,
+	spineThickness: defaults.spineThickness,
+	shadowIntensity: defaults.shadowIntensity,
 };
 
 const DEFAULT_TABLE_NOTE = `# Timeline events
@@ -83,7 +94,18 @@ function render(): void {
 		currentEvents,
 		view.layout,
 		{ onEventClick: logClick, onEventHover: logHover },
-		{ precision: view.datePrecision, verticalCardSide: view.verticalCardSide, verticalLineStyle: view.verticalLineStyle }
+		{
+			precision: view.datePrecision,
+			verticalCardSide: view.verticalCardSide,
+			verticalLineStyle: view.verticalLineStyle,
+			styleVars: {
+				density: view.density,
+				cardRadius: view.cardRadius,
+				markerSize: view.markerSize,
+				spineThickness: view.spineThickness,
+				shadowIntensity: view.shadowIntensity,
+			},
+		}
 	);
 }
 
@@ -357,6 +379,16 @@ function renderSettings(): void {
 			})
 		)
 	);
+	settingsBody.appendChild(
+		settingItem(
+			"Style overrides",
+			"Show controls to change a view's density, corner radius, marker size, spine thickness, and shadow intensity.",
+			toggleControl(advanced.styleOverrides, (v) => {
+				advanced.styleOverrides = v;
+				renderSettings();
+			})
+		)
+	);
 
 	settingsBody.appendChild(groupHeading("Timeline view: Preview"));
 
@@ -525,6 +557,106 @@ function renderSettings(): void {
 		settingsBody.appendChild(groupHeading("Multiple views"));
 		settingsBody.appendChild(
 			note("Only one view exists in this preview harness, so \"default view\" has nothing else to pick from.")
+		);
+	}
+
+	if (advanced.styleOverrides) {
+		settingsBody.appendChild(groupHeading("Style overrides"));
+		settingsBody.appendChild(
+			settingItem(
+				"Density",
+				"Card padding, node spacing, and lane height.",
+				dropdownControl(
+					view.density,
+					[
+						["compact", "Compact"],
+						["comfortable", "Comfortable"],
+						["spacious", "Spacious"],
+					],
+					(v) => {
+						view.density = v as TimelineDensity;
+						render();
+					},
+					"density-select"
+				)
+			)
+		);
+		settingsBody.appendChild(
+			settingItem(
+				"Card radius",
+				"Corner rounding for cards, tooltips, and badges.",
+				dropdownControl(
+					view.cardRadius,
+					[
+						["none", "None"],
+						["small", "Small"],
+						["medium", "Medium"],
+						["large", "Large"],
+					],
+					(v) => {
+						view.cardRadius = v as TimelineCardRadius;
+						render();
+					},
+					"card-radius-select"
+				)
+			)
+		);
+		settingsBody.appendChild(
+			settingItem(
+				"Marker size",
+				"Diameter of the vertical spine dot and horizontal point marker.",
+				dropdownControl(
+					view.markerSize,
+					[
+						["small", "Small"],
+						["medium", "Medium"],
+						["large", "Large"],
+					],
+					(v) => {
+						view.markerSize = v as TimelineMarkerSize;
+						render();
+					},
+					"marker-size-select"
+				)
+			)
+		);
+		settingsBody.appendChild(
+			settingItem(
+				"Spine thickness",
+				"Width of the vertical spine line and horizontal connector.",
+				dropdownControl(
+					view.spineThickness,
+					[
+						["thin", "Thin"],
+						["medium", "Medium"],
+						["thick", "Thick"],
+					],
+					(v) => {
+						view.spineThickness = v as TimelineSpineThickness;
+						render();
+					},
+					"spine-thickness-select"
+				)
+			)
+		);
+		settingsBody.appendChild(
+			settingItem(
+				"Shadow intensity",
+				"Elevation shadow on cards and tooltips.",
+				dropdownControl(
+					view.shadowIntensity,
+					[
+						["none", "None"],
+						["subtle", "Subtle"],
+						["normal", "Normal"],
+					],
+					(v) => {
+						view.shadowIntensity = v as TimelineShadowIntensity;
+						render();
+					},
+					"shadow-intensity-select"
+				)
+			)
 		);
 	}
 }

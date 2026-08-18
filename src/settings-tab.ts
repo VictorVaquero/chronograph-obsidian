@@ -88,6 +88,21 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 				},
 			},
 			{
+				name: "Style overrides",
+				desc: "Show controls to change a view's density, corner radius, marker size, spine thickness, and shadow intensity. Defaults already look good — for deeper customization (fonts, exact colors), target this plugin's CSS classes with an Obsidian CSS snippet instead (see the README).",
+				render: (setting) => {
+					setting.addToggle((toggle) =>
+						toggle
+							.setValue(this.plugin.settings.advanced.styleOverrides)
+							.onChange(async (value) => {
+								this.plugin.settings.advanced.styleOverrides = value;
+								await this.plugin.saveSettings();
+								this.update();
+							})
+					);
+				},
+			},
+			{
 				type: "list",
 				heading: "Timeline views",
 				emptyState: "No timeline views yet.",
@@ -381,6 +396,97 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 							.setValue(view.verticalLineStyle)
 							.onChange(async (value) => {
 								view.verticalLineStyle = value as TimelineViewConfig["verticalLineStyle"];
+								await this.plugin.saveSettings();
+							})
+					);
+				},
+			},
+			{
+				name: "Density",
+				desc: "Card padding, node spacing, and lane height.",
+				visible: () => this.plugin.settings.advanced.styleOverrides,
+				render: (setting) => {
+					setting.addDropdown((dropdown) =>
+						dropdown
+							.addOption("compact", "Compact")
+							.addOption("comfortable", "Comfortable")
+							.addOption("spacious", "Spacious")
+							.setValue(view.density)
+							.onChange(async (value) => {
+								view.density = value as TimelineViewConfig["density"];
+								await this.plugin.saveSettings();
+							})
+					);
+				},
+			},
+			{
+				name: "Card radius",
+				desc: "Corner rounding for cards, tooltips, and badges.",
+				visible: () => this.plugin.settings.advanced.styleOverrides,
+				render: (setting) => {
+					setting.addDropdown((dropdown) =>
+						dropdown
+							.addOption("none", "None")
+							.addOption("small", "Small")
+							.addOption("medium", "Medium")
+							.addOption("large", "Large")
+							.setValue(view.cardRadius)
+							.onChange(async (value) => {
+								view.cardRadius = value as TimelineViewConfig["cardRadius"];
+								await this.plugin.saveSettings();
+							})
+					);
+				},
+			},
+			{
+				name: "Marker size",
+				desc: "Diameter of the vertical spine dot and horizontal point marker.",
+				visible: () => this.plugin.settings.advanced.styleOverrides,
+				render: (setting) => {
+					setting.addDropdown((dropdown) =>
+						dropdown
+							.addOption("small", "Small")
+							.addOption("medium", "Medium")
+							.addOption("large", "Large")
+							.setValue(view.markerSize)
+							.onChange(async (value) => {
+								view.markerSize = value as TimelineViewConfig["markerSize"];
+								await this.plugin.saveSettings();
+							})
+					);
+				},
+			},
+			{
+				name: "Spine thickness",
+				desc: "Width of the vertical spine line and horizontal connector.",
+				visible: () => this.plugin.settings.advanced.styleOverrides,
+				render: (setting) => {
+					setting.addDropdown((dropdown) =>
+						dropdown
+							.addOption("thin", "Thin")
+							.addOption("medium", "Medium")
+							.addOption("thick", "Thick")
+							.setValue(view.spineThickness)
+							.onChange(async (value) => {
+								view.spineThickness = value as TimelineViewConfig["spineThickness"];
+								await this.plugin.saveSettings();
+							})
+					);
+				},
+			},
+			{
+				name: "Shadow intensity",
+				desc: "Elevation shadow on cards and tooltips.",
+				visible: () => this.plugin.settings.advanced.styleOverrides,
+				render: (setting) => {
+					setting.addDropdown((dropdown) =>
+						dropdown
+							.addOption("none", "None")
+							.addOption("subtle", "Subtle")
+							.addOption("normal", "Normal")
+							.setValue(view.shadowIntensity)
+							.onChange(async (value) => {
+								view.shadowIntensity = value as TimelineViewConfig["shadowIntensity"];
 								await this.plugin.saveSettings();
 							})
 					);

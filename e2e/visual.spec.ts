@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { closeSettings, openLayoutAndStyleSettings } from "./helpers";
+import { closeSettings, openLayoutAndStyleSettings, openStyleOverrideSettings } from "./helpers";
 
 // Pixel-level regression coverage for the dev-preview harness. Screenshots
 // are scoped to the #app container (not the full page/toolbar) so changes
@@ -52,6 +52,17 @@ test("vertical layout, cards pinned right, dashed line", async ({ page }) => {
 	await page.selectOption("#line-style-select", "dashed");
 	await closeSettings(page);
 	await expect(page.locator("#app")).toHaveScreenshot("vertical-right-dashed-light.png");
+});
+
+test("vertical layout, square cards, no shadow, large spacious markers", async ({ page }) => {
+	await page.emulateMedia({ colorScheme: "light" });
+	await openStyleOverrideSettings(page);
+	await page.selectOption("#card-radius-select", "none");
+	await page.selectOption("#shadow-intensity-select", "none");
+	await page.selectOption("#marker-size-select", "large");
+	await page.selectOption("#density-select", "spacious");
+	await closeSettings(page);
+	await expect(page.locator("#app")).toHaveScreenshot("vertical-style-overrides-light.png");
 });
 
 test("empty state (light)", async ({ page }) => {

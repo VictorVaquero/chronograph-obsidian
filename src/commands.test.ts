@@ -35,6 +35,11 @@ function tableView(overrides: Partial<TimelineViewConfig> = {}): TimelineViewCon
 		datePrecision: "day",
 		verticalCardSide: "alternate",
 		verticalLineStyle: "solid",
+		density: "comfortable",
+		cardRadius: "medium",
+		markerSize: "medium",
+		spineThickness: "medium",
+		shadowIntensity: "subtle",
 		...overrides,
 	};
 }

@@ -34,7 +34,11 @@ export async function exportSnapshot(
 		return;
 	}
 
-	const svg = exportTimelineSvg(events, config.datePrecision, config.sortOrder, config.name);
+	// Obsidian's own dark/light choice can diverge from the OS scheme, and is
+	// what actually determines how "dark"/"light" this vault looks, so this
+	// checks the body class Obsidian sets rather than prefers-color-scheme.
+	const theme = document.body.classList.contains("theme-dark") ? "dark" : "light";
+	const svg = exportTimelineSvg(events, config.datePrecision, config.sortOrder, config.name, theme);
 	const path = await uniqueSvgPath(app, `${config.name || "Timeline"} snapshot`);
 	await app.vault.create(path, svg);
 	new Notice(`Snapshot saved to "${path}". Embed it anywhere with ![[${path.split("/").pop()}]].`);

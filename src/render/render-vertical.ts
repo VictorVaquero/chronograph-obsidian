@@ -1,5 +1,13 @@
 import { TimelineEvent, TimelineDatePrecision, TimelineCardSide, TimelineLineStyle } from "../types";
-import { TimelineRenderCallbacks, attachHoverPreview, colorForEvent, renderEmptyState } from "./render-shared";
+import {
+	TimelineRenderCallbacks,
+	TimelineTheme,
+	attachHoverPreview,
+	buildGroupColorMap,
+	colorForEvent,
+	groupsOf,
+	renderEmptyState,
+} from "./render-shared";
 import {
 	bucketOf,
 	compareTimelineDates,
@@ -15,7 +23,8 @@ export function renderVerticalTimeline(
 	callbacks: TimelineRenderCallbacks,
 	precision: TimelineDatePrecision = "day",
 	cardSide: TimelineCardSide = "alternate",
-	lineStyle: TimelineLineStyle = "solid"
+	lineStyle: TimelineLineStyle = "solid",
+	theme: TimelineTheme = "light"
 ): void {
 	if (events.length === 0) {
 		renderEmptyState(
@@ -24,6 +33,8 @@ export function renderVerticalTimeline(
 		);
 		return;
 	}
+
+	const groupColors = buildGroupColorMap(groupsOf(events), theme);
 
 	const showEra = hasAnyBCDate(events.flatMap((e) => (e.endDate ? [e.date, e.endDate] : [e.date])));
 
@@ -49,7 +60,7 @@ export function renderVerticalTimeline(
 		previousBucketKey = bucket.key;
 
 		const alignLeft = cardSide === "alternate" ? index % 2 === 0 : cardSide === "left";
-		spine.appendChild(renderNode(event, alignLeft, callbacks, precision, showEra));
+		spine.appendChild(renderNode(event, alignLeft, callbacks, precision, showEra, groupColors));
 	});
 	if (todayIndex === events.length) {
 		spine.appendChild(renderTodayMarker());
@@ -111,12 +122,13 @@ function renderNode(
 	alignLeft: boolean,
 	callbacks: TimelineRenderCallbacks,
 	precision: TimelineDatePrecision,
-	showEra: boolean
+	showEra: boolean,
+	groupColors: Map<string, string>
 ): HTMLElement {
 	const node = createDiv();
 	node.className = `timeline-graph-node ${alignLeft ? "is-left" : "is-right"}`;
 
-	const color = colorForEvent(event);
+	const color = colorForEvent(event, groupColors);
 
 	const dot = createDiv();
 	dot.className = "timeline-graph-node-dot";

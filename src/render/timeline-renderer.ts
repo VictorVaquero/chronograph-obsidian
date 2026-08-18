@@ -1,5 +1,5 @@
 import { TimelineEvent, TimelineLayout, TimelineDatePrecision, TimelineCardSide, TimelineLineStyle } from "../types";
-import { TimelineRenderCallbacks } from "./render-shared";
+import { TimelineRenderCallbacks, TimelineStyleVars, TimelineTheme, applyStyleVars } from "./render-shared";
 import { renderVerticalTimeline } from "./render-vertical";
 import { renderHorizontalTimeline } from "./horizontal";
 
@@ -19,6 +19,22 @@ export interface TimelineRenderOptions {
 	verticalCardSide?: TimelineCardSide;
 	/** Vertical layout only. */
 	verticalLineStyle?: TimelineLineStyle;
+	styleVars?: TimelineStyleVars;
+}
+
+// Obsidian doesn't expose a documented theme API. Real Obsidian sets a
+// "theme-dark"/"theme-light" class on <body>, which reflects the user's
+// in-app theme choice (can diverge from the OS scheme) — checked first. The
+// dev-preview harness and its Playwright screenshots don't set that class,
+// only prefers-color-scheme, so that's the fallback.
+function detectTheme(): TimelineTheme {
+	if (typeof document !== "undefined") {
+		if (document.body.classList.contains("theme-dark")) return "dark";
+		if (document.body.classList.contains("theme-light")) return "light";
+	}
+	return typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches
+		? "dark"
+		: "light";
 }
 
 export function renderTimeline(
@@ -29,11 +45,13 @@ export function renderTimeline(
 	options: TimelineRenderOptions = {}
 ): void {
 	container.replaceChildren();
+	applyStyleVars(container, options.styleVars ?? {});
 
 	const precision = options.precision ?? "day";
+	const theme = detectTheme();
 
 	if (layout === "horizontal") {
-		renderHorizontalTimeline(container, events, callbacks, precision);
+		renderHorizontalTimeline(container, events, callbacks, precision, theme);
 	} else {
 		renderVerticalTimeline(
 			container,
@@ -41,7 +59,8 @@ export function renderTimeline(
 			callbacks,
 			precision,
 			options.verticalCardSide ?? "alternate",
-			options.verticalLineStyle ?? "solid"
+			options.verticalLineStyle ?? "solid",
+			theme
 		);
 	}
 }

@@ -47,6 +47,17 @@ export type TimelineCardSide = "alternate" | "left" | "right";
 /** Visual style of the vertical layout's central spine line. */
 export type TimelineLineStyle = "solid" | "dashed" | "dotted";
 
+/** Card padding, node margin, and lane min-height preset. */
+export type TimelineDensity = "compact" | "comfortable" | "spacious";
+/** Corner-radius preset for cards, tooltips, and badges. */
+export type TimelineCardRadius = "none" | "small" | "medium" | "large";
+/** Diameter preset for the vertical spine dot and horizontal point marker. */
+export type TimelineMarkerSize = "small" | "medium" | "large";
+/** Thickness preset for the vertical spine line and horizontal connector. */
+export type TimelineSpineThickness = "thin" | "medium" | "thick";
+/** Elevation preset for card/tooltip shadows. */
+export type TimelineShadowIntensity = "none" | "subtle" | "normal";
+
 export type { TimelineDatePrecision } from "./date/timeline-date";
 
 export interface TimelineFieldMapping {
@@ -94,6 +105,16 @@ export interface TimelineViewConfig {
 	verticalCardSide: TimelineCardSide;
 	/** Vertical layout only: visual style of the central spine line. */
 	verticalLineStyle: TimelineLineStyle;
+	/** Card padding, node margin, and lane min-height preset. */
+	density: TimelineDensity;
+	/** Corner-radius preset for cards, tooltips, and badges. */
+	cardRadius: TimelineCardRadius;
+	/** Diameter preset for the vertical spine dot and horizontal point marker. */
+	markerSize: TimelineMarkerSize;
+	/** Thickness preset for the vertical spine line and horizontal connector. */
+	spineThickness: TimelineSpineThickness;
+	/** Elevation preset for card/tooltip shadows. */
+	shadowIntensity: TimelineShadowIntensity;
 }
 
 /** Which optional groups of advanced per-view settings are shown in the settings tab. Each is off by default so new views only ask for a name, source, and date field. */
@@ -106,6 +127,8 @@ export interface TimelineAdvancedFeatures {
 	sortAndGranularity: boolean;
 	/** Default-view toggle, relevant once a vault has more than one view. */
 	multiView: boolean;
+	/** Density, card radius, marker size, spine thickness, and shadow intensity presets. */
+	styleOverrides: boolean;
 }
 
 export interface TimelineGraphSettings {

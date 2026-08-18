@@ -1,6 +1,6 @@
 import { TimelineEvent, TimelineDatePrecision } from "../../types";
 import { TimelineDate, formatTimelineDate, toOrdinal } from "../../date/timeline-date";
-import { TimelineRenderCallbacks, attachHoverPreview, colorForEvent, colorForGroup } from "../render-shared";
+import { TimelineRenderCallbacks, attachHoverPreview, colorForEvent } from "../render-shared";
 import { Scale, xFor } from "./scale";
 
 export function todayAsTimelineDate(): TimelineDate {
@@ -15,7 +15,8 @@ export function renderLane(
 	laneIndex: number,
 	callbacks: TimelineRenderCallbacks,
 	precision: TimelineDatePrecision,
-	showEra: boolean
+	showEra: boolean,
+	groupColors: Map<string, string>
 ): HTMLElement {
 	const lane = createDiv();
 	lane.className = `timeline-graph-lane ${laneIndex % 2 === 0 ? "is-even" : "is-odd"}`;
@@ -23,14 +24,15 @@ export function renderLane(
 	const label = createDiv();
 	label.className = "timeline-graph-lane-label";
 	label.textContent = group || "Ungrouped";
-	if (group) label.style.borderLeftColor = colorForGroup(group);
+	const labelColor = group ? groupColors.get(group) : undefined;
+	if (labelColor) label.style.borderLeftColor = labelColor;
 	lane.appendChild(label);
 
 	const laneTrack = createDiv();
 	laneTrack.className = "timeline-graph-lane-track";
 
 	for (const event of laneEvents) {
-		laneTrack.appendChild(renderMarker(event, scale, callbacks, precision, showEra));
+		laneTrack.appendChild(renderMarker(event, scale, callbacks, precision, showEra, groupColors));
 	}
 
 	lane.appendChild(laneTrack);
@@ -54,9 +56,10 @@ function renderMarker(
 	scale: Scale,
 	callbacks: TimelineRenderCallbacks,
 	precision: TimelineDatePrecision,
-	showEra: boolean
+	showEra: boolean,
+	groupColors: Map<string, string>
 ): HTMLElement {
-	const color = colorForEvent(event) ?? "var(--interactive-accent, #7c3aed)";
+	const color = colorForEvent(event, groupColors) ?? "var(--interactive-accent)";
 	const startX = xFor(toOrdinal(event.date), scale);
 
 	const el = createEl("button");
@@ -160,7 +163,8 @@ export function renderPeriodBands(
 	scale: Scale,
 	callbacks: TimelineRenderCallbacks,
 	precision: TimelineDatePrecision,
-	showEra: boolean
+	showEra: boolean,
+	groupColors: Map<string, string>
 ): HTMLElement {
 	const wrap = createDiv();
 	wrap.className = "timeline-graph-period-bands";
@@ -176,7 +180,7 @@ export function renderPeriodBands(
 		band.className = "timeline-graph-period-band";
 		band.style.left = `${startX}%`;
 		band.style.width = `${width}%`;
-		const color = colorForEvent(period);
+		const color = colorForEvent(period, groupColors);
 		if (color) band.style.setProperty("--marker-color", color);
 		band.addEventListener("click", () => callbacks.onEventClick?.(period));
 		attachTooltip(band, period, precision, showEra);
@@ -201,14 +205,15 @@ export function renderFlagMarker(
 	scale: Scale,
 	callbacks: TimelineRenderCallbacks,
 	precision: TimelineDatePrecision,
-	showEra: boolean
+	showEra: boolean,
+	groupColors: Map<string, string>
 ): HTMLElement {
 	const line = createEl("button");
 	line.type = "button";
 	line.dataset.timelineEventId = marker.id;
 	line.className = "timeline-graph-flag-marker";
 	line.style.left = `${xFor(toOrdinal(marker.date), scale)}%`;
-	const color = colorForEvent(marker);
+	const color = colorForEvent(marker, groupColors);
 	if (color) line.style.setProperty("--marker-color", color);
 	line.addEventListener("click", () => callbacks.onEventClick?.(marker));
 	attachTooltip(line, marker, precision, showEra);

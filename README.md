@@ -89,7 +89,7 @@ Every view already looks for the default column/frontmatter keys below, whether 
 | Points-to | `pointsto` | Title of another event in the same view to draw a connecting arrow toward — horizontal layout only |
 
 - **Ranged and point events**: an optional end-date field renders events as a span instead of a single marker.
-- **Grouping & color**: events auto-color by group (deterministic hash), or set an explicit per-event color that overrides the group color.
+- **Grouping & color**: events auto-color by group, using a curated palette assigned in first-seen order (so the same set of groups always gets the same colors); groups past the 8th distinct one fall back to a deterministic hash. Set an explicit per-event color to override the group color.
 - **Connecting arrows**: point one event at another (by title) to draw an arrow between them on the horizontal axis.
 
 ### Layout & style (default: vertical list)
@@ -98,6 +98,7 @@ Every view already looks for the default column/frontmatter keys below, whether 
 - **Horizontal axis**: mouse-wheel/pinch zoom and drag-to-pan, grouped lanes (one row per distinct `group` value), full-height translucent period bands for eras/spans, flag markers for single significant dates, a "today" line, and BC/BCE-aware date formatting.
 - **Compressed sparse ranges**: long empty gaps (century+ spans) are compressed on the horizontal axis instead of wasting track width, with a small "⌇" break marker showing where compression happened.
 - **Vertical layout options**: which side of the spine cards sit on (alternating, left, or right), and the spine's line style (solid, dashed, dotted).
+- **Style overrides** (default: comfortable/medium/subtle): density, card corner radius, marker size, spine thickness, and shadow intensity, each a closed set of presets — see [Custom styling via CSS snippets](#custom-styling-via-css-snippets) for finer-grained control.
 
 ### Sort & date granularity (default: oldest first, day precision)
 
@@ -152,6 +153,35 @@ Recognized settings keys:
 | `<field>field` | a column header or frontmatter field name | Field mapping override, one per field in the [extra field mappings](#extra-field-mappings) table (e.g. `titlefield`, `groupfield`), plus `descriptionfield` for the description shown in tooltips and vertical-layout cards |
 
 Unrecognized keys/values are ignored.
+
+## Custom styling via CSS snippets
+
+Beyond the settings above, Chronograph's CSS is a stable, documented surface you can
+override with Obsidian's built-in CSS snippets (Settings → Appearance → CSS snippets)
+rather than editing the plugin's own files, which get overwritten on update.
+
+Every `.timeline-graph-*` class name in `styles.css` is considered part of that stable
+surface. A few CSS custom properties are also set at render time and are usually the
+easiest hook for a quick tweak:
+
+| Custom property | Set on | Controls |
+| --- | --- | --- |
+| `--marker-color` | Each event's dot/connector/card/marker/band | That event's color (group- or explicitly-derived) |
+| `--timeline-card-radius` | The timeline's root container | Corner rounding for cards, tooltips, and badges |
+| `--timeline-density-gap` | The timeline's root container | Card padding, node spacing, and lane height |
+| `--timeline-marker-size` | The timeline's root container | Diameter of the vertical spine dot and horizontal point marker |
+| `--timeline-spine-thickness` | The timeline's root container | Width of the vertical spine line and horizontal connector |
+| `--timeline-card-shadow` / `--timeline-card-shadow-hover` | The timeline's root container | Card/tooltip elevation shadow, at rest and on hover |
+
+The five `--timeline-*` properties are also settable per view via the **Style overrides** toggle in settings, as closed presets (compact/comfortable/spacious, none/small/medium/large, etc.) — reach for a CSS snippet instead when you want a value outside those presets.
+
+Example snippet — make cards perfectly square-cornered vault-wide:
+
+```css
+.timeline-graph-card {
+	border-radius: 0;
+}
+```
 
 ## Contributing
 

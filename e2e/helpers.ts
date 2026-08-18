@@ -14,6 +14,16 @@ export async function openLayoutAndStyleSettings(page: Page): Promise<void> {
 	if (!(await toggle.isChecked())) await item.locator(".slider").click();
 }
 
+// Same pattern as openLayoutAndStyleSettings, for the "Style overrides"
+// toggle group (density/card-radius/marker-size/spine-thickness/shadow
+// controls).
+export async function openStyleOverrideSettings(page: Page): Promise<void> {
+	await page.click("#open-settings");
+	const item = page.locator(".setting-item", { hasText: "Style overrides" });
+	const toggle = item.locator("input[type=checkbox]");
+	if (!(await toggle.isChecked())) await item.locator(".slider").click();
+}
+
 export async function closeSettings(page: Page): Promise<void> {
 	await page.click("#close-settings");
 }
