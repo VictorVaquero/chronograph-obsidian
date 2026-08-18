@@ -4,12 +4,21 @@
 
 /* In-note code-block variant: bounded height (scrolls internally) and a
    border so it reads as an embedded widget rather than blending into the
-   surrounding note text. */
+   surrounding note text. Height is configurable via the block's `height`
+   setting (a pixel value) or the Configure modal; --timeline-max-height is
+   set inline per block, defaulting to 480px to match this rule's fallback. */
 .timeline-graph-code-block {
-	max-height: 480px;
+	max-height: var(--timeline-max-height, 480px);
 	overflow-y: auto;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: var(--radius-m);
+}
+
+/* `height: fill` removes the cap and inner scrollbar entirely, so the block
+   just grows with its content like a normal embed. */
+.timeline-graph-code-block.timeline-graph-fill-height {
+	max-height: none;
+	overflow-y: visible;
 }
 
 .timeline-graph-empty,

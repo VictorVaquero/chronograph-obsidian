@@ -7,6 +7,7 @@ export interface CodeBlockConfigModalValues {
 	precision: TimelineDatePrecision;
 	density: TimelineDensity;
 	linestyle: TimelineLineStyle;
+	height: number | "fill";
 }
 
 export class CodeBlockConfigModal extends Modal {
@@ -60,6 +61,20 @@ export class CodeBlockConfigModal extends Modal {
 					this.values.density = value as TimelineDensity;
 				})
 		);
+
+		new Setting(this.contentEl)
+			.setName("Height")
+			.setDesc('"fill" to grow with content, or a pixel value (e.g. 480) to scroll internally past that height.')
+			.addText((text) =>
+				text.setValue(String(this.values.height)).onChange((value) => {
+					const trimmed = value.trim().toLowerCase();
+					if (trimmed === "fill") {
+						this.values.height = "fill";
+					} else if (/^\d+$/.test(trimmed) && Number(trimmed) > 0) {
+						this.values.height = Number(trimmed);
+					}
+				})
+			);
 
 		this.lineStyleSetting = new Setting(this.contentEl)
 			.setName("Spine line style")

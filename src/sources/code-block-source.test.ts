@@ -132,6 +132,26 @@ path: Timeline/Events.md
 		expect(config.sourceType).toBe("table");
 		expect(config.tableNotePath).toBe("Timeline/Events.md");
 	});
+
+	it("defaults height to 480 pixels", () => {
+		const { config } = parseCodeBlockConfig("layout: horizontal");
+		expect(config.height).toBe(480);
+	});
+
+	it("parses a custom pixel height", () => {
+		const { config } = parseCodeBlockConfig("height: 900\n---");
+		expect(config.height).toBe(900);
+	});
+
+	it("parses height: fill", () => {
+		const { config } = parseCodeBlockConfig("height: fill\n---");
+		expect(config.height).toBe("fill");
+	});
+
+	it("ignores a non-numeric, non-fill height value", () => {
+		const { config } = parseCodeBlockConfig("height: tall\n---");
+		expect(config.height).toBe(480);
+	});
 });
 
 describe("upsertSettingLines", () => {

@@ -45,6 +45,8 @@ export interface TimelineCodeBlockConfig {
 	spineThickness: TimelineSpineThickness;
 	/** Elevation preset for card/tooltip shadows. */
 	shadowIntensity: TimelineShadowIntensity;
+	/** Max block height in pixels before it scrolls internally, or "fill" to grow with content and disable the inner scrollbar. */
+	height: number | "fill";
 	fields: TimelineFieldMapping;
 }
 
@@ -68,6 +70,7 @@ export function defaultCodeBlockConfig(): TimelineCodeBlockConfig {
 		markerSize: "medium",
 		spineThickness: "medium",
 		shadowIntensity: "subtle",
+		height: 480,
 		fields: {
 			dateField: "date",
 			endDateField: "enddate",
@@ -146,6 +149,10 @@ function applySettingLine(config: TimelineCodeBlockConfig, key: string, rawValue
 		config.spineThickness = vLower as TimelineSpineThickness;
 	} else if (k === "shadowintensity" && VALID_SHADOW_INTENSITIES.has(vLower as TimelineShadowIntensity)) {
 		config.shadowIntensity = vLower as TimelineShadowIntensity;
+	} else if (k === "height" && vLower === "fill") {
+		config.height = "fill";
+	} else if (k === "height" && /^\d+$/.test(v) && Number(v) > 0) {
+		config.height = Number(v);
 	} else if (k in FIELD_KEYS) {
 		config.fields[FIELD_KEYS[k]] = v;
 	}

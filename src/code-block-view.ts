@@ -95,6 +95,16 @@ async function resolveCodeBlockEvents(
 	return events;
 }
 
+function applyHeightConfig(el: HTMLElement, height: number | "fill"): void {
+	if (height === "fill") {
+		el.addClass("timeline-graph-fill-height");
+		el.style.removeProperty("--timeline-max-height");
+	} else {
+		el.removeClass("timeline-graph-fill-height");
+		el.style.setProperty("--timeline-max-height", `${height}px`);
+	}
+}
+
 function extractInnerSource(info: MarkdownSectionInformation): string {
 	return info.text.split(/\r?\n/).slice(info.lineStart + 1, info.lineEnd).join("\n");
 }
@@ -108,6 +118,7 @@ function diffToHeaderKeys(
 	if (values.precision !== current.precision) changes.precision = values.precision;
 	if (values.density !== current.density) changes.density = values.density;
 	if (values.linestyle !== current.linestyle) changes.linestyle = values.linestyle;
+	if (values.height !== current.height) changes.height = String(values.height);
 	return changes;
 }
 
@@ -137,6 +148,7 @@ async function renderCodeBlock(
 
 	try {
 		const { config, body } = parseCodeBlockConfig(source);
+		applyHeightConfig(el, config.height);
 		log.debug("Rendering code block", { sourcePath: ctx.sourcePath, sourceType: config.sourceType });
 		const events = await resolveCodeBlockEvents(plugin, config, body, ctx.sourcePath);
 		events.sort((a, b) =>
@@ -175,6 +187,7 @@ async function renderCodeBlock(
 						precision: current.precision,
 						density: current.density,
 						linestyle: current.verticalLineStyle,
+						height: current.height,
 					};
 					new CodeBlockConfigModal(plugin.app, currentValues, async (values) => {
 						const changes = diffToHeaderKeys(currentValues, values);

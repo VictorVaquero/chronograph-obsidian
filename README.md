@@ -155,6 +155,7 @@ Recognized settings keys:
 | `markersize` | `small` / `medium` (default) / `large` | Diameter of the vertical spine dot / horizontal point marker |
 | `spinethickness` | `thin` / `medium` (default) / `thick` | Thickness of the vertical spine line / horizontal connector |
 | `shadowintensity` | `none` / `subtle` (default) / `normal` | Elevation of card/tooltip shadows |
+| `height` | `fill` or a pixel number (default `480`) | Block height before it scrolls internally; `fill` grows with content instead |
 | `<field>field` | a column header or frontmatter field name | Field mapping override, one per field in the [extra field mappings](#extra-field-mappings) table (e.g. `titlefield`, `groupfield`), plus `descriptionfield` for the description shown in tooltips and vertical-layout cards |
 
 Unrecognized keys/values are ignored.
