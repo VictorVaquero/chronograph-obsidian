@@ -16,6 +16,7 @@ import {
 	toOrdinal,
 } from "../date/timeline-date";
 import { setupVerticalZoom } from "./vertical-zoom-pan";
+import { renderRangeBars } from "./range-bars";
 
 export function renderVerticalTimeline(
 	container: HTMLElement,
@@ -116,7 +117,9 @@ export function renderVerticalTimeline(
 	root.append(toolbar, spine);
 	container.appendChild(root);
 
-	setupVerticalZoom(root, spine, zoomInBtn, zoomOutBtn, fitBtn);
+	renderRangeBars(spine, events);
+
+	setupVerticalZoom(root, spine, zoomInBtn, zoomOutBtn, fitBtn, () => renderRangeBars(spine, events));
 }
 
 function renderPeriodDivider(label: string): HTMLElement {
@@ -144,6 +147,7 @@ function renderNode(
 
 	const dot = createDiv();
 	dot.className = "timeline-graph-node-dot";
+	dot.dataset.timelineEventId = event.id;
 	if (color) dot.style.setProperty("--marker-color", color);
 	node.appendChild(dot);
 

@@ -13,13 +13,15 @@ export function setupVerticalZoom(
 	spine: HTMLElement,
 	zoomInBtn: HTMLButtonElement,
 	zoomOutBtn: HTMLButtonElement,
-	fitBtn: HTMLButtonElement
+	fitBtn: HTMLButtonElement,
+	onZoomChange?: () => void
 ): void {
 	let zoom = 1;
 
 	function applyZoom(newZoom: number): void {
 		zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, newZoom));
 		spine.style.transform = `scale(${zoom})`;
+		onZoomChange?.();
 	}
 
 	container.addEventListener(

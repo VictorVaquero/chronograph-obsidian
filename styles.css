@@ -80,6 +80,28 @@
 	border-left-style: dotted;
 }
 
+.timeline-graph-range-bars {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 2;
+	pointer-events: none;
+	overflow: visible;
+}
+
+.timeline-graph-range-bar-line {
+	stroke: var(--marker-color, var(--interactive-accent));
+	stroke-width: var(--timeline-spine-thickness, 3px);
+	opacity: 0.55;
+}
+
+.timeline-graph-range-bar-end {
+	fill: var(--marker-color, var(--interactive-accent));
+	opacity: 0.55;
+}
+
 .timeline-graph-node {
 	position: relative;
 	display: grid;
