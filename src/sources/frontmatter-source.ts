@@ -1,6 +1,7 @@
 import { App, TFile, getAllTags } from "obsidian";
 import { TimelineEvent, TimelineEventKind, TimelineFieldMapping } from "../types";
 import { parseTimelineDate } from "../date/timeline-date";
+import { log } from "../log";
 
 function normalizeTag(tag: string): string {
 	const trimmed = tag.trim();
@@ -89,5 +90,6 @@ export function queryTimelineEventsFromFrontmatter(
 		const event = frontmatterToEvent(file, frontmatter, fields);
 		if (event) events.push(event);
 	}
+	log.debug("Frontmatter source resolved", { tag, folder, events: events.length });
 	return events;
 }

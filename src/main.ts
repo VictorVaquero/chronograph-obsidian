@@ -5,12 +5,14 @@ import { TimelineView } from "./timeline-view";
 import { TimelineGraphSettingTab } from "./settings-tab";
 import { registerCommands } from "./commands";
 import { registerCodeBlockProcessor } from "./code-block-view";
+import { log, setLogLevel } from "./log";
 
 export default class TimelineGraphPlugin extends Plugin {
 	settings!: TimelineGraphSettings;
 
 	async onload(): Promise<void> {
 		await this.loadSettings();
+		log.info("Plugin loaded");
 
 		this.registerView(
 			TIMELINE_VIEW_TYPE,
@@ -40,6 +42,7 @@ export default class TimelineGraphPlugin extends Plugin {
 
 	onunload(): void {
 		// registerView/registerEvent handlers are cleaned up automatically.
+		log.info("Plugin unloaded");
 	}
 
 	async activateView(): Promise<void> {
@@ -67,9 +70,11 @@ export default class TimelineGraphPlugin extends Plugin {
 			view.frontmatterTag ??= "";
 			view.frontmatterFolder ??= "";
 		}
+		setLogLevel(this.settings.logLevel);
 	}
 
 	async saveSettings(): Promise<void> {
+		setLogLevel(this.settings.logLevel);
 		await this.saveData(this.settings);
 		for (const leaf of this.app.workspace.getLeavesOfType(TIMELINE_VIEW_TYPE)) {
 			const view = leaf.view;

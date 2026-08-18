@@ -1,6 +1,7 @@
 import { App, TFile, getAllTags } from "obsidian";
 import { TimelineEvent } from "../types";
 import { parseTimelineDate } from "../date/timeline-date";
+import { log } from "../log";
 
 // Obsidian Tasks plugin emoji-date syntax: https://publish.obsidian.md/tasks/
 const DUE_DATE_RE = /📅\s*(\d{4}-\d{2}-\d{2})/;
@@ -98,5 +99,6 @@ export async function queryTimelineEventsFromTasks(
 			if (event) events.push(event);
 		}
 	}
+	log.debug("Tasks source resolved", { tag, folder, events: events.length });
 	return events;
 }

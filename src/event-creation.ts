@@ -1,6 +1,7 @@
 import { App, TFile } from "obsidian";
 import { TimelineViewConfig } from "./types";
 import { insertTableRow, queryTimelineEventsFromTable } from "./sources/table-source";
+import { log } from "./log";
 
 export class TimelineCreateEventError extends Error {
 	constructor(message: string) {
@@ -43,21 +44,25 @@ export async function createTimelineEvent(
 	title: string
 ): Promise<void> {
 	if (config.sourceType === "tasks") {
+		log.warn("Cannot create event: tasks source", { view: config.name });
 		throw new TimelineCreateEventError(
 			`"${config.name}" uses the Obsidian Tasks source; create events as checklist lines directly in a note instead.`
 		);
 	}
 
 	if (!config.fields.dateField) {
+		log.warn("Cannot create event: no date field configured", { view: config.name });
 		throw new TimelineCreateEventError(`Set a date field for "${config.name}" before creating events.`);
 	}
 
 	if (config.sourceType === "table") {
 		if (!config.tableNotePath) {
+			log.warn("Cannot create event: no table note path configured", { view: config.name });
 			throw new TimelineCreateEventError(`Set a table note path for "${config.name}" before creating events.`);
 		}
 		const file = app.vault.getAbstractFileByPath(config.tableNotePath);
 		if (!(file instanceof TFile)) {
+			log.warn("Cannot create event: table note not found", { view: config.name, path: config.tableNotePath });
 			throw new TimelineCreateEventError(`Table note not found: "${config.tableNotePath}".`);
 		}
 
@@ -70,6 +75,7 @@ export async function createTimelineEvent(
 		// Validate the note still parses as a table after the edit, surfacing a
 		// clear error instead of silently producing an unreadable timeline.
 		await queryTimelineEventsFromTable(app, config.tableNotePath, config.fields);
+		log.info("Created event row", { view: config.name, path: config.tableNotePath });
 		return;
 	}
 
@@ -83,4 +89,5 @@ export async function createTimelineEvent(
 			frontmatter[config.fields.titleField] = title;
 		}
 	});
+	log.info("Created event note", { view: config.name, path });
 }

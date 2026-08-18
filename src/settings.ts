@@ -48,4 +48,5 @@ export const DEFAULT_SETTINGS: TimelineGraphSettings = {
 		multiView: false,
 		styleOverrides: false,
 	},
+	logLevel: "warn",
 };

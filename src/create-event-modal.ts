@@ -1,6 +1,7 @@
 import { App, Modal, Notice, Setting } from "obsidian";
 import { TimelineViewConfig } from "./types";
 import { createTimelineEvent } from "./event-creation";
+import { log } from "./log";
 
 function todayIso(): string {
 	return new Date().toISOString().slice(0, 10);
@@ -52,6 +53,7 @@ export class TimelineCreateEventModal extends Modal {
 			this.close();
 			this.onCreated();
 		} catch (err) {
+			log.error("Failed to create event", { view: this.config.name }, err);
 			new Notice(err instanceof Error ? err.message : String(err));
 		}
 	}

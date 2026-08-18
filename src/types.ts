@@ -1,4 +1,5 @@
 import { TimelineDate, TimelineDatePrecision } from "./date/timeline-date";
+import { TimelineLogLevel } from "./log";
 
 export const TIMELINE_VIEW_TYPE = "timeline-graph-view";
 
@@ -135,4 +136,6 @@ export interface TimelineGraphSettings {
 	views: TimelineViewConfig[];
 	defaultViewId: string | null;
 	advanced: TimelineAdvancedFeatures;
+	/** Minimum severity printed to the developer console, prefixed "[Chronograph]". "warn" by default; "debug" for troubleshooting a source/query issue. */
+	logLevel: TimelineLogLevel;
 }

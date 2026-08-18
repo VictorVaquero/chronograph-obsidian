@@ -1,6 +1,7 @@
 import { App, TFile } from "obsidian";
 import { TimelineEvent, TimelineEventKind, TimelineFieldMapping } from "../types";
 import { parseTimelineDate } from "../date/timeline-date";
+import { log } from "../log";
 
 export class TimelineTableNotFoundError extends Error {
 	constructor(notePath: string) {
@@ -225,10 +226,17 @@ export async function queryTimelineEventsFromTable(
 	fields: TimelineFieldMapping
 ): Promise<TimelineEvent[]> {
 	const file = app.vault.getAbstractFileByPath(notePath);
-	if (!(file instanceof TFile)) throw new TimelineTableNotFoundError(notePath);
+	if (!(file instanceof TFile)) {
+		log.warn("Table note not found", { notePath });
+		throw new TimelineTableNotFoundError(notePath);
+	}
 
 	const content = await app.vault.cachedRead(file);
 	const events = parseTimelineEventsFromTableContent(content, notePath, fields);
-	if (!events) throw new TimelineTableParseError(notePath);
+	if (!events) {
+		log.warn("No markdown table found in note", { notePath });
+		throw new TimelineTableParseError(notePath);
+	}
+	log.debug("Table source resolved", { notePath, events: events.length });
 	return events;
 }

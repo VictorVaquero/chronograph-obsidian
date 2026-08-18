@@ -3,6 +3,7 @@ import type TimelineGraphPlugin from "./main";
 import { createDefaultView } from "./settings";
 import { isDataviewEnabled } from "./sources/dataview-source";
 import { TimelineViewConfig } from "./types";
+import { TimelineLogLevel } from "./log";
 
 export class TimelineGraphSettingTab extends PluginSettingTab {
 	plugin: TimelineGraphPlugin;
@@ -98,6 +99,25 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 								this.plugin.settings.advanced.styleOverrides = value;
 								await this.plugin.saveSettings();
 								this.update();
+							})
+					);
+				},
+			},
+			{
+				name: "Log level",
+				desc: 'How much Chronograph prints to the developer console (Ctrl/Cmd+Shift+I), prefixed "[Chronograph]". "Warnings & errors" is the default; set to "Debug" when troubleshooting a source/query issue, then back down afterward.',
+				render: (setting) => {
+					setting.addDropdown((dropdown) =>
+						dropdown
+							.addOption("off", "Off")
+							.addOption("error", "Errors only")
+							.addOption("warn", "Warnings & errors")
+							.addOption("info", "Info & above")
+							.addOption("debug", "Debug (verbose)")
+							.setValue(this.plugin.settings.logLevel)
+							.onChange(async (value) => {
+								this.plugin.settings.logLevel = value as TimelineLogLevel;
+								await this.plugin.saveSettings();
 							})
 					);
 				},
