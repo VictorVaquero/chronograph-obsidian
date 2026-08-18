@@ -1,47 +1,49 @@
 ![Chronograph](docs/images/logo.svg)
 
-A configurable timeline graph view for [Obsidian](https://obsidian.md).
+A configurable timeline graph view for [Obsidian](https://obsidian.md). Point it at events in your vault, map a few fields, get an interactive timeline.
 
-Define one or more "views," each pulling events from a [Dataview](https://blacksmithgu.github.io/obsidian-dataview/) Query Language (DQL) source string across the vault, a markdown table in a single note, frontmatter scanned directly (no Dataview dependency), or [Obsidian Tasks](https://publish.obsidian.md/tasks/) checklist emoji-dates, and map fields to build an interactive timeline.
-
-Chronograph is simple by default: a new view only asks for a name, a source, and a date field. Everything else — extra field mappings, layout/style, sort order, date granularity, multiple views — already works with sensible defaults (`title`/`group`/`enddate`/... field names, vertical layout, oldest-first, day precision); the corresponding toggle in Settings → Chronograph just reveals the controls to override that default per view, so the settings tab stays uncluttered until you need to change something.
+Simple by default: name it, pick a source, pick a date field — done. Everything else (field mappings, layout, sort, granularity) already has sensible defaults; toggles just reveal the controls when you want to override one.
 
 ## Screenshots
 
-**Vertical layout** — a chronological card list alternating on either side of a spine:
-
-![Vertical timeline with alternating cards](docs/images/vertical-timeline.png)
-
-**Horizontal layout** — a zoomable axis with grouped lanes:
-
-![Horizontal timeline with grouped lanes](docs/images/horizontal-timeline.png)
-
-**BC/AD-aware, with period bands** — for history and ancient-timeline use cases:
-
-![Horizontal timeline showing ancient history with period bands](docs/images/horizontal-ancient.png)
+| Vertical | Horizontal | BC/AD & period bands |
+| --- | --- | --- |
+| [![Vertical timeline with alternating cards](docs/images/vertical-timeline.png)](docs/images/vertical-timeline.png) | [![Horizontal timeline with grouped lanes](docs/images/horizontal-timeline.png)](docs/images/horizontal-timeline.png) | [![Horizontal timeline showing ancient history with period bands](docs/images/horizontal-ancient.png)](docs/images/horizontal-ancient.png) |
+| Card list alternating on a spine | Zoomable axis with grouped lanes | For history / ancient-timeline use cases |
 
 ## Requirements
 
 - Obsidian ≥ 1.13.0
-- [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin installed and enabled, only for views using the Dataview source (optional at install time — Chronograph will show a notice if it's missing on a Dataview-backed view). Views using the markdown table or frontmatter source don't need Dataview.
+- [Dataview](https://github.com/blacksmithgu/obsidian-dataview) — only if you use the Dataview source. Table/frontmatter/Tasks sources need nothing extra.
 
-## Quick start
+## Two ways to build a timeline
 
-1. Open the timeline pane via the ribbon icon ("Open Chronograph") or the **Chronograph: Open view** command.
-2. In Settings → Chronograph, click **Add view**, then choose its source:
-   - **Dataview query**: a DQL source string, e.g. `from "Journal" where date`.
-   - **Markdown table**: the vault path of a note containing a table with a header row and a `---` divider row.
-   - **Frontmatter**: scans vault notes directly via Obsidian's metadata cache, no Dataview needed. Optionally filter by tag and/or folder.
-   - **Obsidian Tasks emoji-dates**: scans vault notes for checklist lines (`- [ ] ...`) carrying an [Obsidian Tasks](https://publish.obsidian.md/tasks/) emoji-date (📅 due, ⏳ scheduled, 🛫 start, ✅ done); each matching line becomes its own event, not just each note. No Dataview needed. Optionally filter by tag and/or folder.
-3. Set the **Date field** — the column header (table source) or frontmatter field (Dataview/frontmatter source) holding each event's date.
+| | **View** | **Code block** |
+| --- | --- | --- |
+| Where | Settings → Chronograph, opened from the ribbon/command palette | A ` ```chronograph ` block, right in any note |
+| Best for | A timeline you come back to | One embedded in the note it's about |
+| Sources | Dataview · Table · Frontmatter · Tasks | same four |
+| Options | field mappings, layout, sort, granularity | same options, via a settings header |
 
-Dates accept a plain year with a BC/BCE (or AD/CE) suffix (`44 BC`), or a full `YYYY-MM-DD` date with the same suffix for day precision (`44-03-15 BC`) — write the calendar year as-is, the suffix handles the conversion.
+Pick either — they're equivalent in capability.
 
-That's it. The view renders as a vertical chronological list, oldest first — no other setting required. It already looks for a `title` field for the event title (falling back to the note's file name), plus `group`, `color`, `enddate`, and more (see [Extra field mappings](#extra-field-mappings) below); rename any of these in Settings → Chronograph if your notes use different field names. Zoom in/out/fit from the toolbar (or Ctrl/Cmd+wheel) any time; panning is native page scroll.
+### Views
 
-### In-note code blocks
+1. Open the timeline pane (ribbon icon, or **Chronograph: Open view**).
+2. Settings → Chronograph → **Add view**, then pick a source:
 
-For a one-off timeline without adding a view in settings, use a ` ```chronograph ` fenced code block with an inline markdown table:
+   | Source | What it needs |
+   | --- | --- |
+   | Dataview query | a DQL string, e.g. `from "Journal" where date` |
+   | Markdown table | the vault path of a note with a `\| header \|` + `---` table |
+   | Frontmatter | nothing — scans the vault directly; optional tag/folder filter |
+   | Obsidian Tasks | checklist lines with an emoji-date (📅 ⏳ 🛫 ✅); optional tag/folder filter |
+
+3. Set the **Date field** (column header or frontmatter key).
+
+That's it — renders as a vertical list, oldest first. It already looks for `title`, `group`, `enddate`, etc. (see [field mappings](#extra-field-mappings)); rename them in settings if your notes differ. Zoom/pan with the toolbar, Ctrl/Cmd+wheel, or plain scroll.
+
+### Code blocks
 
     ```chronograph
     | date | title | group |
@@ -50,7 +52,24 @@ For a one-off timeline without adding a view in settings, use a ` ```chronograph
     | 2024-03-15 | v2 | Product |
     ```
 
-Column headers default to `date`, `title`, `group` (see [Extra field mappings](#extra-field-mappings) below for the full list). This also needs no view configured in Settings → Chronograph.
+That's the zero-config form — an inline table, columns default to `date`/`title`/`group`. Want a Dataview query, a frontmatter scan, or Tasks instead? Add a `source:` header:
+
+    ```chronograph
+    source: dataview
+    query: from "Journal" where date
+    ```
+
+    ```chronograph
+    source: frontmatter
+    tag: event
+    folder: Journal
+    ```
+
+Full key reference: [Advanced: in-note code block settings](#advanced-in-note-code-block-settings).
+
+### Dates
+
+`44 BC` / `44 AD` for a year, or `44-03-15 BC` for day precision — write the calendar year as-is, the suffix handles the BC/AD conversion.
 
 ## More features
 
@@ -97,13 +116,13 @@ These aren't behind a toggle — they work regardless of which advanced groups a
 - **Click-to-create events**: a "+ new event" button in the horizontal toolbar prompts for a date/title and creates the event — a new table row for the table source, or a new note with frontmatter for the Dataview/frontmatter sources.
 - **Export snapshot**: an "Export snapshot" button (vertical and horizontal toolbars) saves the current timeline as an SVG image file into your vault. Embed it anywhere with `![[Name snapshot.svg]]` — it renders directly as an image both in Obsidian and on GitHub, no extra software needed.
 - **Native hover preview**: hovering an event's title shows Obsidian's built-in note preview popover.
-- **Four event sources**: a Dataview query across the vault, a single-note markdown table, frontmatter scanned directly via Obsidian's own metadata cache, or Obsidian Tasks checklist emoji-dates (the latter two need no Dataview dependency) — plus an "Insert timeline event row" command that scaffolds or appends rows to a table source.
-- **Frontmatter/Tasks source filtering**: narrow the frontmatter or Tasks source by tag and/or vault folder, so a single view can target e.g. all notes tagged `#event` under `Journal/`.
-- **In-note code-block timelines**: see [In-note code blocks](#in-note-code-blocks) above.
+- **Four event sources, for views and code blocks alike**: a Dataview query across the vault, a single-note markdown table, frontmatter scanned directly via Obsidian's own metadata cache, or Obsidian Tasks checklist emoji-dates (the latter two need no Dataview dependency) — plus an "Insert timeline event row" command that scaffolds or appends rows to a table source.
+- **Frontmatter/Tasks source filtering**: narrow the frontmatter or Tasks source by tag and/or vault folder, so a single view (or code block) can target e.g. all notes tagged `#event` under `Journal/`.
+- **In-note code-block timelines**: see [Code blocks](#code-blocks) above.
 
 ## Advanced: in-note code block settings
 
-The ` ```chronograph ` code block accepts the same options as a configured view. Add a settings header above a lone `---` line before the table:
+The ` ```chronograph ` code block accepts the same options as a configured view — same sources, same field mappings, same layout/sort/granularity. Add a settings header above a lone `---` line before the table (the `---` and table are only needed for the table source's inline form; the other sources take no body):
 
     ```chronograph
     layout: horizontal
@@ -116,7 +135,23 @@ The ` ```chronograph ` code block accepts the same options as a configured view.
     | 1969 | Moon landing |
     ```
 
-Recognized settings keys: `layout` (`vertical`/`horizontal`), `precision` (`day`/`month`/`year`/`decade`/`century`/`millennium`), `sort` (`asc`/`desc`), `cardside` (`alternate`/`left`/`right`), `linestyle` (`solid`/`dashed`/`dotted`), and `<field>field` for each field in the [extra field mappings](#extra-field-mappings) table (e.g. `titlefield`, `groupfield`), plus `descriptionfield` for the description shown in tooltips and vertical-layout cards. Unrecognized keys/values are ignored.
+Recognized settings keys:
+
+| Key | Values | Purpose |
+| --- | --- | --- |
+| `source` | `table` (default) / `dataview` / `frontmatter` / `tasks` | Which of the four event sources this block uses |
+| `query` | a DQL string | Dataview source string — used when `source: dataview` |
+| `path` | a vault note path | Note whose table to read — used when `source: table`; omit to use the block's own inline table instead |
+| `tag` | a tag, with or without `#` | Filter by tag — used when `source: frontmatter` or `source: tasks` |
+| `folder` | a vault folder path | Filter by folder — used when `source: frontmatter` or `source: tasks` |
+| `layout` | `vertical` / `horizontal` | Same as a view's layout setting |
+| `precision` | `day` / `month` / `year` / `decade` / `century` / `millennium` | Date granularity |
+| `sort` | `asc` / `desc` | Sort order |
+| `cardside` | `alternate` / `left` / `right` | Vertical layout only |
+| `linestyle` | `solid` / `dashed` / `dotted` | Vertical layout only |
+| `<field>field` | a column header or frontmatter field name | Field mapping override, one per field in the [extra field mappings](#extra-field-mappings) table (e.g. `titlefield`, `groupfield`), plus `descriptionfield` for the description shown in tooltips and vertical-layout cards |
+
+Unrecognized keys/values are ignored.
 
 ## Contributing
 

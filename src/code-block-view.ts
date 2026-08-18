@@ -1,27 +1,73 @@
 import { HoverParent, HoverPopover, MarkdownPostProcessorContext } from "obsidian";
-import { parseCodeBlock, TimelineCodeBlockParseError } from "./sources/code-block-source";
+import { parseCodeBlockConfig, TimelineCodeBlockConfig, TimelineCodeBlockParseError } from "./sources/code-block-source";
+import { parseTimelineEventsFromTableContent, queryTimelineEventsFromTable } from "./sources/table-source";
+import { queryTimelineEventsFromFrontmatter } from "./sources/frontmatter-source";
+import { queryTimelineEventsFromTasks } from "./sources/tasks-source";
+import { DataviewUnavailableError, isDataviewEnabled, queryTimelineEvents } from "./sources/dataview-source";
+import { TimelineEvent } from "./types";
 import { renderErrorState, renderTimeline } from "./render/timeline-renderer";
 import { compareTimelineDates } from "./date/timeline-date";
 import type TimelineGraphPlugin from "./main";
 
 /**
  * Registers the `chronograph` fenced-code-block processor: renders an
- * inline, self-contained timeline from a markdown table embedded directly
- * in the block, with an optional settings header, no view configured in
- * Settings → Chronograph required.
+ * inline, self-contained timeline from a settings header plus a source —
+ * by default an inline markdown table embedded directly in the block, but
+ * (like a configured view) also a Dataview query, frontmatter scan, or
+ * Obsidian Tasks scan — no view configured in Settings → Chronograph
+ * required.
  */
 export function registerCodeBlockProcessor(plugin: TimelineGraphPlugin): void {
 	plugin.registerMarkdownCodeBlockProcessor("chronograph", (source, el, ctx) => {
-		renderCodeBlock(plugin, source, el, ctx);
+		void renderCodeBlock(plugin, source, el, ctx);
 	});
 }
 
-function renderCodeBlock(
+async function resolveCodeBlockEvents(
+	plugin: TimelineGraphPlugin,
+	config: TimelineCodeBlockConfig,
+	body: string,
+	sourcePath: string
+): Promise<TimelineEvent[]> {
+	if (config.sourceType === "dataview") {
+		if (!isDataviewEnabled(plugin.app)) throw new DataviewUnavailableError();
+		return queryTimelineEvents(plugin.app, config.dataviewQuery, config.fields);
+	}
+
+	if (config.sourceType === "frontmatter") {
+		return queryTimelineEventsFromFrontmatter(
+			plugin.app,
+			config.frontmatterTag,
+			config.frontmatterFolder,
+			config.fields
+		);
+	}
+
+	if (config.sourceType === "tasks") {
+		return queryTimelineEventsFromTasks(plugin.app, config.frontmatterTag, config.frontmatterFolder);
+	}
+
+	// "table": an explicit `path` reads that note's table, like a configured
+	// view; with no `path`, the block's own body is the inline table.
+	if (config.tableNotePath) {
+		return queryTimelineEventsFromTable(plugin.app, config.tableNotePath, config.fields);
+	}
+
+	const events = parseTimelineEventsFromTableContent(body, sourcePath, config.fields);
+	if (!events) {
+		throw new TimelineCodeBlockParseError(
+			'No markdown table found in this chronograph block. Add a table with a header row and a "---" divider row, or set a `source`/`path`.'
+		);
+	}
+	return events;
+}
+
+async function renderCodeBlock(
 	plugin: TimelineGraphPlugin,
 	source: string,
 	el: HTMLElement,
 	ctx: MarkdownPostProcessorContext
-): void {
+): Promise<void> {
 	el.addClass("timeline-graph-view", "timeline-graph-code-block");
 
 	// A plain HoverParent stand-in — the code block has no ItemView of its
@@ -30,7 +76,8 @@ function renderCodeBlock(
 	const hoverParent: HoverParent = { hoverPopover: null as HoverPopover | null };
 
 	try {
-		const { config, events } = parseCodeBlock(source, ctx.sourcePath);
+		const { config, body } = parseCodeBlockConfig(source);
+		const events = await resolveCodeBlockEvents(plugin, config, body, ctx.sourcePath);
 		events.sort((a, b) =>
 			config.sortOrder === "asc"
 				? compareTimelineDates(a.date, b.date)

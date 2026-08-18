@@ -1,13 +1,12 @@
 import {
 	TimelineCardSide,
 	TimelineDatePrecision,
-	TimelineEvent,
 	TimelineFieldMapping,
 	TimelineLayout,
 	TimelineLineStyle,
 	TimelineSortOrder,
+	TimelineSourceType,
 } from "../types";
-import { parseTimelineEventsFromTableContent } from "./table-source";
 
 export class TimelineCodeBlockParseError extends Error {
 	constructor(message: string) {
@@ -17,6 +16,15 @@ export class TimelineCodeBlockParseError extends Error {
 }
 
 export interface TimelineCodeBlockConfig {
+	sourceType: TimelineSourceType;
+	/** Dataview Query Language source string. Used when sourceType is "dataview". */
+	dataviewQuery: string;
+	/** Vault path of the note whose body contains the events table. Used when sourceType is "table"; empty means the embedding note itself. */
+	tableNotePath: string;
+	/** Only include notes carrying this tag. Used when sourceType is "frontmatter" or "tasks". */
+	frontmatterTag: string;
+	/** Only include notes under this vault folder path. Used when sourceType is "frontmatter" or "tasks". */
+	frontmatterFolder: string;
 	layout: TimelineLayout;
 	precision: TimelineDatePrecision;
 	sortOrder: TimelineSortOrder;
@@ -30,6 +38,11 @@ export interface TimelineCodeBlockConfig {
 // the zero-setup usage that in-note code-block timelines are meant to offer.
 export function defaultCodeBlockConfig(): TimelineCodeBlockConfig {
 	return {
+		sourceType: "table",
+		dataviewQuery: "",
+		tableNotePath: "",
+		frontmatterTag: "",
+		frontmatterFolder: "",
 		layout: "vertical",
 		precision: "day",
 		sortOrder: "asc",
@@ -48,6 +61,7 @@ export function defaultCodeBlockConfig(): TimelineCodeBlockConfig {
 	};
 }
 
+const VALID_SOURCE_TYPES = new Set<TimelineSourceType>(["table", "dataview", "frontmatter", "tasks"]);
 const VALID_LAYOUTS = new Set<TimelineLayout>(["vertical", "horizontal"]);
 const VALID_PRECISIONS = new Set<TimelineDatePrecision>([
 	"day", "month", "year", "decade", "century", "millennium",
@@ -69,22 +83,34 @@ const FIELD_KEYS: Record<string, keyof TimelineFieldMapping> = {
 
 // Applies one "key: value" settings-header line to `config`, mutating it in
 // place. Unknown keys are ignored rather than erroring, so a typo in an
-// optional setting doesn't break the whole block.
-function applySettingLine(config: TimelineCodeBlockConfig, key: string, value: string): void {
+// optional setting doesn't break the whole block. `value` is taken raw (not
+// lowercased) since query strings, paths, and tags are case-sensitive.
+function applySettingLine(config: TimelineCodeBlockConfig, key: string, rawValue: string): void {
 	const k = key.trim().toLowerCase();
-	const v = value.trim();
+	const v = rawValue.trim();
 	if (!v) return;
+	const vLower = v.toLowerCase();
 
-	if (k === "layout" && VALID_LAYOUTS.has(v as TimelineLayout)) {
-		config.layout = v as TimelineLayout;
-	} else if (k === "precision" && VALID_PRECISIONS.has(v as TimelineDatePrecision)) {
-		config.precision = v as TimelineDatePrecision;
-	} else if (k === "sort" && VALID_SORT_ORDERS.has(v as TimelineSortOrder)) {
-		config.sortOrder = v as TimelineSortOrder;
-	} else if (k === "cardside" && VALID_CARD_SIDES.has(v as TimelineCardSide)) {
-		config.verticalCardSide = v as TimelineCardSide;
-	} else if (k === "linestyle" && VALID_LINE_STYLES.has(v as TimelineLineStyle)) {
-		config.verticalLineStyle = v as TimelineLineStyle;
+	if (k === "source" && VALID_SOURCE_TYPES.has(vLower as TimelineSourceType)) {
+		config.sourceType = vLower as TimelineSourceType;
+	} else if (k === "query") {
+		config.dataviewQuery = v;
+	} else if (k === "path") {
+		config.tableNotePath = v;
+	} else if (k === "tag") {
+		config.frontmatterTag = v;
+	} else if (k === "folder") {
+		config.frontmatterFolder = v;
+	} else if (k === "layout" && VALID_LAYOUTS.has(vLower as TimelineLayout)) {
+		config.layout = vLower as TimelineLayout;
+	} else if (k === "precision" && VALID_PRECISIONS.has(vLower as TimelineDatePrecision)) {
+		config.precision = vLower as TimelineDatePrecision;
+	} else if (k === "sort" && VALID_SORT_ORDERS.has(vLower as TimelineSortOrder)) {
+		config.sortOrder = vLower as TimelineSortOrder;
+	} else if (k === "cardside" && VALID_CARD_SIDES.has(vLower as TimelineCardSide)) {
+		config.verticalCardSide = vLower as TimelineCardSide;
+	} else if (k === "linestyle" && VALID_LINE_STYLES.has(vLower as TimelineLineStyle)) {
+		config.verticalLineStyle = vLower as TimelineLineStyle;
 	} else if (k in FIELD_KEYS) {
 		config.fields[FIELD_KEYS[k]] = v;
 	}
@@ -107,14 +133,14 @@ function splitHeaderAndBody(source: string): { header: string; body: string } {
 }
 
 /**
- * Parses a `chronograph` fenced code-block's source into a config plus the
- * TimelineEvents from its inline markdown table. `sourcePath` is the
- * embedding note's path, used as each event's source/id.
+ * Parses a `chronograph` fenced code-block's settings header (and, for the
+ * default "table" source, its inline markdown table body) into a config.
+ * For the "table" source with no explicit `path`, `body` is the events
+ * table content itself, embedded directly in the block. For the other
+ * source types, `body` is unused — events come from elsewhere in the vault,
+ * resolved separately by `resolveCodeBlockEvents`.
  */
-export function parseCodeBlock(
-	source: string,
-	sourcePath: string
-): { config: TimelineCodeBlockConfig; events: TimelineEvent[] } {
+export function parseCodeBlockConfig(source: string): { config: TimelineCodeBlockConfig; body: string } {
 	const config = defaultCodeBlockConfig();
 	const { header, body } = splitHeaderAndBody(source);
 
@@ -124,12 +150,5 @@ export function parseCodeBlock(
 		applySettingLine(config, line.slice(0, colonIndex), line.slice(colonIndex + 1));
 	}
 
-	const events = parseTimelineEventsFromTableContent(body, sourcePath, config.fields);
-	if (!events) {
-		throw new TimelineCodeBlockParseError(
-			'No markdown table found in this chronograph block. Add a table with a header row and a "---" divider row.'
-		);
-	}
-
-	return { config, events };
+	return { config, body };
 }
