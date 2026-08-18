@@ -70,7 +70,10 @@ export function defaultCodeBlockConfig(): TimelineCodeBlockConfig {
 		markerSize: "medium",
 		spineThickness: "medium",
 		shadowIntensity: "subtle",
-		height: 480,
+		// Vertical (this default's layout) reads naturally at full length;
+		// resolved again post-parse in parseCodeBlockConfig to track a
+		// header's `layout` override too.
+		height: "fill",
 		fields: {
 			dateField: "date",
 			endDateField: "enddate",
@@ -97,6 +100,11 @@ const VALID_CARD_RADII = new Set<TimelineCardRadius>(["none", "small", "medium",
 const VALID_MARKER_SIZES = new Set<TimelineMarkerSize>(["small", "medium", "large"]);
 const VALID_SPINE_THICKNESSES = new Set<TimelineSpineThickness>(["thin", "medium", "thick"]);
 const VALID_SHADOW_INTENSITIES = new Set<TimelineShadowIntensity>(["none", "subtle", "normal"]);
+
+function isValidHeightValue(raw: string): boolean {
+	const v = raw.trim().toLowerCase();
+	return v === "fill" || (/^\d+$/.test(v) && Number(v) > 0);
+}
 
 const FIELD_KEYS: Record<string, keyof TimelineFieldMapping> = {
 	datefield: "dateField",
@@ -149,10 +157,8 @@ function applySettingLine(config: TimelineCodeBlockConfig, key: string, rawValue
 		config.spineThickness = vLower as TimelineSpineThickness;
 	} else if (k === "shadowintensity" && VALID_SHADOW_INTENSITIES.has(vLower as TimelineShadowIntensity)) {
 		config.shadowIntensity = vLower as TimelineShadowIntensity;
-	} else if (k === "height" && vLower === "fill") {
-		config.height = "fill";
-	} else if (k === "height" && /^\d+$/.test(v) && Number(v) > 0) {
-		config.height = Number(v);
+	} else if (k === "height" && isValidHeightValue(v)) {
+		config.height = vLower === "fill" ? "fill" : Number(v);
 	} else if (k in FIELD_KEYS) {
 		config.fields[FIELD_KEYS[k]] = v;
 	}
@@ -249,11 +255,24 @@ function rewriteHeaderLines(header: string, changes: Record<string, string>): st
 export function parseCodeBlockConfig(source: string): { config: TimelineCodeBlockConfig; body: string } {
 	const config = defaultCodeBlockConfig();
 	const { header, body } = splitHeaderAndBody(source);
+	let heightExplicit = false;
 
 	for (const line of header.split(/\r?\n/)) {
 		const colonIndex = line.indexOf(":");
 		if (colonIndex === -1) continue;
-		applySettingLine(config, line.slice(0, colonIndex), line.slice(colonIndex + 1));
+		const key = line.slice(0, colonIndex);
+		applySettingLine(config, key, line.slice(colonIndex + 1));
+		if (key.trim().toLowerCase() === "height" && isValidHeightValue(line.slice(colonIndex + 1))) {
+			heightExplicit = true;
+		}
+	}
+
+	// Vertical timelines read naturally at full length (like a normal note
+	// embed); horizontal timelines pan along a fixed-height track, so they
+	// keep the bounded/scrollable default. Only applies when the header
+	// doesn't set `height` itself.
+	if (!heightExplicit) {
+		config.height = config.layout === "vertical" ? "fill" : 480;
 	}
 
 	return { config, body };

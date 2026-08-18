@@ -133,7 +133,12 @@ path: Timeline/Events.md
 		expect(config.tableNotePath).toBe("Timeline/Events.md");
 	});
 
-	it("defaults height to 480 pixels", () => {
+	it("defaults height to fill for vertical layout", () => {
+		const { config } = parseCodeBlockConfig("layout: vertical");
+		expect(config.height).toBe("fill");
+	});
+
+	it("defaults height to 480 pixels for horizontal layout", () => {
 		const { config } = parseCodeBlockConfig("layout: horizontal");
 		expect(config.height).toBe(480);
 	});
@@ -148,9 +153,14 @@ path: Timeline/Events.md
 		expect(config.height).toBe("fill");
 	});
 
-	it("ignores a non-numeric, non-fill height value", () => {
-		const { config } = parseCodeBlockConfig("height: tall\n---");
+	it("ignores a non-numeric, non-fill height value and falls back to the layout default", () => {
+		const { config } = parseCodeBlockConfig("layout: horizontal\nheight: tall\n---");
 		expect(config.height).toBe(480);
+	});
+
+	it("an explicit height overrides the layout default even when layout appears after it", () => {
+		const { config } = parseCodeBlockConfig("height: 300\nlayout: vertical\n---");
+		expect(config.height).toBe(300);
 	});
 });
 
