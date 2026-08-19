@@ -95,8 +95,15 @@ function renderMarker(
 
 	el.className = "timeline-graph-marker timeline-graph-marker-point";
 	el.style.removeProperty("left");
-	el.appendChild(labelEl);
 	wrapper.appendChild(el);
+
+	// The label sits next to the dot as a wrapper sibling rather than a
+	// child of `el` — `el` keeps `overflow: hidden` (shared with the range
+	// marker's ellipsis truncation via .timeline-graph-marker), which would
+	// silently clip the label to the dot's own tiny box if it were nested
+	// inside instead.
+	labelEl.className = "timeline-graph-marker-label timeline-graph-marker-label-point";
+	wrapper.appendChild(labelEl);
 
 	return wrapper;
 }

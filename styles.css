@@ -625,22 +625,33 @@
 	flex: 1 1 auto;
 }
 
+/* The dot sits exactly on the event's time-axis position (this wrapper's
+   `left`), but the wrapper itself isn't centered on that position anymore —
+   only the dot is (via .timeline-graph-marker-point's own negative margin
+   below). That lets the label flow to the dot's right without shifting
+   where the dot visually marks the date, matching how Chronos/vis-timeline
+   place point labels: always-visible text on the same row as the dot. */
 .timeline-graph-marker-point-wrapper {
 	position: absolute;
 	top: 0;
 	bottom: 0;
-	transform: translateX(-50%);
 	display: flex;
-	flex-direction: column;
 	align-items: center;
-	justify-content: center;
+	gap: var(--size-4-1);
+	pointer-events: none;
+}
+
+.timeline-graph-marker-point-wrapper .timeline-graph-marker {
+	pointer-events: auto;
 }
 
 .timeline-graph-marker-stem {
 	position: absolute;
+	left: 0;
 	top: 4px;
 	bottom: 4px;
 	width: 2px;
+	transform: translateX(-50%);
 	background: var(--marker-color, var(--background-modifier-border));
 	opacity: 0.35;
 }
@@ -672,18 +683,23 @@
 	border-radius: 50%;
 	padding: 0;
 	border: 2px solid var(--background-primary);
+	transform: translateX(-50%);
+	flex: 0 0 auto;
 }
 
-.timeline-graph-marker-point .timeline-graph-marker-label {
-	position: absolute;
-	top: 100%;
-	left: 50%;
-	transform: translateX(-50%);
-	margin-top: 4px;
+/* Always-visible label to the right of the dot, on the same row (rather
+   than only on hover) so the lane reads like Chronos/vis-timeline's point
+   items instead of an unlabeled row of dots. */
+.timeline-graph-marker-label-point {
+	position: relative;
 	color: var(--text-normal);
 	background: var(--background-primary);
 	padding: 1px 4px;
 	border-radius: var(--radius-s);
+	flex: 0 1 auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 160px;
 }
 
 .timeline-graph-marker-range {
