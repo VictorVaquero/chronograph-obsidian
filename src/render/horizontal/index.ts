@@ -57,7 +57,20 @@ export function renderHorizontalTimeline(
 	fitBtn.textContent = "Fit";
 	fitBtn.title = "Reset zoom and scroll position";
 
-	toolbar.append(zoomOutBtn, zoomInBtn, fitBtn);
+	const widthToggleBtn = createEl("button");
+	widthToggleBtn.type = "button";
+	widthToggleBtn.className = "timeline-graph-width-toggle-btn";
+	widthToggleBtn.textContent = "⇔";
+	widthToggleBtn.title = "Expand timeline to the width of the editor";
+	widthToggleBtn.addEventListener("click", () => {
+		const expanded = container.classList.toggle("timeline-graph-full-width");
+		widthToggleBtn.classList.toggle("is-active", expanded);
+		widthToggleBtn.title = expanded
+			? "Shrink timeline back to the note's normal width"
+			: "Expand timeline to the width of the editor";
+	});
+
+	toolbar.append(zoomOutBtn, zoomInBtn, fitBtn, widthToggleBtn);
 
 	if (callbacks.onCreateEvent) {
 		const newEventBtn = createEl("button");

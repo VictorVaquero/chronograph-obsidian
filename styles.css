@@ -48,6 +48,20 @@
 	overflow-y: visible;
 }
 
+/* "Toggle width" button (horizontal layout): breaks this one block out of
+   Obsidian's readable-line-width cap so it can use the editor pane's full
+   width instead of being squeezed to ~700px like normal note text. Scoped
+   to just this block's sizer ancestor in both Reading view and Live
+   Preview (CM6) rather than disabling readable-line-width note-wide.
+   `!important` is needed since the sizer's own max-width has higher
+   specificity than a plain descendant selector would otherwise beat. */
+.markdown-preview-view.is-readable-line-width
+	.markdown-preview-sizer:has(> div > .timeline-graph-full-width),
+.markdown-source-view.mod-cm6.is-readable-line-width
+	.cm-sizer:has(.timeline-graph-full-width) {
+	max-width: none !important;
+}
+
 .timeline-graph-empty,
 .timeline-graph-error {
 	color: var(--text-muted);
@@ -462,6 +476,7 @@
 
 .timeline-graph-zoom-btn,
 .timeline-graph-fit-btn,
+.timeline-graph-width-toggle-btn,
 .timeline-graph-new-event-btn,
 .timeline-graph-configure-btn,
 .timeline-graph-export-btn {
@@ -476,10 +491,17 @@
 
 .timeline-graph-zoom-btn:hover,
 .timeline-graph-fit-btn:hover,
+.timeline-graph-width-toggle-btn:hover,
 .timeline-graph-new-event-btn:hover,
 .timeline-graph-configure-btn:hover,
 .timeline-graph-export-btn:hover {
 	background: var(--background-secondary);
+}
+
+.timeline-graph-width-toggle-btn.is-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
 }
 
 .timeline-graph-new-event-btn {
