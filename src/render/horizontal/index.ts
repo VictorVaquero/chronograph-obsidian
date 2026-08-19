@@ -4,7 +4,7 @@ import { hasAnyBCDate, toOrdinal } from "../../date/timeline-date";
 import { AXIS_PADDING_PX, buildScale } from "./scale";
 import { computeTicks, renderAxis, renderCompressionMarkers, renderPeriodLines } from "./ticks";
 import { setupZoomAndPan } from "./zoom-pan";
-import { renderFlagMarker, renderLane, renderPeriodBands, renderTodayLine, todayAsTimelineDate } from "./markers";
+import { renderFlagMarker, renderLane, renderPeriodBands, renderTodayLine, restackLane, todayAsTimelineDate } from "./markers";
 import { renderArrows } from "./arrows";
 
 export function renderHorizontalTimeline(
@@ -102,11 +102,12 @@ export function renderHorizontalTimeline(
 	track.appendChild(renderPeriodLines(ticks, scale));
 	track.appendChild(renderCompressionMarkers(scale));
 
+	const lanes: HTMLElement[] = [];
 	groupsOf(laneEvents).forEach((group, laneIndex) => {
 		const eventsInLane = laneEvents.filter((e) => (e.group ?? "") === group);
-		track.appendChild(
-			renderLane(group, eventsInLane, scale, laneIndex, callbacks, precision, showEra, groupColors)
-		);
+		const lane = renderLane(group, eventsInLane, scale, laneIndex, callbacks, precision, showEra, groupColors);
+		lanes.push(lane);
+		track.appendChild(lane);
 	});
 
 	for (const marker of markerEvents) {
@@ -123,9 +124,19 @@ export function renderHorizontalTimeline(
 	root.appendChild(scroller);
 	container.appendChild(root);
 
-	renderArrows(track, events);
+	function relayout(): void {
+		renderArrows(track, events);
+		// Zoom only resizes the track via CSS (percent-positioned children
+		// rescale for free), so which point-event labels actually collide
+		// changes with zoom and must be re-measured against the live DOM
+		// rather than computed once up front.
+		for (const lane of lanes) {
+			const laneTrack = lane.querySelector<HTMLElement>(".timeline-graph-lane-track");
+			if (laneTrack) restackLane(laneTrack, lane);
+		}
+	}
 
-	setupZoomAndPan(scroller, track, totalWidth, zoomInBtn, zoomOutBtn, fitBtn, () =>
-		renderArrows(track, events)
-	);
+	relayout();
+
+	setupZoomAndPan(scroller, track, totalWidth, zoomInBtn, zoomOutBtn, fitBtn, relayout);
 }

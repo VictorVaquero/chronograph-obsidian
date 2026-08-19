@@ -1,62 +1,100 @@
 import { TimelineEvent, TimelineDatePrecision } from "../../types";
 import { TimelineDate, formatTimelineDate, toOrdinal } from "../../date/timeline-date";
 import { TimelineRenderCallbacks, attachHoverPreview, colorForEvent } from "../render-shared";
-import { Scale, xFor, xForPx } from "./scale";
+import { Scale, xFor } from "./scale";
 
 export function todayAsTimelineDate(): TimelineDate {
 	const d = new Date();
 	return { year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate() };
 }
 
-// Vertical spacing (in px) between stacked marker rows within a lane, and a
-// rough per-character width estimate used to guess a point marker's on-screen
-// footprint (dot + gap + padded label) without a real DOM measurement pass.
+// Vertical spacing (in px) between stacked marker rows within a lane.
 const STACK_ROW_HEIGHT_PX = 22;
-const CHAR_WIDTH_PX = 6;
-const DOT_AND_GAP_PX = 20;
-const LABEL_PADDING_PX = 8;
+// Small breathing room required between two markers' real rendered edges
+// before they're considered non-colliding.
+const COLLISION_MARGIN_PX = 6;
 
-function estimateMarkerWidthPx(title: string): number {
-	return DOT_AND_GAP_PX + LABEL_PADDING_PX + title.length * CHAR_WIDTH_PX;
-}
-
-// Greedily assigns each point event a vertical "row" (0 = the lane's
-// baseline/date-spine row) so that two markers whose estimated label
-// footprints would overlap horizontally end up on different rows instead of
-// drawing on top of each other. Rows grow outward from the spine (0, 1, -1,
-// 2, -2, ...) so the default case (no collisions) stays on the baseline and
-// only colliding events get displaced above/below it.
-function assignStackRows(points: TimelineEvent[], scale: Scale): Map<string, number> {
-	const sorted = [...points].sort((a, b) => toOrdinal(a.date) - toOrdinal(b.date));
+// Greedily assigns each point-marker wrapper a vertical "row" (0 = the
+// lane's baseline/date-spine row) so that two markers whose *actual
+// rendered* footprints overlap horizontally end up on different rows
+// instead of drawing on top of each other. Rows grow outward from the
+// spine (0, 1, -1, 2, -2, ...) so the default case (no collisions) stays on
+// the baseline and only colliding events get displaced above/below it.
+//
+// Operates on real `getBoundingClientRect()` measurements rather than an
+// estimated title-length width, and is re-run by `restackLane` on every zoom
+// change (zoom only resizes the track via CSS — see zoom-pan.ts — so a
+// marker's rendered pixel width/position is zoom-dependent and can't be
+// precomputed once at initial render).
+function assignStackRows(wrappers: HTMLElement[]): Map<HTMLElement, number> {
+	const sorted = [...wrappers].sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left);
 
 	// Tracks, per row, the rightmost pixel edge claimed so far by a marker
 	// placed on that row.
 	const rowRightEdge = new Map<number, number>();
-	const rows = new Map<string, number>();
+	const rows = new Map<HTMLElement, number>();
 
-	for (const event of sorted) {
-		const x = xForPx(toOrdinal(event.date), scale);
-		const width = estimateMarkerWidthPx(event.title);
+	for (const wrapper of sorted) {
+		const rect = wrapper.getBoundingClientRect();
 
 		let chosen = 0;
 		for (let offset = 0; ; offset++) {
 			const candidate = offset === 0 ? 0 : offset % 2 === 1 ? Math.ceil(offset / 2) : -Math.ceil(offset / 2);
 			const edge = rowRightEdge.get(candidate) ?? -Infinity;
-			if (x > edge) {
+			if (rect.left > edge) {
 				chosen = candidate;
 				break;
 			}
-			if (offset > points.length * 2) {
+			if (offset > wrappers.length * 2) {
 				chosen = candidate;
 				break;
 			}
 		}
 
-		rowRightEdge.set(chosen, x + width);
-		rows.set(event.id, chosen);
+		rowRightEdge.set(chosen, rect.right + COLLISION_MARGIN_PX);
+		rows.set(wrapper, chosen);
 	}
 
 	return rows;
+}
+
+// Re-measures a lane's point markers in their *current* layout (i.e. at
+// whatever zoom level is presently applied) and reassigns/clears their
+// stacked-row offsets accordingly. Call once after initial mount and again
+// whenever zoom changes, since collisions that exist at one zoom level may
+// not exist at another (labels get proportionally further apart as the
+// track widens) and vice versa.
+export function restackLane(laneTrack: HTMLElement, lane: HTMLElement): void {
+	const wrappers = Array.from(laneTrack.querySelectorAll<HTMLElement>(".timeline-graph-marker-point-wrapper"));
+	if (wrappers.length === 0) {
+		lane.style.removeProperty("min-height");
+		return;
+	}
+
+	// Clear any previous stacking before re-measuring, since a wrapper's own
+	// vertical offset would otherwise skew its bounding rect for the next pass.
+	for (const wrapper of wrappers) {
+		wrapper.classList.remove("is-stacked-above", "is-stacked-below");
+		wrapper.style.removeProperty("--stack-offset");
+	}
+
+	const rows = assignStackRows(wrappers);
+	let maxAbsRow = 0;
+	for (const [wrapper, row] of rows) {
+		maxAbsRow = Math.max(maxAbsRow, Math.abs(row));
+		if (row === 0) continue;
+		wrapper.classList.add(row > 0 ? "is-stacked-below" : "is-stacked-above");
+		wrapper.style.setProperty("--stack-offset", `${Math.abs(row) * STACK_ROW_HEIGHT_PX}px`);
+	}
+
+	if (maxAbsRow > 0) {
+		// Grow the lane to fit however many stacked rows this lane's events
+		// need, above and below the baseline, plus the row the baseline
+		// itself already reserves.
+		lane.style.minHeight = `calc(32px + var(--timeline-density-gap, var(--size-4-3)) + ${maxAbsRow * 2 * STACK_ROW_HEIGHT_PX}px)`;
+	} else {
+		lane.style.removeProperty("min-height");
+	}
 }
 
 export function renderLane(
@@ -82,21 +120,8 @@ export function renderLane(
 	const laneTrack = createDiv();
 	laneTrack.className = "timeline-graph-lane-track";
 
-	const points = laneEvents.filter((e) => !e.endDate);
-	const stackRows = assignStackRows(points, scale);
-	let maxAbsRow = 0;
-	for (const row of stackRows.values()) maxAbsRow = Math.max(maxAbsRow, Math.abs(row));
-
 	for (const event of laneEvents) {
-		const row = stackRows.get(event.id) ?? 0;
-		laneTrack.appendChild(renderMarker(event, scale, callbacks, precision, showEra, groupColors, row));
-	}
-
-	if (maxAbsRow > 0) {
-		// Grow the lane to fit however many stacked rows this lane's events
-		// need, above and below the baseline, plus the row the baseline
-		// itself already reserves.
-		lane.style.minHeight = `calc(32px + var(--timeline-density-gap, var(--size-4-3)) + ${maxAbsRow * 2 * STACK_ROW_HEIGHT_PX}px)`;
+		laneTrack.appendChild(renderMarker(event, scale, callbacks, precision, showEra, groupColors));
 	}
 
 	lane.appendChild(laneTrack);
@@ -121,8 +146,7 @@ function renderMarker(
 	callbacks: TimelineRenderCallbacks,
 	precision: TimelineDatePrecision,
 	showEra: boolean,
-	groupColors: Map<string, string>,
-	stackRow = 0
+	groupColors: Map<string, string>
 ): HTMLElement {
 	const color = colorForEvent(event, groupColors) ?? "var(--interactive-accent)";
 	const startX = xFor(toOrdinal(event.date), scale);
@@ -153,12 +177,9 @@ function renderMarker(
 	wrapper.className = "timeline-graph-marker-point-wrapper";
 	wrapper.style.left = `${startX}%`;
 	wrapper.style.setProperty("--marker-color", color);
-	if (stackRow !== 0) {
-		wrapper.classList.add(stackRow > 0 ? "is-stacked-below" : "is-stacked-above");
-		wrapper.style.setProperty("--stack-offset", `${Math.abs(stackRow) * STACK_ROW_HEIGHT_PX}px`);
-	}
 
-	// The stem always runs from the dot's own (possibly stacked) row back to
+	// The stem always runs from the dot's own (possibly stacked, see
+	// restackLane) row back to
 	// the lane's baseline, so a marker pushed above/below still points at its
 	// exact date on the date spine.
 	const stem = createDiv();
