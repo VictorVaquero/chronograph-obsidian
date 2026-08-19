@@ -13,6 +13,11 @@ const STACK_ROW_HEIGHT_PX = 22;
 // Small breathing room required between two markers' real rendered edges
 // before they're considered non-colliding.
 const COLLISION_MARGIN_PX = 6;
+// Wider breathing room specifically between a range bar's claimed row-0
+// footprint and the next point marker — the bar itself is a much bigger,
+// more visually prominent shape than a label, so the plain text-to-text
+// margin above reads as too tight next to it.
+const RANGE_BAR_COLLISION_MARGIN_PX = 20;
 
 // Greedily assigns each point-marker wrapper a vertical "row" (0 = the
 // lane's baseline/date-spine row) so that two markers whose *actual
@@ -42,7 +47,7 @@ function assignStackRows(wrappers: HTMLElement[], rangeBars: HTMLElement[]): Map
 
 	let row0Edge = -Infinity;
 	for (const bar of rangeBars) {
-		row0Edge = Math.max(row0Edge, bar.getBoundingClientRect().right + COLLISION_MARGIN_PX);
+		row0Edge = Math.max(row0Edge, bar.getBoundingClientRect().right + RANGE_BAR_COLLISION_MARGIN_PX);
 	}
 	if (row0Edge > -Infinity) rowRightEdge.set(0, row0Edge);
 
