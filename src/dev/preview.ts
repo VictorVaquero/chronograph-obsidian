@@ -702,6 +702,7 @@ document.getElementById("btn-empty")?.addEventListener("click", () => {
 const sampleErrors = [
 	"Dataview is not installed or enabled. Chronograph uses Dataview as its query backend.",
 	'Dataview query failed: Unknown field "startDate" in WHERE clause.',
+	"Dataview query failed: The query seems to end mid-expression — check for a trailing operator (like a dangling +) or an unclosed quote/parenthesis near the end.\n\nFull error: -- PARSING FAILED -- Got the end of the input Expected one of the following: '(', 'null', boolean, date, duration, file link, list ('[1, 2, 3]'), negated field, number, object ('{ a: 1, b: 2 }'), string, variable",
 	'Table note not found: "Timeline/Events.md". Set a valid note path in the view\'s settings.',
 	'No markdown table found in "Timeline/Events.md". Add a table with a header row and a "---" divider row.',
 ];

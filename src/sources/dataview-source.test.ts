@@ -60,6 +60,35 @@ describe("queryTimelineEvents", () => {
 		);
 	});
 
+	it("appends a plain-English hint for a dangling operator/OR parse failure, keeping the raw error", async () => {
+		const raw = "-- PARSING FAILED -- Got the end of the input Expected one of the following: 'or', string";
+		const api = makeApi({ successful: false, error: raw });
+		const app = makeApp(api);
+		await expect(queryTimelineEvents(app as never, "bogus", fields())).rejects.toThrow(
+			/query seems to end mid-expression.*OR/is
+		);
+		await expect(queryTimelineEvents(app as never, "bogus", fields())).rejects.toThrow(
+			new RegExp(raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+		);
+	});
+
+	it("appends a plain-English hint for an incomplete FROM clause", async () => {
+		const raw = "-- PARSING FAILED -- Got 'or' Expected one of the following: string";
+		const api = makeApi({ successful: false, error: `FROM error: ${raw}` });
+		const app = makeApp(api);
+		await expect(queryTimelineEvents(app as never, "bogus", fields())).rejects.toThrow(
+			/Check the FROM clause/
+		);
+	});
+
+	it("leaves unrecognized dataview errors unhinted", async () => {
+		const api = makeApi({ successful: false, error: "bad query" });
+		const app = makeApp(api);
+		await expect(queryTimelineEvents(app as never, "bogus", fields())).rejects.toThrow(
+			"Dataview query failed: bad query"
+		);
+	});
+
 	it("maps pages with a valid date field into events", async () => {
 		const page = makePage({ date: "2024-06-15" });
 		const api = makeApi({ successful: true, value: { type: "table", values: [page] } });

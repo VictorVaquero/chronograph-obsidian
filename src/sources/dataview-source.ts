@@ -43,6 +43,34 @@ export function isDataviewEnabled(app: App): boolean {
 	return getDataviewApi(app) !== null;
 }
 
+// Dataview's own parser error is just "-- PARSING FAILED -- ... Got X
+// Expected one of the following: ...", which is accurate but assumes
+// familiarity with DQL grammar terms ("negated field", "variable") that most
+// users hitting this in a code block won't recognize. This matches the raw
+// text against a few signatures that account for most real-world query
+// mistakes and appends a plain-English hint above the original message,
+// which is kept in full underneath for anyone who wants the detail.
+function hintForDataviewError(rawError: string): string | undefined {
+	if (/got the end of the input/i.test(rawError)) {
+		if (/\bor\b/i.test(rawError)) {
+			return 'The query seems to end mid-expression. If you\'re combining sources, check every "OR" has a value on both sides (e.g. FROM "A" OR "B") and that quotes are balanced.';
+		}
+		return "The query seems to end mid-expression — check for a trailing operator (like a dangling +) or an unclosed quote/parenthesis near the end.";
+	}
+	if (/\bfrom\b/i.test(rawError) && /expected/i.test(rawError)) {
+		return 'Check the FROM clause: sources must be quoted (e.g. FROM "Folder") and combined with AND/OR, not commas.';
+	}
+	if (/negated field|variable/i.test(rawError) && /expected/i.test(rawError)) {
+		return "Check for a missing value after an operator — this usually means an expression like `a + ` or `choice(x, y,)` is missing one of its arguments.";
+	}
+	return undefined;
+}
+
+function formatDataviewError(rawError: string): string {
+	const hint = hintForDataviewError(rawError);
+	return hint ? `Dataview query failed: ${hint}\n\nFull error: ${rawError}` : `Dataview query failed: ${rawError}`;
+}
+
 function toTimelineDate(value: unknown): TimelineDate | undefined {
 	if (value == null) return undefined;
 
@@ -175,7 +203,7 @@ export async function queryTimelineEvents(
 	const result = await api.query(dataviewQuery);
 	if (!result.successful) {
 		log.error("Dataview query failed", { dataviewQuery, error: result.error });
-		throw new Error(`Dataview query failed: ${result.error}`);
+		throw new Error(formatDataviewError(result.error));
 	}
 	const events: TimelineEvent[] = [];
 	for (const row of result.value.values) {
