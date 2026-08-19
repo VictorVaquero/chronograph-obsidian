@@ -641,6 +641,18 @@
 	pointer-events: none;
 }
 
+/* A marker pushed to a stacked row (to avoid colliding with a neighbor's
+   label) shifts its dot+label up or down by --stack-offset, while its own
+   .timeline-graph-marker-stem (below) stretches to bridge the gap back to
+   the baseline so the date it marks stays unambiguous. */
+.timeline-graph-marker-point-wrapper.is-stacked-above {
+	transform: translateY(calc(-1 * var(--stack-offset)));
+}
+
+.timeline-graph-marker-point-wrapper.is-stacked-below {
+	transform: translateY(var(--stack-offset));
+}
+
 .timeline-graph-marker-point-wrapper .timeline-graph-marker {
 	pointer-events: auto;
 }
@@ -654,6 +666,17 @@
 	transform: translateX(-50%);
 	background: var(--marker-color, var(--background-modifier-border));
 	opacity: 0.35;
+}
+
+/* Extend the stem past the wrapper's own (shifted) box on whichever side
+   points back toward the baseline, so it visually reaches the date spine
+   instead of stopping at the stacked row. */
+.is-stacked-above .timeline-graph-marker-stem {
+	bottom: calc(-1 * var(--stack-offset) + 4px);
+}
+
+.is-stacked-below .timeline-graph-marker-stem {
+	top: calc(-1 * var(--stack-offset) + 4px);
 }
 
 .timeline-graph-marker {
