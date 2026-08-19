@@ -103,7 +103,8 @@ export class CodeBlockConfigModal extends Modal {
 			);
 
 		if (this.advanced.sortAndGranularity) {
-			new Setting(this.contentEl).setName("Sort order").addDropdown((dd) =>
+			const group = this.group("Sort & date granularity");
+			new Setting(group).setName("Sort order").addDropdown((dd) =>
 				dd
 					.addOption("asc", "Oldest first")
 					.addOption("desc", "Newest first")
@@ -114,8 +115,15 @@ export class CodeBlockConfigModal extends Modal {
 			);
 		}
 
+		// "Spine line style" stays a core (always-visible) setting rather than
+		// gated behind advanced.layoutAndStyle like "Vertical card side" is,
+		// so it renders into the advanced group's container when that's on
+		// and directly into the modal otherwise — either way it's still the
+		// same single setting, just placed differently.
+		const layoutStyleParent = this.advanced.layoutAndStyle ? this.group("Layout & style") : this.contentEl;
+
 		if (this.advanced.layoutAndStyle) {
-			this.cardSideSetting = new Setting(this.contentEl)
+			this.cardSideSetting = new Setting(layoutStyleParent)
 				.setName("Vertical card side")
 				.setDesc("Vertical layout only.")
 				.addDropdown((dd) =>
@@ -130,7 +138,7 @@ export class CodeBlockConfigModal extends Modal {
 				);
 		}
 
-		this.lineStyleSetting = new Setting(this.contentEl)
+		this.lineStyleSetting = new Setting(layoutStyleParent)
 			.setName("Spine line style")
 			.setDesc("Vertical layout only.")
 			.addDropdown((dd) =>
@@ -146,7 +154,9 @@ export class CodeBlockConfigModal extends Modal {
 		this.refreshLineStyleVisibility();
 
 		if (this.advanced.styleOverrides) {
-			new Setting(this.contentEl).setName("Card radius").addDropdown((dd) =>
+			const group = this.group("Style overrides");
+
+			new Setting(group).setName("Card radius").addDropdown((dd) =>
 				dd
 					.addOption("none", "None")
 					.addOption("small", "Small")
@@ -158,7 +168,7 @@ export class CodeBlockConfigModal extends Modal {
 					})
 			);
 
-			new Setting(this.contentEl).setName("Marker size").addDropdown((dd) =>
+			new Setting(group).setName("Marker size").addDropdown((dd) =>
 				dd
 					.addOption("small", "Small")
 					.addOption("medium", "Medium")
@@ -169,7 +179,7 @@ export class CodeBlockConfigModal extends Modal {
 					})
 			);
 
-			new Setting(this.contentEl).setName("Spine thickness").addDropdown((dd) =>
+			new Setting(group).setName("Spine thickness").addDropdown((dd) =>
 				dd
 					.addOption("thin", "Thin")
 					.addOption("medium", "Medium")
@@ -180,7 +190,7 @@ export class CodeBlockConfigModal extends Modal {
 					})
 			);
 
-			new Setting(this.contentEl).setName("Shadow intensity").addDropdown((dd) =>
+			new Setting(group).setName("Shadow intensity").addDropdown((dd) =>
 				dd
 					.addOption("none", "None")
 					.addOption("subtle", "Subtle")
@@ -193,7 +203,9 @@ export class CodeBlockConfigModal extends Modal {
 		}
 
 		if (this.advanced.extraFields) {
-			new Setting(this.contentEl)
+			const group = this.group("Field mappings");
+
+			new Setting(group)
 				.setName('End date field (default: "enddate")')
 				.setDesc("Renders the event as a span instead of a point.")
 				.addText((text) =>
@@ -202,7 +214,7 @@ export class CodeBlockConfigModal extends Modal {
 					})
 				);
 
-			new Setting(this.contentEl)
+			new Setting(group)
 				.setName('Title field (default: "title")')
 				.addText((text) =>
 					text.setValue(this.values.titleField).onChange((value) => {
@@ -210,7 +222,7 @@ export class CodeBlockConfigModal extends Modal {
 					})
 				);
 
-			new Setting(this.contentEl)
+			new Setting(group)
 				.setName('Group field (default: "group")')
 				.addText((text) =>
 					text.setValue(this.values.groupField).onChange((value) => {
@@ -218,7 +230,7 @@ export class CodeBlockConfigModal extends Modal {
 					})
 				);
 
-			new Setting(this.contentEl)
+			new Setting(group)
 				.setName('Color field (default: "color")')
 				.addText((text) =>
 					text.setValue(this.values.colorField).onChange((value) => {
@@ -226,7 +238,7 @@ export class CodeBlockConfigModal extends Modal {
 					})
 				);
 
-			new Setting(this.contentEl)
+			new Setting(group)
 				.setName('Kind field (default: "kind")')
 				.setDesc('Horizontal layout only: "event", "period", or "marker".')
 				.addText((text) =>
@@ -235,7 +247,7 @@ export class CodeBlockConfigModal extends Modal {
 					})
 				);
 
-			new Setting(this.contentEl)
+			new Setting(group)
 				.setName('Points-to field (default: "pointsto")')
 				.setDesc("Horizontal layout only.")
 				.addText((text) =>
@@ -251,6 +263,16 @@ export class CodeBlockConfigModal extends Modal {
 				.setCta()
 				.onClick(() => void this.submit())
 		);
+	}
+
+	// Each advanced feature group renders as a collapsible <details> section
+	// instead of a flat run of settings, so a block using only a couple of
+	// advanced features doesn't force scrolling past every other group's
+	// controls to find the Save button.
+	private group(label: string): HTMLElement {
+		const details = this.contentEl.createEl("details", { cls: "timeline-config-group" });
+		details.createEl("summary", { text: label });
+		return details;
 	}
 
 	private refreshLineStyleVisibility(): void {

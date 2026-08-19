@@ -13,6 +13,7 @@ import { renderEmptyState, renderErrorState, renderTimeline } from "./render/tim
 import { compareTimelineDates } from "./date/timeline-date";
 import { TimelineCreateEventModal } from "./create-event-modal";
 import { exportSnapshot } from "./export-snapshot";
+import { ViewConfigModal } from "./view-config-modal";
 import type TimelineGraphPlugin from "./main";
 import { log } from "./log";
 
@@ -138,6 +139,18 @@ export class TimelineView extends ItemView implements HoverParent {
 								},
 					onExportSnapshot: () => {
 						void exportSnapshot(this.app, config, events);
+					},
+					onConfigure: () => {
+						new ViewConfigModal(this.app, config, this.plugin.settings.advanced, async (values) => {
+							const index = this.plugin.settings.views.findIndex((v) => v.id === config.id);
+							if (index === -1) {
+								throw new Error("This view no longer exists — it may have been deleted in Settings → Chronograph.");
+							}
+							this.plugin.settings.views[index] = values;
+							this.activeConfig = values;
+							await this.plugin.saveSettings();
+							new Notice("Timeline view saved.");
+						}).open();
 					},
 				},
 				{

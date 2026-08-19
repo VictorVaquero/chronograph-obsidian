@@ -93,7 +93,7 @@ function render(): void {
 		container!,
 		currentEvents,
 		view.layout,
-		{ onEventClick: logClick, onEventHover: logHover },
+		{ onEventClick: logClick, onEventHover: logHover, onConfigure: openSettings },
 		{
 			precision: view.datePrecision,
 			verticalCardSide: view.verticalCardSide,

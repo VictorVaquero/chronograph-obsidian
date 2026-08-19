@@ -2,6 +2,8 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import obsidianmd from "eslint-plugin-obsidianmd";
+import { DEFAULT_ACRONYMS } from "eslint-plugin-obsidianmd/dist/lib/rules/ui/acronyms.js";
+import { DEFAULT_BRANDS } from "eslint-plugin-obsidianmd/dist/lib/rules/ui/brands.js";
 
 export default defineConfig([
 	globalIgnores([
@@ -28,7 +30,15 @@ export default defineConfig([
 			"@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
 			"@typescript-eslint/no-explicit-any": "warn",
 			"@typescript-eslint/explicit-module-boundary-types": "off",
-			"obsidianmd/ui/sentence-case": ["warn", { brands: ["Dataview", "Chronograph"], acronyms: ["DQL"] }],
+			// `brands`/`acronyms` here REPLACE the rule's own defaults rather than
+			// extend them (see node_modules/eslint-plugin-obsidianmd's
+			// normalizeOptions: `options?.brands ?? DEFAULT_BRANDS`), so the
+			// plugin's own lists (which recognize "Obsidian", "CSS", "HTML", etc.)
+			// must be spread in explicitly alongside our project-specific additions.
+			"obsidianmd/ui/sentence-case": [
+				"warn",
+				{ brands: [...DEFAULT_BRANDS, "Dataview", "Chronograph"], acronyms: [...DEFAULT_ACRONYMS, "DQL"] },
+			],
 		},
 	},
 	// Standalone dev/preview tooling (see src/dev/), not bundled into the

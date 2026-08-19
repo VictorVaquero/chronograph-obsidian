@@ -84,7 +84,7 @@ export function renderHorizontalTimeline(
 		exportBtn.type = "button";
 		exportBtn.className = "timeline-graph-export-btn";
 		exportBtn.textContent = "Export snapshot";
-		exportBtn.title = "Save a static svg snapshot of this timeline to the vault";
+		exportBtn.title = "Save a static SVG snapshot of this timeline to the vault";
 		exportBtn.addEventListener("click", () => callbacks.onExportSnapshot?.());
 		toolbar.append(exportBtn);
 	}
