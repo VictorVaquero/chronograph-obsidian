@@ -21,18 +21,30 @@ const COLLISION_MARGIN_PX = 6;
 // spine (0, 1, -1, 2, -2, ...) so the default case (no collisions) stays on
 // the baseline and only colliding events get displaced above/below it.
 //
+// Range bars always render on row 0 (see .timeline-graph-marker-range) and
+// aren't movable, so their footprints are pre-claimed on row 0 before any
+// point marker is placed — otherwise a point event whose date falls inside
+// a bar's span would draw its dot/label right on top of the bar instead of
+// being pushed to a stacked row like it would for a colliding point event.
+//
 // Operates on real `getBoundingClientRect()` measurements rather than an
 // estimated title-length width, and is re-run by `restackLane` on every zoom
 // change (zoom only resizes the track via CSS — see zoom-pan.ts — so a
 // marker's rendered pixel width/position is zoom-dependent and can't be
 // precomputed once at initial render).
-function assignStackRows(wrappers: HTMLElement[]): Map<HTMLElement, number> {
+function assignStackRows(wrappers: HTMLElement[], rangeBars: HTMLElement[]): Map<HTMLElement, number> {
 	const sorted = [...wrappers].sort((a, b) => a.getBoundingClientRect().left - b.getBoundingClientRect().left);
 
 	// Tracks, per row, the rightmost pixel edge claimed so far by a marker
 	// placed on that row.
 	const rowRightEdge = new Map<number, number>();
 	const rows = new Map<HTMLElement, number>();
+
+	let row0Edge = -Infinity;
+	for (const bar of rangeBars) {
+		row0Edge = Math.max(row0Edge, bar.getBoundingClientRect().right + COLLISION_MARGIN_PX);
+	}
+	if (row0Edge > -Infinity) rowRightEdge.set(0, row0Edge);
 
 	for (const wrapper of sorted) {
 		const rect = wrapper.getBoundingClientRect();
@@ -66,6 +78,7 @@ function assignStackRows(wrappers: HTMLElement[]): Map<HTMLElement, number> {
 // track widens) and vice versa.
 export function restackLane(laneTrack: HTMLElement, lane: HTMLElement): void {
 	const wrappers = Array.from(laneTrack.querySelectorAll<HTMLElement>(".timeline-graph-marker-point-wrapper"));
+	const rangeBars = Array.from(laneTrack.querySelectorAll<HTMLElement>(".timeline-graph-marker-range"));
 	if (wrappers.length === 0) {
 		lane.style.removeProperty("min-height");
 		return;
@@ -78,7 +91,7 @@ export function restackLane(laneTrack: HTMLElement, lane: HTMLElement): void {
 		wrapper.style.removeProperty("--stack-offset");
 	}
 
-	const rows = assignStackRows(wrappers);
+	const rows = assignStackRows(wrappers, rangeBars);
 	let maxAbsRow = 0;
 	for (const [wrapper, row] of rows) {
 		maxAbsRow = Math.max(maxAbsRow, Math.abs(row));
