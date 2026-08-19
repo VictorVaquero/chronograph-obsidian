@@ -638,7 +638,7 @@
 	display: flex;
 	align-items: center;
 	gap: var(--size-4-1);
-	pointer-events: none;
+	cursor: pointer;
 }
 
 /* A marker pushed to a stacked row (to avoid colliding with a neighbor's
@@ -653,10 +653,6 @@
 	transform: translateY(var(--stack-offset));
 }
 
-.timeline-graph-marker-point-wrapper .timeline-graph-marker {
-	pointer-events: auto;
-}
-
 .timeline-graph-marker-stem {
 	position: absolute;
 	left: 0;
@@ -666,6 +662,7 @@
 	transform: translateX(-50%);
 	background: var(--marker-color, var(--background-modifier-border));
 	opacity: 0.35;
+	pointer-events: none;
 }
 
 /* Extend the stem past the wrapper's own (shifted) box on whichever side

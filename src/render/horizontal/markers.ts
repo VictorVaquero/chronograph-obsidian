@@ -155,15 +155,16 @@ function renderMarker(
 	el.type = "button";
 	el.dataset.timelineEventId = event.id;
 	el.style.setProperty("--marker-color", color);
-	el.addEventListener("click", () => callbacks.onEventClick?.(event));
-	attachTooltip(el, event, precision, showEra);
-	attachHoverPreview(el, event, callbacks);
 
 	const labelEl = createSpan();
 	labelEl.className = "timeline-graph-marker-label";
 	labelEl.textContent = event.title;
 
 	if (event.endDate) {
+		el.addEventListener("click", () => callbacks.onEventClick?.(event));
+		attachTooltip(el, event, precision, showEra);
+		attachHoverPreview(el, event, callbacks);
+
 		const endX = xFor(toOrdinal(event.endDate), scale);
 		const width = Math.max(0, endX - startX);
 		el.className = "timeline-graph-marker timeline-graph-marker-range";
@@ -177,11 +178,19 @@ function renderMarker(
 	wrapper.className = "timeline-graph-marker-point-wrapper";
 	wrapper.style.left = `${startX}%`;
 	wrapper.style.setProperty("--marker-color", color);
+	wrapper.dataset.timelineEventId = event.id;
+
+	// Click/hover are attached to the whole wrapper (dot + label), not just
+	// the tiny 14px dot, so the label text is just as clickable/hoverable as
+	// the dot itself — a point event with only a start date has no range bar
+	// to grab, so the label is often the only practically-sized hit target.
+	wrapper.addEventListener("click", () => callbacks.onEventClick?.(event));
+	attachTooltip(wrapper, event, precision, showEra);
+	attachHoverPreview(wrapper, event, callbacks);
 
 	// The stem always runs from the dot's own (possibly stacked, see
-	// restackLane) row back to
-	// the lane's baseline, so a marker pushed above/below still points at its
-	// exact date on the date spine.
+	// restackLane) row back to the lane's baseline, so a marker pushed
+	// above/below still points at its exact date on the date spine.
 	const stem = createDiv();
 	stem.className = "timeline-graph-marker-stem";
 	wrapper.appendChild(stem);

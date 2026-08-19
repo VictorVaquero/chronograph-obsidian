@@ -58,7 +58,15 @@ export function setupZoomAndPan(
 	let dragStartScrollLeft = 0;
 
 	scroller.addEventListener("pointerdown", (evt) => {
-		if (evt.target instanceof HTMLElement && evt.target.closest("button, a")) return;
+		// Point-event markers put their click/hover handlers on the whole
+		// dot+label wrapper (a <div>, not a <button>, so the label text is
+		// just as clickable as the dot) — starting a pan-drag from inside one
+		// would capture the pointer and swallow the marker's own click.
+		if (
+			evt.target instanceof HTMLElement &&
+			evt.target.closest("button, a, [data-timeline-event-id]")
+		)
+			return;
 		isDragging = true;
 		dragStartX = evt.clientX;
 		dragStartScrollLeft = scroller.scrollLeft;
