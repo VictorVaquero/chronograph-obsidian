@@ -2,6 +2,33 @@
 	padding: var(--size-4-4);
 }
 
+/* Configure-modal advanced setting groups: a native <details> per feature
+   group (see code-block-config-modal.ts) so a block using only a couple of
+   advanced features doesn't force scrolling past every other group's
+   controls to reach Save. Styled to read as part of the settings list
+   rather than a raw browser disclosure widget. */
+.timeline-config-group {
+	margin: var(--size-4-2) 0;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.timeline-config-group summary {
+	cursor: pointer;
+	padding: var(--size-4-2) 0;
+	font-weight: var(--font-medium);
+	color: var(--text-normal);
+}
+
+.timeline-config-group[open] summary {
+	margin-bottom: var(--size-4-1);
+}
+
+.timeline-config-group .setting-item {
+	border-top: none;
+	padding-top: var(--size-4-1);
+	padding-bottom: var(--size-4-1);
+}
+
 /* In-note code-block variant: bounded height (scrolls internally) and a
    border so it reads as an embedded widget rather than blending into the
    surrounding note text. Height is configurable via the block's `height`
@@ -29,6 +56,11 @@
 
 .timeline-graph-error {
 	color: var(--text-error);
+	/* Dataview query errors append a plain-English hint above the raw parser
+	   error, separated by a blank line (see formatDataviewError in
+	   dataview-source.ts) — preserve that line break instead of collapsing it
+	   like normal inline text. */
+	white-space: pre-line;
 }
 
 /* Vertical layout: central spine with alternating cards */
@@ -86,13 +118,25 @@
    when titles are on the right, right-of-center when titles are on the
    left — instead of splitting the row evenly between a wide title column and
    a narrow date column. Alternating layouts keep the spine centered, and
-   comfortable/spacious layouts are unaffected (their grid is symmetric). */
-.timeline-graph-spine-right.timeline-graph-spine-compact .timeline-graph-spine-line {
-	left: 30%;
+   comfortable/spacious layouts are unaffected (their grid is symmetric).
+   --timeline-node-split is defined once here, on the spine itself (the
+   common ancestor of both the spine line and every node row), and inherited
+   down into both — the spine line reads it directly below, and the node
+   rows pick it up too (see .timeline-graph-node-compact) without needing
+   their own copy of the number. A previous version defined the split twice,
+   once here as a hardcoded percentage and once again on the node rule; the
+   two silently drifted apart whenever one was tuned without the other,
+   drawing the spine line somewhere the dots didn't actually sit. */
+.timeline-graph-spine-right.timeline-graph-spine-compact {
+	--timeline-node-split: 42%;
 }
 
-.timeline-graph-spine-left.timeline-graph-spine-compact .timeline-graph-spine-line {
-	left: 70%;
+.timeline-graph-spine-left.timeline-graph-spine-compact {
+	--timeline-node-split: 58%;
+}
+
+.timeline-graph-spine-compact .timeline-graph-spine-line {
+	left: var(--timeline-node-split);
 }
 
 .timeline-graph-spine-line-solid {
@@ -256,14 +300,22 @@
    one side, title on the other, dot in the middle — instead of a boxed card.
    The date (and any range-bar clutter drawn next to it) sits opposite the
    title so the title text always reads cleanly next to just the dot.
-   The split point defaults to dead center (50%) for alternating rows, and is
-   overridden to 30%/70% for a fixed card side (see the -fixed-side rules
-   below) to match the spine line's own offset exactly — both read the same
-   --timeline-node-split value, so the dot is guaranteed to land exactly on
-   the spine line instead of drifting from it the way an `auto`-sized grid
-   column would. */
+   --timeline-node-split is intentionally NOT declared on this element: it
+   inherits from the spine ancestor (42%/58% for a fixed card side, see
+   .timeline-graph-spine-right/-left.timeline-graph-spine-compact above),
+   with every var(--timeline-node-split, 50%) usage below supplying the
+   centered default for alternating rows, which have no such ancestor to
+   inherit from. A previous version redeclared the split locally on this
+   element instead of inheriting it, which silently shadowed the spine's own
+   value and let the two drift out of sync whenever one was tuned without
+   the other — the dot ended up off the spine line. 42/58 rather than a
+   plainer 30/70: the date column has to fit a full range ("1299 → 1449"),
+   not just a single date, and 30% clipped even modest ranges into
+   "1299 → …" (ellipsis eating the whole end date). The ellipsis truncation
+   on .timeline-graph-card-date-compact stays as a fallback for genuinely
+   long ranges (e.g. spanning eras with "BC"/"AD" suffixes), but the common
+   case should fit without hitting it. */
 .timeline-graph-node-compact {
-	--timeline-node-split: 50%;
 	position: relative;
 	display: flex;
 	align-items: baseline;
@@ -271,18 +323,10 @@
 	min-height: var(--timeline-marker-size, 12px);
 }
 
-.timeline-graph-node-compact-fixed-side.is-right {
-	--timeline-node-split: 30%;
-}
-
-.timeline-graph-node-compact-fixed-side.is-left {
-	--timeline-node-split: 70%;
-}
-
 .timeline-graph-node-compact .timeline-graph-node-dot-compact {
 	position: absolute;
 	top: 50%;
-	left: var(--timeline-node-split);
+	left: var(--timeline-node-split, 50%);
 	transform: translate(-50%, -50%);
 	margin-top: 0;
 	z-index: 3;
@@ -297,8 +341,8 @@
    (matching the title's own truncation) so a long range shortens rather
    than pushing past the dot it's supposed to line up with. */
 .timeline-graph-node-compact.is-right .timeline-graph-card-date-compact {
-	width: var(--timeline-node-split);
-	flex: 0 0 var(--timeline-node-split);
+	width: var(--timeline-node-split, 50%);
+	flex: 0 0 var(--timeline-node-split, 50%);
 	padding-right: var(--size-4-3);
 	text-align: right;
 }
@@ -316,8 +360,8 @@
 }
 
 .timeline-graph-node-compact.is-left .timeline-graph-card-date-compact {
-	width: calc(100% - var(--timeline-node-split));
-	flex: 0 0 calc(100% - var(--timeline-node-split));
+	width: calc(100% - var(--timeline-node-split, 50%));
+	flex: 0 0 calc(100% - var(--timeline-node-split, 50%));
 	padding-left: var(--size-4-3);
 	text-align: left;
 }
