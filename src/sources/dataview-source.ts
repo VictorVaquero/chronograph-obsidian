@@ -66,7 +66,7 @@ function hintForDataviewError(rawError: string): string | undefined {
 	return undefined;
 }
 
-function formatDataviewError(rawError: string): string {
+export function formatDataviewError(rawError: string): string {
 	const hint = hintForDataviewError(rawError);
 	return hint ? `Dataview query failed: ${hint}\n\nFull error: ${rawError}` : `Dataview query failed: ${rawError}`;
 }

@@ -4,6 +4,7 @@ import { createDefaultView } from "./settings";
 import { isDataviewEnabled } from "./sources/dataview-source";
 import { TimelineViewConfig } from "./types";
 import { TimelineLogLevel } from "./log";
+import { attachDataviewQueryValidation, renderDataviewQueryStatus } from "./dataview-query-validator";
 
 export class TimelineGraphSettingTab extends PluginSettingTab {
 	plugin: TimelineGraphPlugin;
@@ -223,12 +224,24 @@ export class TimelineGraphSettingTab extends PluginSettingTab {
 				desc: 'DQL source, e.g. from "Journal" where date',
 				visible: () => view.sourceType === "dataview",
 				render: (setting) => {
-					setting.addTextArea((text) =>
+					setting.addTextArea((text) => {
+						text.inputEl.addClass("timeline-dataview-query-textarea");
 						text.setValue(view.dataviewQuery).onChange(async (value) => {
 							view.dataviewQuery = value;
 							await this.plugin.saveSettings();
-						})
+							validation.scheduleValidate();
+						});
+					});
+
+					const statusEl = setting.settingEl.createDiv({ cls: "timeline-dataview-query-status" });
+					const validation = attachDataviewQueryValidation(
+						this.app,
+						() => view.dataviewQuery,
+						(state, message) => renderDataviewQueryStatus(statusEl, state, message)
 					);
+					validation.validateNow();
+
+					return () => validation.dispose();
 				},
 			},
 			{

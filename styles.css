@@ -29,6 +29,40 @@
 	padding-bottom: var(--size-4-1);
 }
 
+/* Dataview query field: a code-like textarea (monospace, several rows tall)
+   instead of Obsidian's tiny single-line-height default, since DQL is
+   multi-clause source text people need to actually read while editing. */
+.timeline-dataview-query-textarea {
+	width: 100%;
+	min-height: 120px;
+	font-family: var(--font-monospace);
+	font-size: var(--font-small);
+	resize: vertical;
+}
+
+.timeline-dataview-query-status {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-1);
+	margin-top: var(--size-4-1);
+	font-size: var(--font-smallest);
+	min-height: 1.4em;
+	white-space: pre-line;
+}
+
+.timeline-dataview-query-status.is-valid {
+	color: var(--text-success, #2e7d32);
+}
+
+.timeline-dataview-query-status.is-invalid {
+	color: var(--text-error);
+}
+
+.timeline-dataview-query-status.is-pending,
+.timeline-dataview-query-status.is-unavailable {
+	color: var(--text-muted);
+}
+
 /* In-note code-block variant: bounded height (scrolls internally) and a
    border so it reads as an embedded widget rather than blending into the
    surrounding note text. Height is configurable via the block's `height`

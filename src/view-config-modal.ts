@@ -15,6 +15,7 @@ import {
 	TimelineViewConfig,
 } from "./types";
 import { log } from "./log";
+import { attachDataviewQueryValidation, renderDataviewQueryStatus } from "./dataview-query-validator";
 
 /**
  * Sidebar-view counterpart to CodeBlockConfigModal, opened from the same
@@ -33,6 +34,8 @@ export class ViewConfigModal extends Modal {
 	private cardSideSetting!: Setting;
 	private tableNotePathSetting!: Setting;
 	private dataviewQuerySetting!: Setting;
+	private dataviewQueryStatusEl!: HTMLElement;
+	private dataviewValidation?: ReturnType<typeof attachDataviewQueryValidation>;
 	private tagFilterSetting!: Setting;
 	private folderFilterSetting!: Setting;
 	private dateFieldSetting!: Setting;
@@ -91,11 +94,23 @@ export class ViewConfigModal extends Modal {
 		this.dataviewQuerySetting = new Setting(this.contentEl)
 			.setName("Dataview query")
 			.setDesc('DQL source, for example: from "journal" where date')
-			.addTextArea((text) =>
+			.addTextArea((text) => {
+				text.inputEl.addClass("timeline-dataview-query-textarea");
 				text.setValue(this.values.dataviewQuery).onChange((value) => {
 					this.values.dataviewQuery = value;
-				})
-			);
+					this.dataviewValidation?.scheduleValidate();
+				});
+			});
+
+		this.dataviewQueryStatusEl = this.dataviewQuerySetting.settingEl.createDiv({
+			cls: "timeline-dataview-query-status",
+		});
+		this.dataviewValidation = attachDataviewQueryValidation(
+			this.app,
+			() => this.values.dataviewQuery,
+			(state, message) => renderDataviewQueryStatus(this.dataviewQueryStatusEl, state, message)
+		);
+		this.dataviewValidation.validateNow();
 
 		this.tagFilterSetting = new Setting(this.contentEl)
 			.setName("Tag filter (optional)")
@@ -365,6 +380,7 @@ export class ViewConfigModal extends Modal {
 	}
 
 	onClose(): void {
+		this.dataviewValidation?.dispose();
 		this.contentEl.empty();
 	}
 }

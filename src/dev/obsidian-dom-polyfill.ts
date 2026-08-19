@@ -76,6 +76,10 @@ HTMLElement.prototype.createSpan = function (
 	return this.createEl("span", o, callback);
 };
 
+HTMLElement.prototype.setText = function (this: HTMLElement, text: string): void {
+	this.textContent = text;
+};
+
 HTMLElement.prototype.setCssStyles = function (this: HTMLElement, styles: Partial<CSSStyleDeclaration>): void {
 	Object.assign(this.style, styles);
 };
